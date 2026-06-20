@@ -15,6 +15,7 @@ jobs:
 
     env:
       FRONTEND_S3_BUCKET: visora-front-467685081574-us-east-1
+      CLOUDFRONT_DISTRIBUTION_ID: EWXF337MK8DJ1
       NEXT_PUBLIC_VISORA_API_URL: https://6p0ws7vu2f.execute-api.us-east-1.amazonaws.com/dev
       NEXT_PUBLIC_COGNITO_DOMAIN: https://visoracloud.auth.us-east-1.amazoncognito.com
       NEXT_PUBLIC_COGNITO_CLIENT_ID: 670ta8v3io1g1kat5jrgechpll
@@ -61,3 +62,9 @@ jobs:
               --cache-control "public,max-age=31536000,immutable" \
               --metadata-directive REPLACE
           fi
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" \
+            --paths "/*"

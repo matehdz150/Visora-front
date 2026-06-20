@@ -11,6 +11,7 @@ import {
   registerUser,
   resendConfirmationCode,
   saveSession,
+  startGitHubOAuth,
   startGoogleOAuth,
 } from "@/lib/visora-api";
 
@@ -209,6 +210,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
   const [resending, setResending] = useState(false);
 
   const signin = mode === "signin";
@@ -300,6 +302,23 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
     } catch (err) {
       setGoogleLoading(false);
       setError(err instanceof Error ? err.message : "Could not start Google sign in");
+    }
+  };
+
+  const onGitHubContinue = async () => {
+    setError(null);
+    setNotice(null);
+    setGithubLoading(true);
+
+    try {
+      await startGitHubOAuth({
+        intent: signin ? "signin" : "signup",
+        ...(signin ? {} : { planId: selectedPlan ?? "free" }),
+        returnTo: "/dashboard",
+      });
+    } catch (err) {
+      setGithubLoading(false);
+      setError(err instanceof Error ? err.message : "Could not start GitHub sign in");
     }
   };
 
@@ -504,13 +523,15 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
             <div style={{ animation: "loginRise .35s ease both" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
                 <label style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)" }}>Password</label>
-                <a
-                  href="#"
-                  className="v-link-underline"
-                  style={{ fontSize: "12.5px", color: "#aebfff", textDecoration: "none" }}
-                >
-                  Forgot?
-                </a>
+                {signin ? (
+                  <Link
+                    href="/forgot-password"
+                    className="v-link-underline"
+                    style={{ fontSize: "12.5px", color: "#aebfff", textDecoration: "none" }}
+                  >
+                    Forgot?
+                  </Link>
+                ) : null}
               </div>
               <input
                 value={password}
@@ -603,7 +624,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
           {/* submit */}
           <button
             type="submit"
-            disabled={loading || googleLoading}
+            disabled={loading || googleLoading || githubLoading}
             className="v-submit"
             style={{
               width: "100%",
@@ -616,7 +637,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
               fontFamily: "inherit",
               fontSize: "15px",
               fontWeight: 600,
-              cursor: loading || googleLoading ? "not-allowed" : "pointer",
+              cursor: loading || googleLoading || githubLoading ? "not-allowed" : "pointer",
               transition: "transform .15s, box-shadow .15s, background .2s",
             }}
           >
@@ -634,7 +655,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
               <button
                 type="button"
                 onClick={onGoogleContinue}
-                disabled={loading || googleLoading}
+                disabled={loading || googleLoading || githubLoading}
                 style={{
                   width: "100%",
                   padding: "12px 14px",
@@ -645,7 +666,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
                   fontFamily: "inherit",
                   fontSize: "14px",
                   fontWeight: 600,
-                  cursor: loading || googleLoading ? "not-allowed" : "pointer",
+                  cursor: loading || googleLoading || githubLoading ? "not-allowed" : "pointer",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -654,6 +675,32 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
               >
                 <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#fff", color: "#050505", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, fontFamily: "Arial, sans-serif" }}>G</span>
                 {googleLoading ? "Redirecting to Google..." : signin ? "Continue with Google" : "Sign up with Google"}
+              </button>
+
+              <button
+                type="button"
+                onClick={onGitHubContinue}
+                disabled={loading || googleLoading || githubLoading}
+                style={{
+                  width: "100%",
+                  marginTop: "10px",
+                  padding: "12px 14px",
+                  borderRadius: "11px",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  background: "rgba(255,255,255,0.04)",
+                  color: "rgba(255,255,255,0.86)",
+                  fontFamily: "inherit",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: loading || googleLoading || githubLoading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                }}
+              >
+                <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#fff", color: "#050505", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800, fontFamily: "Arial, sans-serif" }}>GH</span>
+                {githubLoading ? "Redirecting to GitHub..." : signin ? "Continue with GitHub" : "Sign up with GitHub"}
               </button>
             </>
           )}

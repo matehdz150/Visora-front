@@ -10,6 +10,7 @@ const COGNITO_DOMAIN =
   "https://visoracloud.auth.us-east-1.amazoncognito.com";
 const COGNITO_CLIENT_ID =
   process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID ?? "670ta8v3io1g1kat5jrgechpll";
+const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? "";
 
 export interface VisoraSession {
   idToken: string;
@@ -350,6 +351,26 @@ export async function loginUser(email: string, password: string): Promise<Visora
   return parseResponse<VisoraSession>(response);
 }
 
+export async function forgotPassword(email: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  await parseResponse<unknown>(response);
+}
+
+export async function confirmForgotPassword(email: string, confirmationCode: string, newPassword: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/confirm-forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, confirmationCode, newPassword }),
+  });
+
+  await parseResponse<unknown>(response);
+}
+
 function base64UrlEncode(value: ArrayBuffer | string): string {
   const bytes = typeof value === "string" ? new TextEncoder().encode(value) : new Uint8Array(value);
   let binary = "";
@@ -381,7 +402,11 @@ async function createCodeChallenge(codeVerifier: string): Promise<string> {
 }
 
 function getOAuthRedirectUri() {
-  return `${window.location.origin}/auth/callback`;
+  return `${window.location.origin}/auth/callback/`;
+}
+
+function getGitHubRedirectUri() {
+  return `${window.location.origin}/auth/github/callback/`;
 }
 
 export async function startGoogleOAuth(params: {
@@ -414,6 +439,34 @@ export async function startGoogleOAuth(params: {
   });
 
   window.location.assign(`${COGNITO_DOMAIN}/oauth2/authorize?${searchParams.toString()}`);
+}
+
+export async function startGitHubOAuth(params: {
+  intent: "signin" | "signup";
+  planId?: PlanId;
+  returnTo?: string;
+}): Promise<void> {
+  if (!GITHUB_CLIENT_ID) {
+    throw new Error("GitHub sign in is not configured");
+  }
+
+  const state: OAuthState = {
+    csrf: createRandomString(32),
+    intent: params.intent,
+    ...(params.planId ? { planId: params.planId } : {}),
+    ...(params.returnTo ? { returnTo: params.returnTo } : {}),
+  };
+
+  window.sessionStorage.setItem(OAUTH_STATE_STORAGE_KEY, JSON.stringify(state));
+
+  const searchParams = new URLSearchParams({
+    client_id: GITHUB_CLIENT_ID,
+    redirect_uri: getGitHubRedirectUri(),
+    scope: "read:user user:email",
+    state: base64UrlEncode(JSON.stringify(state)),
+  });
+
+  window.location.assign(`https://github.com/login/oauth/authorize?${searchParams.toString()}`);
 }
 
 export function readOAuthState(encodedState: string | null): OAuthState | null {
@@ -472,6 +525,24 @@ export async function exchangeCognitoCodeForSession(code: string): Promise<Visor
     expiresIn: payload.expires_in,
     tokenType: payload.token_type,
   };
+}
+
+export async function exchangeGitHubCodeForSession(code: string, planId?: PlanId): Promise<VisoraSession> {
+  const response = await fetch(`${API_BASE_URL}/auth/github/exchange`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code,
+      redirectUri: getGitHubRedirectUri(),
+      ...(planId ? { planId } : {}),
+    }),
+  });
+
+  const session = await parseResponse<VisoraSession>(response);
+
+  window.sessionStorage.removeItem(OAUTH_STATE_STORAGE_KEY);
+
+  return session;
 }
 
 export async function getCurrentUser(idToken: string): Promise<CurrentUser> {

@@ -1,0 +1,63 @@
+name: Deploy Frontend to S3
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      FRONTEND_S3_BUCKET: visora-front-467685081574-us-east-1
+      NEXT_PUBLIC_VISORA_API_URL: https://6p0ws7vu2f.execute-api.us-east-1.amazonaws.com/dev
+      NEXT_PUBLIC_COGNITO_DOMAIN: https://visoracloud.auth.us-east-1.amazoncognito.com
+      NEXT_PUBLIC_COGNITO_CLIENT_ID: 670ta8v3io1g1kat5jrgechpll
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build static export
+        run: pnpm build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy HTML and public assets
+        run: |
+          aws s3 sync out "s3://$FRONTEND_S3_BUCKET" \
+            --delete \
+            --cache-control "public,max-age=0,must-revalidate"
+
+      - name: Cache Next static assets
+        run: |
+          if [ -d out/_next/static ]; then
+            aws s3 cp out/_next/static "s3://$FRONTEND_S3_BUCKET/_next/static" \
+              --recursive \
+              --cache-control "public,max-age=31536000,immutable" \
+              --metadata-directive REPLACE
+          fi

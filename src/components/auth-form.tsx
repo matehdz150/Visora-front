@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
   confirmRegistration,
+  createBillingCheckoutSession,
   loginUser,
   type PlanId,
   registerUser,
@@ -32,6 +33,14 @@ const planSummaries: Record<PlanId, { name: string; price: string; usage: string
   growth: { name: "Growth", price: "$149 / month", usage: "50,000 moderations" },
   scale: { name: "Scale", price: "$399 / month", usage: "150,000 moderations" },
 };
+
+function GitHubIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.41 7.86 10.94.58.1.79-.25.79-.56v-2.18c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.73-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.17A10.9 10.9 0 0 1 12 6.04c.97 0 1.94.13 2.85.39 2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.75.11 3.04.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.19c0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+    </svg>
+  );
+}
 
 function passwordMeetsPolicy(password: string) {
   return (
@@ -216,6 +225,18 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
   const signin = mode === "signin";
   const submitBg = email && !loading ? "#aebfff" : "rgba(174,191,255,0.55)";
 
+  const continueAfterSignup = async (session: { idToken: string }) => {
+    const planId = selectedPlan ?? "free";
+
+    if (planId !== "free") {
+      const checkout = await createBillingCheckoutSession(session.idToken, planId);
+      window.location.assign(checkout.url);
+      return;
+    }
+
+    router.push("/dashboard");
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -241,7 +262,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
         await confirmRegistration(normalizedEmail, confirmationCode.trim());
         const session = await loginUser(normalizedEmail, password);
         saveSession(session);
-        router.push("/dashboard");
+        await continueAfterSignup(session);
         return;
       }
 
@@ -250,7 +271,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
       if (registration.userConfirmed) {
         const session = await loginUser(normalizedEmail, password);
         saveSession(session);
-        router.push("/dashboard");
+        await continueAfterSignup(session);
         return;
       }
 
@@ -699,7 +720,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
                   gap: "10px",
                 }}
               >
-                <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#fff", color: "#050505", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 800, fontFamily: "Arial, sans-serif" }}>GH</span>
+                <GitHubIcon />
                 {githubLoading ? "Redirecting to GitHub..." : signin ? "Continue with GitHub" : "Sign up with GitHub"}
               </button>
             </>

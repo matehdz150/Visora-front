@@ -43,6 +43,10 @@ export interface DashboardAccount {
   projectLimit: number;
   apiKeyLimit: number;
   logRetentionDays: number;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  stripeSubscriptionStatus?: string;
+  stripeCurrentPeriodEnd?: string;
 }
 
 export interface ModerationDecisionExplanation {
@@ -568,6 +572,31 @@ export async function getDashboardData(idToken: string): Promise<DashboardData> 
   });
 
   return parseResponse<DashboardData>(response);
+}
+
+export async function createBillingCheckoutSession(idToken: string, planId: Exclude<PlanId, "free">): Promise<{ url: string }> {
+  const response = await fetch(`${API_BASE_URL}/billing/checkout-session`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ planId }),
+  });
+
+  return parseResponse<{ url: string }>(response);
+}
+
+export async function createBillingPortalSession(idToken: string): Promise<{ url: string }> {
+  const response = await fetch(`${API_BASE_URL}/billing/portal-session`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return parseResponse<{ url: string }>(response);
 }
 
 export async function updateAccountPlan(idToken: string, planId: PlanId): Promise<DashboardAccount> {

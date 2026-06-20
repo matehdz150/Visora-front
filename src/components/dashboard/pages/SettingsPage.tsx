@@ -29,6 +29,7 @@ export function SettingsPage({
   workspace,
   onWorkspaceChange,
   onChangePlan,
+  onManageBilling,
   notify,
 }: {
   accountId: string;
@@ -38,11 +39,13 @@ export function SettingsPage({
   workspace: string;
   onWorkspaceChange: (v: string) => void;
   onChangePlan: (planId: PlanId) => Promise<void>;
+  onManageBilling: () => Promise<void>;
   notify: DashboardNotify;
 }) {
   const [savingPlan, setSavingPlan] = useState<PlanId | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const usageUsed = usage?.requestsUsed ?? 0;
   const usageLimit = usage?.monthlyLimit ?? accountPlan?.monthlyLimit ?? 0;
   const usagePercent = usageLimit > 0 ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
@@ -56,9 +59,24 @@ export function SettingsPage({
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not update plan";
       setPlanError(message);
-      notify({ kind: "error", title: "Could not update plan", message });
+      notify({ kind: "error", title: planId === "free" ? "Could not update plan" : "Could not start checkout", message });
     } finally {
       setSavingPlan(null);
+    }
+  };
+
+  const openBillingPortal = async () => {
+    setPlanError(null);
+    setOpeningPortal(true);
+
+    try {
+      await onManageBilling();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not open billing portal";
+      setPlanError(message);
+      notify({ kind: "error", title: "Could not open billing portal", message });
+    } finally {
+      setOpeningPortal(false);
     }
   };
 
@@ -96,11 +114,16 @@ export function SettingsPage({
         <div style={{ display: "flex", justifyContent: "space-between", gap: "20px", alignItems: "flex-start", marginBottom: "18px" }}>
           <div>
             <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "4px" }}>Plan</div>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Change the account plan used for new and existing projects.</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Paid plans open Stripe Checkout. Manage active subscriptions in the billing portal.</div>
           </div>
-          {accountPlan && (
-            <span style={{ fontSize: "12px", color: "#c5d0ff", background: "rgba(126,155,255,0.1)", border: "1px solid rgba(126,155,255,0.24)", padding: "5px 10px", borderRadius: "20px", textTransform: "capitalize" }}>{accountPlan.planId}</span>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {accountPlan?.stripeCustomerId && (
+              <button type="button" onClick={openBillingPortal} disabled={openingPortal} style={{ padding: "7px 11px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.84)", fontFamily: "inherit", fontSize: "12px", cursor: openingPortal ? "not-allowed" : "pointer" }}>{openingPortal ? "Opening..." : "Manage billing"}</button>
+            )}
+            {accountPlan && (
+              <span style={{ fontSize: "12px", color: "#c5d0ff", background: "rgba(126,155,255,0.1)", border: "1px solid rgba(126,155,255,0.24)", padding: "5px 10px", borderRadius: "20px", textTransform: "capitalize" }}>{accountPlan.planId}</span>
+            )}
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
@@ -131,7 +154,7 @@ export function SettingsPage({
                 </div>
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.45 }}>{plan.monthlyLimit} moderations / month</div>
                 <div style={{ marginTop: "4px", fontSize: "12px", color: "rgba(255,255,255,0.36)", lineHeight: 1.45 }}>{plan.limits}</div>
-                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? "Current plan" : loading ? "Updating..." : "Select plan"}</div>
+                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? "Current plan" : loading ? (plan.planId === "free" ? "Updating..." : "Opening checkout...") : (plan.planId === "free" ? "Switch to free" : "Checkout") }</div>
               </button>
             );
           })}

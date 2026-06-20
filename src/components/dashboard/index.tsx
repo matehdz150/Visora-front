@@ -22,6 +22,8 @@ import type { ApiKey, ModLog, Page, Project, ReviewItem, UsageSummary, WebhookEn
 import type { PolicyMap, PolicyPatch } from "./usePolicyStore";
 import {
   clearSession,
+  createBillingCheckoutSession,
+  createBillingPortalSession,
   createDashboardProject,
   createProjectApiKey,
   createProjectWebhook,
@@ -517,9 +519,28 @@ export default function Dashboard() {
   const changePlan = async (planId: PlanId) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
+    if (planId !== "free") {
+      const checkout = await createBillingCheckoutSession(session.idToken, planId);
+      window.location.assign(checkout.url);
+      return;
+    }
+
+    if (accountPlan?.stripeCustomerId) {
+      const portal = await createBillingPortalSession(session.idToken);
+      window.location.assign(portal.url);
+      return;
+    }
+
     await updateAccountPlan(session.idToken, planId);
     await refreshDashboardData();
-    notify({ kind: "success", title: "Plan updated", message: `Your account is now on the ${planId} plan.` });
+    notify({ kind: "success", title: "Plan updated", message: "Your account is now on the free plan." });
+  };
+
+  const manageBilling = async () => {
+    if (!session?.idToken) throw new Error("Missing dashboard session");
+
+    const portal = await createBillingPortalSession(session.idToken);
+    window.location.assign(portal.url);
   };
 
   const navigate = (p: Page) => {
@@ -567,7 +588,7 @@ export default function Dashboard() {
     }
     if (page === "create-project") return <CreateProjectPage onCancel={() => setPage("projects")} onCreateProject={createProject} notify={notify} />;
     if (page === "keys") return <ApiKeysPage projects={projects} apiKeys={apiKeys} rawApiKey={rawApiKey} onDismissRawKey={() => setRawApiKey(null)} onCreateApiKey={createApiKey} onRenameApiKey={renameApiKey} onRevokeApiKey={revokeApiKey} onRotateApiKey={rotateApiKey} notify={notify} />;
-    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} onChangePlan={changePlan} notify={notify} />;
+    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} onChangePlan={changePlan} onManageBilling={manageBilling} notify={notify} />;
     return null;
   };
 

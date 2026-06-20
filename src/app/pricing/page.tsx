@@ -139,7 +139,7 @@ export default function PricingPage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px", marginBottom: "18px" }}>
           <div>
             <h2 style={{ margin: 0, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.035em" }}>Plan comparison</h2>
-            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Billing is not enabled yet. These tiers define the product packaging and limits.</p>
+            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Paid plans are billed monthly through Stripe. The webhook updates account limits after checkout is completed.</p>
           </div>
         </div>
 
@@ -163,7 +163,7 @@ export default function PricingPage() {
           </div>
           <div style={{ display: "grid", gap: "12px" }}>
             {[
-              ["Are payments enabled?", "Not yet. The pricing page shows the intended plan packaging while billing integration is being finalized."],
+              ["How does billing work?", "Paid plans use monthly Stripe subscriptions. Choose a plan, complete Checkout, and Visora updates your account after Stripe confirms the subscription."],
               ["What counts as a moderation?", "A successful protected moderation request counts toward monthly usage. Validation or authentication failures are not counted."],
               ["What is the difference between Visora and Visora Cloud?", "Visora is the image moderation product and API. Visora Cloud is the hosted dashboard where accounts manage projects, plans, keys, policies, and logs."],
               ["Which SDK should I use?", "Use @visoracloud/client from Node.js or TypeScript server code. API keys should not be exposed in browser code."],

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
+  createBillingCheckoutSession,
   exchangeCognitoCodeForSession,
   readOAuthState,
   saveSession,
@@ -41,7 +42,13 @@ export function AuthCallback() {
       saveSession(session);
 
       if (state.intent === "signup" && state.planId) {
-        await updateAccountPlan(session.idToken, state.planId);
+        if (state.planId === "free") {
+          await updateAccountPlan(session.idToken, state.planId);
+        } else {
+          const checkout = await createBillingCheckoutSession(session.idToken, state.planId);
+          window.location.assign(checkout.url);
+          return;
+        }
       }
 
       if (!cancelled) {

@@ -29,7 +29,7 @@ export function ProjectsPage({
       {projects.length === 0 ? (
         <ProjectsEmptyState onCta={onCreateProject} />
       ) : (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginTop: "30px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginTop: "30px" }}>
         {projects.map((p) => (
           <button key={p.id} onClick={() => onSelectProject(p.id)} className="v-projcard" style={{ ...card, padding: "22px", cursor: "pointer", transition: "border-color .2s, transform .2s", color: "inherit", fontFamily: "inherit", textAlign: "left" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>

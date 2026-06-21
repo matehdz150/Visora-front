@@ -127,14 +127,14 @@ export function WebhooksPage({
         <button onClick={() => void refresh()} disabled={loading} style={{ padding: "10px 15px", borderRadius: "10px", border: "none", background: loading ? "rgba(255,255,255,0.35)" : "#fff", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: loading ? "wait" : "pointer" }}>{loading ? "Refreshing..." : "Refresh"}</button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginTop: "28px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginTop: "28px" }}>
         <Metric label="Delivered" value={stats.delivered} color="#7ee0a8" />
         <Metric label="Failed" value={stats.failed} color="#ff9b9b" />
         <Metric label="Pending" value={stats.pending} color="#aebfff" />
         <Metric label="Skipped" value={stats.skipped} color="rgba(255,255,255,0.55)" />
       </div>
 
-      <div style={{ ...card, padding: "16px", marginTop: "18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+      <div className="r-cols-2" style={{ ...card, padding: "16px", marginTop: "18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
         <select value={projectFilter} onChange={(event) => { setProjectFilter(event.target.value); void refresh({ projectId: event.target.value }); }} style={selectStyle}>
           <option value="all">All projects</option>
           {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
@@ -155,8 +155,8 @@ export function WebhooksPage({
         </select>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.45fr 0.95fr", gap: "20px", marginTop: "18px", alignItems: "start" }}>
-        <div style={{ ...card, overflow: "hidden" }}>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.45fr 0.95fr", gap: "20px", marginTop: "18px", alignItems: "start" }}>
+        <div className="dash-scroll" style={{ ...card, overflow: "hidden" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1.15fr 0.9fr 0.8fr 0.55fr 0.9fr", gap: "12px", padding: "13px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontFamily: "'JetBrains Mono', monospace", fontSize: "10.5px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase" }}>
             <span>Event</span><span>Project</span><span>Status</span><span>Attempts</span><span>Created</span>
           </div>

@@ -83,13 +83,15 @@ function Logo() {
 
 export default function PricingPage() {
   return (
-    <main style={{ minHeight: "100vh", background: "#050505", color: "#fff" }}>
+    <main className="lp-root" style={{ minHeight: "100vh", background: "#050505", color: "#fff" }}>
       <nav style={{ position: "sticky", top: 0, zIndex: 20, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 40px", background: "rgba(5,5,5,0.78)", borderBottom: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(14px)" }}>
         <Link href="/" style={{ textDecoration: "none" }}><Logo /></Link>
         <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
-          <Link href="/features/webhooks" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.68)", textDecoration: "none" }}>Features</Link>
-          <a href="#plans" className="v-navlink" style={{ fontSize: "14px", color: "#fff", textDecoration: "none" }}>Pricing</a>
-          <Link href="/login" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.68)", textDecoration: "none" }}>Log In</Link>
+          <span className="lp-nav-mid" style={{ display: "contents" }}>
+            <Link href="/features/webhooks" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.68)", textDecoration: "none" }}>Features</Link>
+            <a href="#plans" className="v-navlink" style={{ fontSize: "14px", color: "#fff", textDecoration: "none" }}>Pricing</a>
+            <Link href="/login" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.68)", textDecoration: "none" }}>Log In</Link>
+          </span>
           <Link href="/register?plan=free" className="v-btn-primary-sm" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: "#fff", padding: "9px 18px", borderRadius: "9px", textDecoration: "none", transition: "transform .2s, box-shadow .2s" }}>Start free</Link>
         </div>
       </nav>
@@ -98,13 +100,13 @@ export default function PricingPage() {
         <div style={{ position: "absolute", top: "-280px", left: "50%", transform: "translateX(-50%)", width: "980px", height: "600px", background: "radial-gradient(ellipse at center, rgba(126,155,255,0.12), rgba(126,155,255,0) 64%)", pointerEvents: "none" }} />
         <div style={{ position: "relative", maxWidth: "760px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 10px", borderRadius: "999px", background: "rgba(126,155,255,0.08)", border: "1px solid rgba(126,155,255,0.18)", color: "#aebfff", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Pricing</div>
-          <h1 style={{ margin: "22px 0 0", fontSize: "58px", lineHeight: 1.02, fontWeight: 600, letterSpacing: "-0.055em" }}>Simple Visora Cloud plans for image moderation.</h1>
+          <h1 style={{ margin: "22px 0 0", fontSize: "clamp(34px, 8vw, 58px)", lineHeight: 1.02, fontWeight: 600, letterSpacing: "-0.055em" }}>Simple Visora Cloud plans for image moderation.</h1>
           <p style={{ margin: "20px 0 0", maxWidth: "620px", color: "rgba(255,255,255,0.55)", fontSize: "17px", lineHeight: 1.7, fontWeight: 300 }}>Start free, then upgrade when you need more projects, longer log retention, compliance packs, and higher monthly usage.</p>
         </div>
       </section>
 
       <section id="plans" style={{ maxWidth: "1180px", margin: "0 auto", padding: "24px 40px 76px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "16px" }}>
+        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "16px" }}>
           {plans.map((plan) => (
             <div key={plan.id} style={{ position: "relative", minHeight: "560px", background: plan.featured ? "linear-gradient(180deg, rgba(126,155,255,0.14), rgba(255,255,255,0.035))" : "#0f0f0f", border: "1px solid " + (plan.featured ? "rgba(126,155,255,0.38)" : "rgba(255,255,255,0.08)"), borderRadius: "14px", padding: "24px", display: "flex", flexDirection: "column" }}>
               {plan.featured && <div style={{ position: "absolute", top: "14px", right: "14px", fontFamily: MONO, fontSize: "10px", letterSpacing: "0.08em", color: "#aebfff", background: "rgba(126,155,255,0.11)", border: "1px solid rgba(126,155,255,0.28)", padding: "4px 8px", borderRadius: "999px" }}>POPULAR</div>}
@@ -143,7 +145,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", overflow: "hidden", background: "#0f0f0f" }}>
+        <div className="dash-scroll" style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", overflow: "hidden", background: "#0f0f0f" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1.5fr repeat(4, 1fr)", padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase" }}>
             <span>Feature</span><span>Free</span><span>Starter</span><span>Growth</span><span>Scale</span>
           </div>
@@ -155,7 +157,7 @@ export default function PricingPage() {
         </div>
       </section>
       <section style={{ maxWidth: "1180px", margin: "0 auto", padding: "0 40px 110px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "0.78fr 1fr", gap: "48px", alignItems: "start" }}>
+        <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "0.78fr 1fr", gap: "48px", alignItems: "start" }}>
           <div>
             <div style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.16em", color: "#8fa0d8", textTransform: "uppercase" }}>FAQ</div>
             <h2 style={{ margin: "14px 0 0", fontSize: "34px", lineHeight: 1.08, fontWeight: 600, letterSpacing: "-0.04em" }}>Pricing questions.</h2>
@@ -163,7 +165,7 @@ export default function PricingPage() {
           </div>
           <div style={{ display: "grid", gap: "12px" }}>
             {[
-              ["How does billing work?", "Paid plans use monthly Stripe subscriptions. Choose a plan, complete Checkout, and Visora updates your account after Stripe confirms the subscription."],
+              ["How does billing work?", "Paid plans use monthly Stripe subscriptions. Choose a plan, complete payment in Visora checkout, and your account updates after Stripe confirms the subscription."],
               ["What counts as a moderation?", "A successful protected moderation request counts toward monthly usage. Validation or authentication failures are not counted."],
               ["What is the difference between Visora and Visora Cloud?", "Visora is the image moderation product and API. Visora Cloud is the hosted dashboard where accounts manage projects, plans, keys, policies, and logs."],
               ["Which SDK should I use?", "Use @visoracloud/client from Node.js or TypeScript server code. API keys should not be exposed in browser code."],

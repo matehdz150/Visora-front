@@ -47,7 +47,7 @@ export function DocsToc() {
   }
 
   return (
-    <aside style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", padding: "44px 24px 60px" }}>
+    <aside className="docs-toc" style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", padding: "44px 24px 60px" }}>
       <div style={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "0.12em", color: text.ghost, textTransform: "uppercase", marginBottom: "14px" }}>On this page</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "2px", borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
         {TOC_ITEMS.map((item) => {

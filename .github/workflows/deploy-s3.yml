@@ -20,6 +20,7 @@ jobs:
       NEXT_PUBLIC_COGNITO_DOMAIN: https://visoracloud.auth.us-east-1.amazoncognito.com
       NEXT_PUBLIC_COGNITO_CLIENT_ID: 670ta8v3io1g1kat5jrgechpll
       NEXT_PUBLIC_GITHUB_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
 
     steps:
       - name: Checkout

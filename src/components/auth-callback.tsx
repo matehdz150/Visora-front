@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
-  createBillingCheckoutSession,
   exchangeCognitoCodeForSession,
   readOAuthState,
   saveSession,
@@ -45,8 +44,7 @@ export function AuthCallback() {
         if (state.planId === "free") {
           await updateAccountPlan(session.idToken, state.planId);
         } else {
-          const checkout = await createBillingCheckoutSession(session.idToken, state.planId);
-          window.location.assign(checkout.url);
+          router.replace(`/checkout?plan=${state.planId}`);
           return;
         }
       }

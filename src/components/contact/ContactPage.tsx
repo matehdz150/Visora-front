@@ -68,7 +68,7 @@ export function ContactPage() {
   }
 
   return (
-    <main style={{ position: "relative", width: "100%", minHeight: "100vh", background: "#050505", color: "#fff", overflow: "hidden" }}>
+    <main className="lp-root" style={{ position: "relative", width: "100%", minHeight: "100vh", background: "#050505", color: "#fff", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: "-300px", right: "-200px", width: "900px", height: "700px", background: "radial-gradient(ellipse at center, rgba(126,155,255,0.12), rgba(126,155,255,0) 62%)", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "absolute", bottom: "-360px", left: "-260px", width: "780px", height: "620px", background: "radial-gradient(ellipse at center, rgba(174,191,255,0.08), rgba(174,191,255,0) 64%)", pointerEvents: "none", zIndex: 0 }} />
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(circle at 68% 18%, #000 0%, transparent 56%)", opacity: 0.7, pointerEvents: "none" }} />
@@ -78,15 +78,17 @@ export function ContactPage() {
           <VisoraLogo markSize={26} fontSize={18} tone="light" />
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "30px" }}>
-          <Link href="/docs" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Documentation</Link>
-          <Link href="/pricing" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Pricing</Link>
-          <Link href="/login" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Log In</Link>
+          <span className="lp-nav-mid" style={{ display: "contents" }}>
+            <Link href="/docs" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Documentation</Link>
+            <Link href="/pricing" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Pricing</Link>
+            <Link href="/login" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>Log In</Link>
+          </span>
           <Link href="/register" className="v-btn-primary-sm" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: "#fff", padding: "9px 18px", borderRadius: "9px", textDecoration: "none" }}>Start Free</Link>
         </div>
       </nav>
 
       <section style={{ position: "relative", zIndex: 1, maxWidth: "1280px", margin: "0 auto", padding: "158px 40px 110px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1.12fr 0.88fr", gap: "54px", alignItems: "start" }}>
+        <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.12fr 0.88fr", gap: "54px", alignItems: "start" }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "9px", marginBottom: "24px", padding: "7px 11px", borderRadius: "999px", background: "rgba(126,155,255,0.08)", border: "1px solid rgba(126,155,255,0.2)", color: "#aebfff", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Contact Visora

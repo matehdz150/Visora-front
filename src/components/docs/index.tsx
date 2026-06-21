@@ -80,7 +80,7 @@ export default function DocsPage() {
     <div style={{ minHeight: "100vh", background: "#050505" }}>
       <style>{"::highlight(docs-search) { background: rgba(174, 191, 255, 0.18); color: #fff; text-decoration: underline; text-decoration-color: #aebfff; text-underline-offset: 3px; }"}</style>
       <DocsTopBar searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
-      <div style={{ display: "grid", gridTemplateColumns: "248px minmax(0, 1fr) 220px", maxWidth: "1320px", margin: "0 auto" }}>
+      <div className="docs-grid" style={{ display: "grid", gridTemplateColumns: "248px minmax(0, 1fr) 220px", maxWidth: "1320px", margin: "0 auto" }}>
         <DocsSideNav />
         <QuickstartArticle articleRef={articleRef} />
         <DocsToc />

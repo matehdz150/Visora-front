@@ -108,7 +108,7 @@ export function ReviewsPage({
           <p style={{ margin: "12px 0 0", maxWidth: "390px", fontSize: "15px", lineHeight: 1.6, color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>No images are waiting for review. New items appear here when a project policy returns review.</p>
         </div>
       ) : selected ? (
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 330px", gap: "22px", marginTop: "30px", alignItems: "start" }}>
+        <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 330px", gap: "22px", marginTop: "30px", alignItems: "start" }}>
           <section style={{ ...card, padding: "20px", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
               <div>

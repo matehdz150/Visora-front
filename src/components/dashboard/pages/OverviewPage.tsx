@@ -47,7 +47,7 @@ export function OverviewPage({
       ) : (
         <>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginTop: "32px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginTop: "32px" }}>
         {metrics.map((m) => (
           <div key={m.label} style={{ ...card, padding: "20px" }}>
             <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "14px" }}>{m.label}</div>
@@ -68,7 +68,7 @@ export function OverviewPage({
         <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 600, letterSpacing: "-0.02em" }}>Recent moderations</h2>
         <button onClick={onViewAll} style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>View all →</button>
       </div>
-      <div style={{ ...card, overflow: "hidden" }}>
+      <div className="dash-scroll" style={{ ...card, overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr 0.9fr 0.9fr 1.2fr", padding: "13px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>
           <span>Time</span><span>Project</span><span>Category</span><span>Risk</span><span>Decision</span><span>Moderation ID</span>
         </div>

@@ -61,7 +61,7 @@ export function AdminPage({ data, loading, error, onRefresh }: { data: AdminOver
         <div style={{ ...card, marginTop: "28px" }}><Empty>{loading ? "Loading admin data..." : "Admin data is not available."}</Empty></div>
       ) : (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "14px", marginTop: "28px" }}>
+          <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "14px", marginTop: "28px" }}>
             <Metric label="Accounts" value={formatNumber(data.accounts.length)} hint={topAccount ? "Top: " + topAccount.email : "No accounts yet"} />
             <Metric label="Monthly usage" value={formatNumber(data.usage.totalRequestsUsed)} hint={percent(usagePercent) + " of visible limits"} tone={usagePercent >= 90 ? "bad" : usagePercent >= 75 ? "warn" : "default"} />
             <Metric label="Active projects" value={formatNumber(data.topProjects.filter((project) => project.monthModerations > 0).length)} hint={formatNumber(data.topProjects.length) + " projects sampled"} />
@@ -69,7 +69,7 @@ export function AdminPage({ data, loading, error, onRefresh }: { data: AdminOver
             <Metric label="Failed webhooks" value={formatNumber(data.failedWebhooks.length)} hint="Recent failed events" tone={data.failedWebhooks.length ? "bad" : "default"} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "18px", marginTop: "18px", alignItems: "start" }}>
+          <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.1fr 0.9fr", gap: "18px", marginTop: "18px", alignItems: "start" }}>
             <Panel title="Accounts">
               <Header columns="1.2fr 0.7fr 0.8fr 0.8fr 0.7fr" labels={["Email", "Plan", "Usage", "Projects", "Keys"]} />
               {data.accounts.length === 0 ? <Empty>No accounts found.</Empty> : data.accounts.map((account) => (
@@ -95,7 +95,7 @@ export function AdminPage({ data, loading, error, onRefresh }: { data: AdminOver
             </Panel>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginTop: "18px", alignItems: "start" }}>
+          <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "18px", marginTop: "18px", alignItems: "start" }}>
             <Panel title="Most active projects">
               <Header columns="1.2fr 0.9fr 0.55fr" labels={["Project", "Account", "Moderations"]} />
               {data.topProjects.length === 0 ? <Empty>No projects found.</Empty> : data.topProjects.map((project) => (

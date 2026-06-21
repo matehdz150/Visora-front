@@ -34,6 +34,13 @@ export interface CurrentUser {
 
 export type PlanId = "free" | "starter" | "growth" | "scale";
 
+export interface BillingSubscriptionIntent {
+  clientSecret: string;
+  subscriptionId: string;
+  customerId: string;
+  planId: Exclude<PlanId, "free">;
+}
+
 export interface DashboardAccount {
   accountId: string;
   email: string;
@@ -574,6 +581,19 @@ export async function getDashboardData(idToken: string): Promise<DashboardData> 
   return parseResponse<DashboardData>(response);
 }
 
+export async function createBillingSubscriptionIntent(idToken: string, planId: Exclude<PlanId, "free">): Promise<BillingSubscriptionIntent> {
+  const response = await fetch(`${API_BASE_URL}/billing/subscription-intent/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ planId }),
+  });
+
+  return parseResponse<BillingSubscriptionIntent>(response);
+}
+
 export async function createBillingCheckoutSession(idToken: string, planId: Exclude<PlanId, "free">): Promise<{ url: string }> {
   const response = await fetch(`${API_BASE_URL}/billing/checkout-session`, {
     method: "POST",
@@ -597,6 +617,19 @@ export async function createBillingPortalSession(idToken: string): Promise<{ url
   });
 
   return parseResponse<{ url: string }>(response);
+}
+
+export async function syncBillingAccount(idToken: string): Promise<DashboardAccount> {
+  const response = await fetch(`${API_BASE_URL}/billing/sync/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+  const payload = await parseResponse<{ account: DashboardAccount }>(response);
+
+  return payload.account;
 }
 
 export async function updateAccountPlan(idToken: string, planId: PlanId): Promise<DashboardAccount> {

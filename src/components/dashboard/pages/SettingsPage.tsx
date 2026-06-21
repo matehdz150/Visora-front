@@ -114,7 +114,7 @@ export function SettingsPage({
         <div style={{ display: "flex", justifyContent: "space-between", gap: "20px", alignItems: "flex-start", marginBottom: "18px" }}>
           <div>
             <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "4px" }}>Plan</div>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Paid plans open Stripe Checkout. Manage active subscriptions in the billing portal.</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>New subscriptions use Visora checkout. Active subscriptions are managed in the billing portal.</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {accountPlan?.stripeCustomerId && (
@@ -154,7 +154,7 @@ export function SettingsPage({
                 </div>
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.45 }}>{plan.monthlyLimit} moderations / month</div>
                 <div style={{ marginTop: "4px", fontSize: "12px", color: "rgba(255,255,255,0.36)", lineHeight: 1.45 }}>{plan.limits}</div>
-                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? "Current plan" : loading ? (plan.planId === "free" ? "Updating..." : "Opening checkout...") : (plan.planId === "free" ? "Switch to free" : "Checkout") }</div>
+                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? "Current plan" : loading ? (plan.planId === "free" ? "Updating..." : "Opening payment...") : (plan.planId === "free" ? "Switch to free" : "Pay") }</div>
               </button>
             );
           })}

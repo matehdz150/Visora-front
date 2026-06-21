@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
-  createBillingCheckoutSession,
   exchangeGitHubCodeForSession,
   readOAuthState,
   saveSession,
@@ -41,8 +40,7 @@ export function GitHubAuthCallback() {
       saveSession(session);
 
       if (state.intent === "signup" && state.planId && state.planId !== "free") {
-        const checkout = await createBillingCheckoutSession(session.idToken, state.planId);
-        window.location.assign(checkout.url);
+        router.replace(`/checkout?plan=${state.planId}`);
         return;
       }
 

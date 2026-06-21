@@ -132,7 +132,7 @@ export function ApiKeysPage({
       {apiKeys.length === 0 ? (
         <ApiKeysEmptyState onCta={() => onCreateApiKey()} onSecondary={() => window.open("/docs", "_blank")} />
       ) : (
-        <div style={{ ...card, overflow: "hidden", marginTop: "24px" }}>
+        <div className="dash-scroll" style={{ ...card, overflow: "hidden", marginTop: "24px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1.3fr 0.7fr 0.75fr 0.85fr 1fr", padding: "13px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>
             <span>Project</span><span>Key</span><span>Plan</span><span>Status</span><span>Last used</span><span style={{ textAlign: "right" }}>Actions</span>
           </div>

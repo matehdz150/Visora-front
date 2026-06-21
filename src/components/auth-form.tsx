@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
   confirmRegistration,
-  createBillingCheckoutSession,
   loginUser,
   type PlanId,
   registerUser,
@@ -26,6 +25,37 @@ import {
  */
 
 type Mode = "signin" | "signup";
+
+const PENDING_SIGNUP_STORAGE_KEY = "visora.pendingSignup";
+
+interface PendingSignupState {
+  email: string;
+  planId: PlanId;
+}
+
+function readPendingSignup(): PendingSignupState | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = window.localStorage.getItem(PENDING_SIGNUP_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<PendingSignupState>;
+    if (typeof parsed.email !== "string" || typeof parsed.planId !== "string") return null;
+
+    return { email: parsed.email, planId: parsed.planId as PlanId };
+  } catch {
+    return null;
+  }
+}
+
+function writePendingSignup(state: PendingSignupState) {
+  window.localStorage.setItem(PENDING_SIGNUP_STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearPendingSignup() {
+  window.localStorage.removeItem(PENDING_SIGNUP_STORAGE_KEY);
+}
 
 const planSummaries: Record<PlanId, { name: string; price: string; usage: string }> = {
   free: { name: "Free", price: "$0 / month", usage: "500 moderations" },
@@ -225,12 +255,23 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
   const signin = mode === "signin";
   const submitBg = email && !loading ? "#aebfff" : "rgba(174,191,255,0.55)";
 
+  useEffect(() => {
+    if (signin || !selectedPlan) return;
+
+    const pendingSignup = readPendingSignup();
+
+    if (!pendingSignup || pendingSignup.planId !== selectedPlan) return;
+
+    setEmail(pendingSignup.email);
+    setAwaitingConfirmation(true);
+    setNotice("Enter the verification code we sent to your email, then continue to checkout.");
+  }, [selectedPlan, signin]);
+
   const continueAfterSignup = async (session: { idToken: string }) => {
     const planId = selectedPlan ?? "free";
 
     if (planId !== "free") {
-      const checkout = await createBillingCheckoutSession(session.idToken, planId);
-      window.location.assign(checkout.url);
+      router.push(`/checkout?plan=${planId}`);
       return;
     }
 
@@ -262,6 +303,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
         await confirmRegistration(normalizedEmail, confirmationCode.trim());
         const session = await loginUser(normalizedEmail, password);
         saveSession(session);
+        clearPendingSignup();
         await continueAfterSignup(session);
         return;
       }
@@ -275,8 +317,9 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
         return;
       }
 
+      writePendingSignup({ email: normalizedEmail, planId: selectedPlan ?? "free" });
       setAwaitingConfirmation(true);
-      setNotice("We sent a verification code to your email.");
+      setNotice("We sent a verification code to your email. Enter it here to continue.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Authentication failed";
 
@@ -365,6 +408,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
     <div style={{ display: "flex", minHeight: "100vh", background: "#050505" }}>
       {/* LEFT: brand panel */}
       <div
+        className="auth-brand"
         style={{
           position: "relative",
           flex: 1.05,
@@ -478,6 +522,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
 
       {/* RIGHT: form */}
       <div
+        className="auth-form-panel"
         style={{
           flex: 1,
           display: "flex",
@@ -526,7 +571,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="you@company.com"
-                disabled={awaitingConfirmation || loading}
+                disabled={loading}
                 className="v-input"
                 style={{
                   width: "100%",
@@ -559,7 +604,7 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
                 onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 placeholder="••••••••"
-                disabled={awaitingConfirmation || loading}
+                disabled={loading}
                 className="v-input"
                 style={{
                   width: "100%",

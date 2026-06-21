@@ -84,15 +84,15 @@ export function DocsTopBar({ searchQuery, onSearchQueryChange }: DocsTopBarProps
   }
 
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 28px", background: "rgba(5,5,5,0.82)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: "1px solid " + surface.borderFaint }}>
+    <header className="docs-topbar" style={{ position: "sticky", top: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 28px", background: "rgba(5,5,5,0.82)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: "1px solid " + surface.borderFaint }}>
       <div style={{ display: "flex", alignItems: "center", gap: "30px" }}>
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "11px", textDecoration: "none", color: "#fff" }}>
           <VisoraLogo markSize={26} fontSize={17} tone="light" docsLabel />
         </Link>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-        <div style={{ position: "relative" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "9px", background: "rgba(255,255,255,0.04)", border: "1px solid " + surface.border, borderRadius: "9px", padding: "7px 12px", minWidth: "260px", cursor: "text", fontFamily: "inherit", transition: "border-color .15s, background .15s" }}>
+        <div className="r-hide-sm" style={{ position: "relative" }}>
+          <label className="docs-search" style={{ display: "flex", alignItems: "center", gap: "9px", background: "rgba(255,255,255,0.04)", border: "1px solid " + surface.border, borderRadius: "9px", padding: "7px 12px", minWidth: "260px", cursor: "text", fontFamily: "inherit", transition: "border-color .15s, background .15s" }}>
             <span style={{ width: "13px", height: "13px", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: "50%", flexShrink: 0 }} />
             <input
               ref={inputRef}
@@ -147,7 +147,7 @@ export function DocsTopBar({ searchQuery, onSearchQueryChange }: DocsTopBarProps
             </div>
           ) : null}
         </div>
-        <a href="#api-reference" onClick={(event) => { event.preventDefault(); scrollToHref("#api-reference"); }} className="docs-navlink" style={{ fontSize: "13.5px", color: text.body, textDecoration: "none" }}>API</a>
+        <a href="#api-reference" onClick={(event) => { event.preventDefault(); scrollToHref("#api-reference"); }} className="docs-navlink r-hide-sm" style={{ fontSize: "13.5px", color: text.body, textDecoration: "none" }}>API</a>
         <Link href="/dashboard" style={{ fontSize: "13.5px", fontWeight: 500, color: "#050505", background: "#fff", padding: "8px 15px", borderRadius: "9px", textDecoration: "none" }}>Dashboard</Link>
       </div>
     </header>

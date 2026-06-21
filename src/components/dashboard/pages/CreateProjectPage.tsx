@@ -122,7 +122,7 @@ export function CreateProjectPage({
         <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>Create an isolated moderation environment with its own policy and API key.</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: "28px", alignItems: "start" }}>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: "28px", alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <div style={{ ...card, padding: "24px" }}>
             <label htmlFor="project-name" style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: "8px" }}>Project name</label>

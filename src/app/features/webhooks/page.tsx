@@ -21,7 +21,16 @@ const webhooksHtml = String.raw`<style>
   @keyframes whGridFloat { 0% { background-position: 0 0; } 100% { background-position: 0 -28px; } }
 
 @media (max-width: 900px) { .webhooks-nav-links { display: none !important; } }
-</style><div style="position: relative; width: 100%; min-height: 100vh; background: #050505; overflow: hidden;">
+@media (max-width: 860px) {
+  .wh-root > nav, .wh-root > section, .wh-root > footer { padding-left: 18px !important; padding-right: 18px !important; }
+  .wh-root > section [style*="grid-template-columns: 1fr 1fr"],
+  .wh-root > section [style*="grid-template-columns: 0.85fr 1.15fr"],
+  .wh-root > section [style*="grid-template-columns: repeat(4, 1fr)"] { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 520px) {
+  .wh-root > nav, .wh-root > section, .wh-root > footer { padding-left: 15px !important; padding-right: 15px !important; }
+}
+</style><div class="wh-root" style="position: relative; width: 100%; min-height: 100vh; background: #050505; overflow: hidden;">
 
   <!-- NAV -->
   <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; background: rgba(5,5,5,0.72); border-bottom: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);">

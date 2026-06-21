@@ -76,7 +76,7 @@ export function PlaygroundPage({
       <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.03em" }}>Playground</h1>
       <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>Upload an image and run it through the moderation pipeline.</p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "22px", marginTop: "30px", alignItems: "start" }}>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "22px", marginTop: "30px", alignItems: "start" }}>
         {/* LEFT: request */}
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <div style={{ ...card, padding: "24px" }}>

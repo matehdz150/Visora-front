@@ -112,14 +112,14 @@ export function ProjectDetailPage({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginTop: "28px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginTop: "28px" }}>
         <div style={{ ...card, padding: "18px" }}><Row k="Plan" v={<span style={planBadge()}>{cap(project.planId)}</span>} top /></div>
         <div style={{ ...card, padding: "18px" }}><Row k="Mode" v={<span style={modeBadge(policy.mode)}>{cap(policy.mode)}</span>} top /></div>
         <div style={{ ...card, padding: "18px" }}><Row k="Project moderations" v={project.monthMods} top /></div>
         <div style={{ ...card, padding: "18px" }}><Row k="Last updated" v={project.updated} top /></div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: "22px", marginTop: "22px", alignItems: "start" }}>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: "22px", marginTop: "22px", alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>PROJECT SETTINGS</div>

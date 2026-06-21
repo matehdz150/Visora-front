@@ -59,7 +59,7 @@ export function ModerationsPage({
         <FilterSelect value={fCategory} onChange={setFCategory} options={["All", ...CATEGORIES]} render={(o) => (o === "All" ? "All" : CATEGORY_LABEL[o as Category])} />
       </div>
 
-      <div style={{ ...card, overflow: "hidden" }}>
+      <div className="dash-scroll" style={{ ...card, overflow: "hidden" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr 0.7fr 0.8fr 0.9fr 1.3fr", padding: "13px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>
           <span>Date</span><span>Project</span><span>Category</span><span>Risk</span><span>Decision</span><span>Brand</span><span>Moderation ID</span>
         </div>

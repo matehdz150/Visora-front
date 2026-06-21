@@ -16,6 +16,7 @@ export function Sidebar({
   onSignOut,
   reviewCount,
   showAdmin,
+  mobileOpen = false,
 }: {
   page: Page;
   onNavigate: (p: Page) => void;
@@ -24,11 +25,12 @@ export function Sidebar({
   onSignOut: () => void;
   reviewCount: number;
   showAdmin: boolean;
+  mobileOpen?: boolean;
 }) {
   const initials = currentUser?.email.slice(0, 2).toUpperCase() ?? "VI";
 
   return (
-    <motion.aside variants={sidebarVariants} initial="initial" animate="animate" style={{ position: "fixed", top: 0, left: 0, bottom: 0, width: "250px", background: "#0b0b0b", borderRight: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", zIndex: 20 }}>
+    <motion.aside variants={sidebarVariants} initial="initial" animate="animate" className={"dash-sidebar" + (mobileOpen ? " dash-sidebar-open" : "")} style={{ position: "fixed", top: 0, left: 0, bottom: 0, width: "250px", background: "#0b0b0b", borderRight: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", zIndex: 20 }}>
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: "11px", padding: "22px 22px 20px", textDecoration: "none", color: "#fff" }}>
         <VisoraLogo markSize={26} fontSize={17} tone="light" />
       </Link>

@@ -53,7 +53,7 @@ export function DocsSideNav() {
   }
 
   return (
-    <nav style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", overflowY: "auto", scrollBehavior: "smooth", padding: "30px 18px 60px", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+    <nav className="docs-sidenav" style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", overflowY: "auto", scrollBehavior: "smooth", padding: "30px 18px 60px", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
       {NAV_GROUPS.map((group) => (
         <div key={group.title} style={{ marginBottom: "26px" }}>
           <div style={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "0.12em", color: text.ghost, textTransform: "uppercase", padding: "0 12px", marginBottom: "10px" }}>{group.title}</div>

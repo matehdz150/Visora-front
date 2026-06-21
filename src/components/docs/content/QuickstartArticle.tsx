@@ -311,7 +311,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
   const [lang, setLang] = useState<Lang>("node");
 
   return (
-    <main ref={articleRef} style={{ padding: "44px 56px 120px", minWidth: 0 }}>
+    <main ref={articleRef} className="docs-article" style={{ padding: "44px 56px 120px", minWidth: 0 }}>
       <div id="overview" style={{ scrollMarginTop: "80px", fontFamily: MONO, fontSize: "12px", letterSpacing: "0.06em", color: "#8fa0d8", marginBottom: "14px" }}>VISORA DEVELOPER DOCS</div>
       <h1 style={{ margin: 0, fontSize: "38px", fontWeight: 600, letterSpacing: "-0.035em", lineHeight: 1.08 }}>Integrate image moderation into your app</h1>
       <p style={{ margin: "16px 0 0", fontSize: "16.5px", lineHeight: 1.6, color: text.body, fontWeight: 300, maxWidth: "760px" }}>
@@ -323,7 +323,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
         Treat Visora API keys like server secrets. Call Visora from your backend, API route, worker, or server action. Do not put <InlineCode>x-api-key</InlineCode> in frontend JavaScript, mobile clients, or public repositories.
       </Callout>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "26px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "26px" }}>
         <InfoCard title="Backend-first integration">Your UI sends a file to your backend. Your backend calls Visora, stores the result, then decides whether to publish, queue, or block the image.</InfoCard>
         <InfoCard title="Project scoped security">Each API key belongs to a project. Uploaded S3 objects are scoped to that account/project and cannot be moderated by another project.</InfoCard>
         <InfoCard title="Human-readable decisions">Every moderation can include labels, risk score, brand safety, compliance, and a policy explanation like why weapons caused reject.</InfoCard>
@@ -346,7 +346,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
 
       <SectionHeading id="sdk-webhooks">SDK v0.2 webhook helpers</SectionHeading>
       <Lead>The SDK includes framework-safe helpers for signed webhook deliveries. Use them in backend routes only; webhook signing secrets must never be shipped to browser code.</Lead>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
         <InfoCard title="Signature verification"><InlineCode>verifyWebhookSignature()</InlineCode> validates <InlineCode>visora-signature</InlineCode> against the raw body and timestamp.</InfoCard>
         <InfoCard title="Framework helpers"><InlineCode>createNextWebhookHandler()</InlineCode> and <InlineCode>createExpressWebhookHandler()</InlineCode> parse, verify, and dispatch events.</InfoCard>
         <InfoCard title="Typed events"><InlineCode>VisoraWebhookEvent</InlineCode> narrows <InlineCode>event.data</InlineCode> based on <InlineCode>event.type</InlineCode>.</InfoCard>
@@ -378,7 +378,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
       <Lead>The SDK defaults to the public Visora API URL. Pass <InlineCode>baseUrl</InlineCode> only when you need a staging or custom API Gateway stage.</Lead>
 
       <SectionHeading id="integration-flow">Recommended integration flow</SectionHeading>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
         <InfoCard title="1. User uploads">Your product receives the image in a backend route, not directly in browser code that contains secrets.</InfoCard>
         <InfoCard title="2. Call Visora">Send the file with <InlineCode>moderateImage</InlineCode>. This uploads and scans in one call.</InfoCard>
         <InfoCard title="3. Branch on action">Use <InlineCode>allow</InlineCode>, <InlineCode>review</InlineCode>, or <InlineCode>reject</InlineCode> to control your product flow.</InfoCard>
@@ -488,7 +488,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
       <Callout>
         Copy the webhook signing secret when you create the endpoint. Visora only shows it once. Store it as <InlineCode>VISORA_WEBHOOK_SECRET</InlineCode> in your server environment and verify every delivery before trusting the payload.
       </Callout>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
         <InfoCard title="1. Create endpoint">Open a project, add your HTTPS endpoint URL, select the subscribed events, then copy the signing secret.</InfoCard>
         <InfoCard title="2. Verify signature">Use <InlineCode>verifyWebhookSignature()</InlineCode> or a framework helper from <InlineCode>@visoracloud/client</InlineCode>.</InfoCard>
         <InfoCard title="3. Return 2xx">Return any 2xx status after processing. Non-2xx responses are treated as delivery failures and retried.</InfoCard>
@@ -541,7 +541,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
 
       <SectionHeading id="brand-safety">Brand safety</SectionHeading>
       <Lead>Brand safety is an additional evaluation layer based on the final action, risk score, and detected categories. Use it when your product needs a simpler safe/caution/unsafe signal for business workflows.</Lead>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
+      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "12px", marginTop: "20px" }}>
         <InfoCard title="safe">Final action is allow and no unsafe brand categories are present.</InfoCard>
         <InfoCard title="caution">Final action is review, or detected content is sensitive but not hard-blocked by policy.</InfoCard>
         <InfoCard title="unsafe">Final action is reject, or categories like weapons, drugs, hate symbols, violence, or nudity make it unsuitable.</InfoCard>
@@ -587,7 +587,7 @@ export function QuickstartArticle({ articleRef }: { articleRef?: React.Ref<HTMLE
       />
 
       <SectionHeading>Next steps</SectionHeading>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "22px" }}>
+      <div className="r-cols-1" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginTop: "22px" }}>
         {NEXT_STEPS.map((step) => (
           <NextStepCard key={step.title} step={step} />
         ))}

@@ -646,6 +646,7 @@ export default function VisoraLanding({
 
   return (
     <div
+      className="lp-root"
       style={{
         position: "relative",
         width: "100%",
@@ -691,7 +692,7 @@ export default function VisoraLanding({
         <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <VisoraLogo markSize={26} fontSize={18} tone="light" />
         </Link>
-        <div style={{ display: "flex", alignItems: "center", gap: "34px" }}>
+        <div className="lp-nav-mid" style={{ display: "flex", alignItems: "center", gap: "34px" }}>
           <div ref={featuresRef} onMouseEnter={() => setFeaturesOpen(true)} style={{ position: "relative" }}>
             <button
               type="button"
@@ -963,6 +964,7 @@ export default function VisoraLanding({
 
       {/* HERO */}
       <section
+        className="lp-hero r-stack"
         style={{
           position: "relative",
           zIndex: 1,
@@ -1080,12 +1082,13 @@ export default function VisoraLanding({
         </div>
 
         {/* right: 3D object + glass panel */}
-        <div style={{ position: "relative", minHeight: "560px" }}>
+        <div className="lp-hero-visual" style={{ position: "relative", minHeight: "560px" }}>
           {buildHero(accent, motion)}
           {showPanel && (
             <div
               data-reveal=""
               data-reveal-delay="260"
+              className="r-hide-sm"
               style={{
                 opacity: 0,
                 transform: "translateY(26px)",
@@ -1305,7 +1308,7 @@ export default function VisoraLanding({
             Drop-in moderation that is predictable, composable, and fast.
           </p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
           {[
             {
               title: "Moderation API",
@@ -1468,7 +1471,7 @@ export default function VisoraLanding({
             Three modes. One decision boundary.
           </h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
           {buildModes(accent)}
         </div>
       </section>
@@ -1483,7 +1486,7 @@ export default function VisoraLanding({
           padding: "90px 40px",
         }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr", gap: "60px", alignItems: "start" }}>
+        <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr", gap: "60px", alignItems: "start" }}>
           <div
             data-reveal=""
             style={{
@@ -1659,6 +1662,7 @@ export default function VisoraLanding({
       >
         <div
           data-reveal=""
+          className="r-stack"
           style={{
             opacity: 0,
             transform: "translateY(26px)",

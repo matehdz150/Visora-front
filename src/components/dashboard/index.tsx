@@ -22,7 +22,6 @@ import type { ApiKey, ModLog, Page, Project, ReviewItem, UsageSummary, WebhookEn
 import type { PolicyMap, PolicyPatch } from "./usePolicyStore";
 import {
   clearSession,
-  createBillingCheckoutSession,
   createBillingPortalSession,
   createDashboardProject,
   createProjectApiKey,
@@ -43,6 +42,7 @@ import {
   rotateProjectApiKey,
   rotateProjectWebhookSecret,
   saveDashboardPolicy,
+  syncBillingAccount,
   updateAccountPlan,
   type AdminOverviewData,
   type CurrentUser,
@@ -104,6 +104,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toasts, setToasts] = useState<DashboardToast[]>([]);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [savingPolicyId, setSavingPolicyId] = useState<string | null>(null);
   const [resolvingReviewId, setResolvingReviewId] = useState<string | null>(null);
   const toastIdRef = useRef(0);
@@ -179,17 +180,35 @@ export default function Dashboard() {
       return;
     }
 
-    Promise.all([
-      getDashboardData(storedSession.idToken),
-      listReviewQueue({ idToken: storedSession.idToken, status: "pending", limit: 100 }),
-    ])
-      .then(([data, reviews]) => {
+    const load = async () => {
+      try {
+        const billingStatus = new URLSearchParams(window.location.search).get("billing");
+
+        if (billingStatus === "success") {
+          try {
+            await syncBillingAccount(storedSession.idToken);
+            notify({ kind: "success", title: "Billing updated", message: "Your plan is now synced with Stripe." });
+          } catch (err) {
+            notify({ kind: "error", title: "Could not sync billing", message: err instanceof Error ? err.message : "Refresh the dashboard in a moment." });
+          } finally {
+            window.history.replaceState(null, "", "/dashboard");
+          }
+        }
+
+        if (billingStatus === "cancelled") {
+          notify({ kind: "error", title: "Checkout cancelled", message: "No changes were made to your plan." });
+          window.history.replaceState(null, "", "/dashboard");
+        }
+
+        const [data, reviews] = await Promise.all([
+          getDashboardData(storedSession.idToken),
+          listReviewQueue({ idToken: storedSession.idToken, status: "pending", limit: 100 }),
+        ]);
         const mapped = mapDashboardData(data);
         applyDashboardData(data);
         setReviewQueue(reviews.map((review) => mapReviewItem(review, mapped.projects)));
         void loadAdminOverview(storedSession.idToken, { silentForbidden: true });
-      })
-      .catch((err) => {
+      } catch (err) {
         if (err instanceof Error && err.message.includes("authorization")) {
           clearSession();
           router.replace("/login");
@@ -197,9 +216,13 @@ export default function Dashboard() {
         }
 
         setError(err instanceof Error ? err.message : "Could not load dashboard");
-      })
-      .finally(() => setLoading(false));
-  }, [router, loadAdminOverview]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [router, loadAdminOverview, notify]);
 
   const setPolicy = (projectId: string, patch: PolicyPatch) => {
     setPolicyByProject((prev) => {
@@ -520,8 +543,13 @@ export default function Dashboard() {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
     if (planId !== "free") {
-      const checkout = await createBillingCheckoutSession(session.idToken, planId);
-      window.location.assign(checkout.url);
+      if (accountPlan?.stripeCustomerId) {
+        const portal = await createBillingPortalSession(session.idToken);
+        window.location.assign(portal.url);
+        return;
+      }
+
+      window.location.assign(`/checkout?plan=${planId}`);
       return;
     }
 
@@ -546,6 +574,7 @@ export default function Dashboard() {
   const navigate = (p: Page) => {
     setPage(p);
     setSelectedMod(null);
+    setMobileNavOpen(false);
     if (p !== "project-detail") setSelectedProjectId(null);
     if (p === "webhooks") void loadWebhookEvents();
     if (p === "admin" && session?.idToken) void loadAdminOverview(session.idToken);
@@ -614,11 +643,27 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#050505" }}>
-      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} showAdmin={Boolean(adminOverview)} onSignOut={() => { clearSession(); router.replace("/login"); }} />
+      {/* Mobile top bar (hidden on desktop via CSS) */}
+      <div className="dash-mobilebar" style={{ position: "fixed", top: 0, left: 0, right: 0, height: "54px", zIndex: 30, alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: "rgba(11,11,11,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <button onClick={() => setMobileNavOpen(true)} aria-label="Open menu" style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", width: "38px", height: "38px", padding: "0 9px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", cursor: "pointer" }}>
+          <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
+          <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
+          <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
+        </button>
+        <span style={{ fontSize: "16px", fontWeight: 600, letterSpacing: "-0.02em", color: "#fff" }}>Visora</span>
+        <span style={{ width: "38px" }} />
+      </div>
 
-      <main style={{ marginLeft: "250px", flex: 1, minHeight: "100vh", overflow: "hidden" }}>
+      {/* Drawer scrim (mobile only) */}
+      {mobileNavOpen && (
+        <div className="dash-overlay" onClick={() => setMobileNavOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 55, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)" }} />
+      )}
+
+      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} showAdmin={Boolean(adminOverview)} mobileOpen={mobileNavOpen} onSignOut={() => { clearSession(); router.replace("/login"); }} />
+
+      <main className="dash-main" style={{ marginLeft: "250px", flex: 1, minHeight: "100vh", overflow: "hidden" }}>
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={`${page}-${selectedProjectId ?? "root"}`} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: "100vh" }}>
+          <motion.div key={`${page}-${selectedProjectId ?? "root"}`} className="dash-page-wrap" variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: "100vh" }}>
             {renderPage()}
           </motion.div>
         </AnimatePresence>

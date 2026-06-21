@@ -30,6 +30,7 @@ export function SettingsPage({
   onWorkspaceChange,
   onChangePlan,
   onManageBilling,
+  onDeleteAccount,
   notify,
 }: {
   accountId: string;
@@ -40,12 +41,14 @@ export function SettingsPage({
   onWorkspaceChange: (v: string) => void;
   onChangePlan: (planId: PlanId) => Promise<void>;
   onManageBilling: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
   notify: DashboardNotify;
 }) {
   const [savingPlan, setSavingPlan] = useState<PlanId | null>(null);
   const [planError, setPlanError] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const usageUsed = usage?.requestsUsed ?? 0;
   const usageLimit = usage?.monthlyLimit ?? accountPlan?.monthlyLimit ?? 0;
   const usagePercent = usageLimit > 0 ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
@@ -85,9 +88,18 @@ export function SettingsPage({
     notify({ kind: "success", title: "API base URL copied" });
   };
 
-  const confirmDeleteAccount = () => {
-    setConfirmDeleteOpen(false);
-    notify({ kind: "info", title: "Delete account is not enabled yet", message: "The dashboard now requires confirmation, but the backend delete endpoint is not connected." });
+  const confirmDeleteAccount = async () => {
+    setDeletingAccount(true);
+
+    try {
+      await onDeleteAccount();
+      setConfirmDeleteOpen(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not delete account";
+      notify({ kind: "error", title: "Could not delete account", message });
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   return (
@@ -200,7 +212,7 @@ export function SettingsPage({
       <div style={{ ...card, border: "1px solid rgba(255,90,90,0.18)", padding: "24px", marginTop: "18px" }}>
         <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "4px", color: "#ff9b9b" }}>Delete account</div>
         <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300, marginBottom: "18px" }}>Permanently remove this account, its projects, API keys, and all moderation history.</div>
-        <button onClick={() => setConfirmDeleteOpen(true)} style={{ fontSize: "13px", fontWeight: 500, color: "#ff9b9b", background: "rgba(255,90,90,0.08)", border: "1px solid rgba(255,90,90,0.25)", padding: "10px 18px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>Delete Account</button>
+        <button onClick={() => setConfirmDeleteOpen(true)} disabled={deletingAccount} style={{ fontSize: "13px", fontWeight: 500, color: "#ff9b9b", background: "rgba(255,90,90,0.08)", border: "1px solid rgba(255,90,90,0.25)", padding: "10px 18px", borderRadius: "10px", cursor: deletingAccount ? "not-allowed" : "pointer", fontFamily: "inherit" }}>{deletingAccount ? "Deleting..." : "Delete Account"}</button>
       </div>
 
       <AnimatePresence>
@@ -209,8 +221,8 @@ export function SettingsPage({
             open
             tone="danger"
             title="Delete this account?"
-            message="This would permanently remove the account, projects, API keys, and moderation history. The backend endpoint is not connected yet, so confirming will not delete data today."
-            confirmLabel="I understand"
+            message="This permanently removes the account, projects, API keys, moderation history, review queue items, webhooks, usage records, and uploaded account images. Active paid subscriptions must be cancelled before deleting."
+            confirmLabel={deletingAccount ? "Deleting..." : "Delete account"}
             onCancel={() => setConfirmDeleteOpen(false)}
             onConfirm={confirmDeleteAccount}
           />

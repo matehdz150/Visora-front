@@ -34,6 +34,11 @@ export interface CurrentUser {
 
 export type PlanId = "free" | "starter" | "growth" | "scale";
 
+export interface DeleteAccountResponse {
+  deleted: boolean;
+  deletedCounts?: Record<string, number>;
+}
+
 export interface BillingSubscriptionIntent {
   clientSecret: string;
   subscriptionId: string;
@@ -630,6 +635,18 @@ export async function syncBillingAccount(idToken: string): Promise<DashboardAcco
   const payload = await parseResponse<{ account: DashboardAccount }>(response);
 
   return payload.account;
+}
+
+export async function deleteAccount(idToken: string): Promise<DeleteAccountResponse> {
+  const response = await fetch(`${API_BASE_URL}/account`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  return parseResponse<DeleteAccountResponse>(response);
 }
 
 export async function updateAccountPlan(idToken: string, planId: PlanId): Promise<DashboardAccount> {

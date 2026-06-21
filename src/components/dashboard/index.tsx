@@ -24,6 +24,7 @@ import {
   clearSession,
   createBillingPortalSession,
   createDashboardProject,
+  deleteAccount,
   createProjectApiKey,
   createProjectWebhook,
   decideReviewQueueItem,
@@ -571,6 +572,15 @@ export default function Dashboard() {
     window.location.assign(portal.url);
   };
 
+  const deleteCurrentAccount = async () => {
+    if (!session?.idToken) throw new Error("Missing dashboard session");
+
+    await deleteAccount(session.idToken);
+    clearSession();
+    notify({ kind: "success", title: "Account deleted", message: "Your Visora account data was removed." });
+    router.replace("/");
+  };
+
   const navigate = (p: Page) => {
     setPage(p);
     setSelectedMod(null);
@@ -617,7 +627,7 @@ export default function Dashboard() {
     }
     if (page === "create-project") return <CreateProjectPage onCancel={() => setPage("projects")} onCreateProject={createProject} notify={notify} />;
     if (page === "keys") return <ApiKeysPage projects={projects} apiKeys={apiKeys} rawApiKey={rawApiKey} onDismissRawKey={() => setRawApiKey(null)} onCreateApiKey={createApiKey} onRenameApiKey={renameApiKey} onRevokeApiKey={revokeApiKey} onRotateApiKey={rotateApiKey} notify={notify} />;
-    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} onChangePlan={changePlan} onManageBilling={manageBilling} notify={notify} />;
+    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} onChangePlan={changePlan} onManageBilling={manageBilling} onDeleteAccount={deleteCurrentAccount} notify={notify} />;
     return null;
   };
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthForm from "@/components/auth-form";
 import type { PlanId } from "@/lib/visora-api";
 
-const PLAN_IDS = new Set<PlanId>(["free", "starter", "growth", "scale"]);
+const PLAN_IDS = new Set<PlanId>(["free", "starter", "plus", "growth", "scale"]);
 
 function isPlanId(value: string | null): value is PlanId {
   return value !== null && PLAN_IDS.has(value as PlanId);

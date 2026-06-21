@@ -17,7 +17,7 @@ import {
 import { SettingsEmptyState } from "@/components/empty-states";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
-const paidPlans = new Set<PlanId>(["starter", "growth", "scale"]);
+const paidPlans = new Set<PlanId>(["starter", "plus", "growth", "scale"]);
 
 function isPaidPlan(planId: PlanId): planId is Exclude<PlanId, "free"> {
   return paidPlans.has(planId);
@@ -86,10 +86,11 @@ const plans: Array<{
   monthlyLimit: string;
   limits: string;
 }> = [
-  { planId: "free", name: "Free", price: "$0", monthlyLimit: "500", limits: "1 project · 1 API key · 7 day logs" },
-  { planId: "starter", name: "Starter", price: "$29", monthlyLimit: "10,000", limits: "3 projects · 3 API keys · 30 day logs" },
-  { planId: "growth", name: "Growth", price: "$149", monthlyLimit: "50,000", limits: "10 projects · 10 API keys · 90 day logs" },
-  { planId: "scale", name: "Scale", price: "$399", monthlyLimit: "150,000", limits: "50 projects · 50 API keys · 180 day logs" },
+  { planId: "free", name: "Free", price: "$0", monthlyLimit: "1,000", limits: "1 project · 1 API key · 7 day logs" },
+  { planId: "starter", name: "Starter", price: "$19", monthlyLimit: "8,000", limits: "3 projects · 3 API keys · 30 day logs" },
+  { planId: "plus", name: "Plus", price: "$39", monthlyLimit: "16,000", limits: "5 projects · 5 API keys · 60 day logs" },
+  { planId: "growth", name: "Growth", price: "$89", monthlyLimit: "38,000", limits: "10 projects · 10 API keys · 90 day logs" },
+  { planId: "scale", name: "Scale", price: "$249", monthlyLimit: "110,000", limits: "50 projects · 50 API keys · 180 day logs" },
 ];
 
 export function SettingsPage({

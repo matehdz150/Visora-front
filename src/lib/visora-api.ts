@@ -36,7 +36,7 @@ export interface CurrentUser {
   email: string;
 }
 
-export type PlanId = "free" | "starter" | "growth" | "scale";
+export type PlanId = "free" | "starter" | "plus" | "growth" | "scale";
 
 export interface DeleteAccountResponse {
   deleted: boolean;

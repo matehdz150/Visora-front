@@ -15,7 +15,7 @@ const plans = [
     name: "Free",
     price: "$0",
     subtitle: "For testing and early validation.",
-    included: "500",
+    included: "1,000",
     overage: "No overage",
     projects: "1 project",
     apiKeys: "1 API key",
@@ -26,10 +26,10 @@ const plans = [
   {
     id: "starter",
     name: "Starter",
-    price: "$29",
+    price: "$19",
     subtitle: "For small apps validating real upload flows.",
-    included: "10,000",
-    overage: "$4.00 / 1,000 extra",
+    included: "8,000",
+    overage: "$2.50 / 1,000 extra",
     projects: "3 projects",
     apiKeys: "3 API keys",
     retention: "30 days",
@@ -37,12 +37,25 @@ const plans = [
     featured: false,
   },
   {
+    id: "plus",
+    name: "Plus",
+    price: "$39",
+    subtitle: "For growing apps with steady upload volume.",
+    included: "16,000",
+    overage: "$2.40 / 1,000 extra",
+    projects: "5 projects",
+    apiKeys: "5 API keys",
+    retention: "60 days",
+    cta: "Choose Plus",
+    featured: false,
+  },
+  {
     id: "growth",
     name: "Growth",
-    price: "$149",
+    price: "$89",
     subtitle: "For marketplaces and social products.",
-    included: "50,000",
-    overage: "$3.00 / 1,000 extra",
+    included: "38,000",
+    overage: "$2.25 / 1,000 extra",
     projects: "10 projects",
     apiKeys: "10 API keys",
     retention: "90 days",
@@ -52,10 +65,10 @@ const plans = [
   {
     id: "scale",
     name: "Scale",
-    price: "$399",
+    price: "$249",
     subtitle: "For larger apps with higher monthly usage.",
-    included: "150,000",
-    overage: "$2.50 / 1,000 extra",
+    included: "110,000",
+    overage: "$2.00 / 1,000 extra",
     projects: "50 projects",
     apiKeys: "50 API keys",
     retention: "180 days",
@@ -65,14 +78,14 @@ const plans = [
 ];
 
 const featureRows = [
-  ["Image moderation API", "Yes", "Yes", "Yes", "Yes"],
-  ["Brand safety result", "Yes", "Yes", "Yes", "Yes"],
-  ["Project scoped uploads", "Yes", "Yes", "Yes", "Yes"],
-  ["Custom policies", "Basic", "Yes", "Yes", "Yes"],
-  ["Compliance packs", "No", "Yes", "Yes", "Yes"],
-  ["Human review mode", "No", "Yes", "Yes", "Yes"],
-  ["Dashboard", "Basic", "Yes", "Yes", "Yes"],
-  ["Support", "Community", "Email", "Priority", "Priority"],
+  ["Image moderation API", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Brand safety result", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Project scoped uploads", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Custom policies", "Basic", "Yes", "Yes", "Yes", "Yes"],
+  ["Compliance packs", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Human review mode", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Dashboard", "Basic", "Yes", "Yes", "Yes", "Yes"],
+  ["Support", "Community", "Email", "Email", "Priority", "Priority"],
 ];
 
 function Logo() {
@@ -106,7 +119,7 @@ export default function PricingPage() {
       </section>
 
       <section id="plans" style={{ maxWidth: "1180px", margin: "0 auto", padding: "24px 40px 76px" }}>
-        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "16px" }}>
+        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "16px" }}>
           {plans.map((plan) => (
             <div key={plan.id} style={{ position: "relative", minHeight: "560px", background: plan.featured ? "linear-gradient(180deg, rgba(126,155,255,0.14), rgba(255,255,255,0.035))" : "#0f0f0f", border: "1px solid " + (plan.featured ? "rgba(126,155,255,0.38)" : "rgba(255,255,255,0.08)"), borderRadius: "14px", padding: "24px", display: "flex", flexDirection: "column" }}>
               {plan.featured && <div style={{ position: "absolute", top: "14px", right: "14px", fontFamily: MONO, fontSize: "10px", letterSpacing: "0.08em", color: "#aebfff", background: "rgba(126,155,255,0.11)", border: "1px solid rgba(126,155,255,0.28)", padding: "4px 8px", borderRadius: "999px" }}>POPULAR</div>}
@@ -146,11 +159,11 @@ export default function PricingPage() {
         </div>
 
         <div className="dash-scroll" style={{ border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", overflow: "hidden", background: "#0f0f0f" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.5fr repeat(4, 1fr)", padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase" }}>
-            <span>Feature</span><span>Free</span><span>Starter</span><span>Growth</span><span>Scale</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1.5fr repeat(5, 1fr)", padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase" }}>
+            <span>Feature</span><span>Free</span><span>Starter</span><span>Plus</span><span>Growth</span><span>Scale</span>
           </div>
           {featureRows.map((row) => (
-            <div key={row[0]} style={{ display: "grid", gridTemplateColumns: "1.5fr repeat(4, 1fr)", padding: "15px 18px", borderBottom: "1px solid rgba(255,255,255,0.055)", fontSize: "13px" }}>
+            <div key={row[0]} style={{ display: "grid", gridTemplateColumns: "1.5fr repeat(5, 1fr)", padding: "15px 18px", borderBottom: "1px solid rgba(255,255,255,0.055)", fontSize: "13px" }}>
               {row.map((cell, index) => <span key={`${row[0]}-${cell}-${index}`} style={{ color: index === 0 ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.58)" }}>{cell}</span>)}
             </div>
           ))}

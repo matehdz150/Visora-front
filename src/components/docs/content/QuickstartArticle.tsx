@@ -16,10 +16,11 @@ const categories = ["nudity", "suggestive", "violence", "weapons", "drugs", "hat
 const compliancePacks = ["marketplace", "kids", "education", "social", "dating", "ads"];
 
 const planRows = [
-  ["Free", "$0", "500/month", "1", "1", "7 days", "Blocked at limit"],
-  ["Starter", "$29/month", "10,000/month", "3", "3", "30 days", "$4 per 1k overage"],
-  ["Growth", "$149/month", "50,000/month", "10", "10", "90 days", "$3 per 1k overage"],
-  ["Scale", "$399/month", "150,000/month", "50", "50", "180 days", "$2.50 per 1k overage"],
+  ["Free", "$0", "1,000/month", "1", "1", "7 days", "Blocked at limit"],
+  ["Starter", "$19/month", "8,000/month", "3", "3", "30 days", "$2.50 per 1k overage"],
+  ["Plus", "$39/month", "16,000/month", "5", "5", "60 days", "$2.40 per 1k overage"],
+  ["Growth", "$89/month", "38,000/month", "10", "10", "90 days", "$2.25 per 1k overage"],
+  ["Scale", "$249/month", "110,000/month", "50", "50", "180 days", "$2.00 per 1k overage"],
 ];
 
 const errorRows = [

@@ -58,10 +58,11 @@ function clearPendingSignup() {
 }
 
 const planSummaries: Record<PlanId, { name: string; price: string; usage: string }> = {
-  free: { name: "Free", price: "$0 / month", usage: "500 moderations" },
-  starter: { name: "Starter", price: "$29 / month", usage: "10,000 moderations" },
-  growth: { name: "Growth", price: "$149 / month", usage: "50,000 moderations" },
-  scale: { name: "Scale", price: "$399 / month", usage: "150,000 moderations" },
+  free: { name: "Free", price: "$0 / month", usage: "1,000 moderations" },
+  starter: { name: "Starter", price: "$19 / month", usage: "8,000 moderations" },
+  plus: { name: "Plus", price: "$39 / month", usage: "16,000 moderations" },
+  growth: { name: "Growth", price: "$89 / month", usage: "38,000 moderations" },
+  scale: { name: "Scale", price: "$249 / month", usage: "110,000 moderations" },
 };
 
 function GitHubIcon() {

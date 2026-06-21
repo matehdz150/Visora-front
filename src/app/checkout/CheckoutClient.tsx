@@ -14,24 +14,30 @@ import {
 } from "@/lib/visora-api";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
-const paidPlans = new Set<PlanId>(["starter", "growth", "scale"]);
+const paidPlans = new Set<PlanId>(["starter", "plus", "growth", "scale"]);
 const planCopy: Record<Exclude<PlanId, "free">, { name: string; price: string; usage: string; features: string[] }> = {
   starter: {
     name: "Starter",
-    price: "$29/month",
-    usage: "10,000 image moderations per month",
+    price: "$19/month",
+    usage: "8,000 image moderations per month",
     features: ["3 projects", "3 API keys", "30 day logs", "Webhooks"],
+  },
+  plus: {
+    name: "Plus",
+    price: "$39/month",
+    usage: "16,000 image moderations per month",
+    features: ["5 projects", "5 API keys", "60 day logs", "Webhooks"],
   },
   growth: {
     name: "Growth",
-    price: "$149/month",
-    usage: "50,000 image moderations per month",
+    price: "$89/month",
+    usage: "38,000 image moderations per month",
     features: ["10 projects", "10 API keys", "90 day logs", "Review queue"],
   },
   scale: {
     name: "Scale",
-    price: "$399/month",
-    usage: "150,000 image moderations per month",
+    price: "$249/month",
+    usage: "110,000 image moderations per month",
     features: ["50 projects", "50 API keys", "180 day logs", "Priority limits"],
   },
 };

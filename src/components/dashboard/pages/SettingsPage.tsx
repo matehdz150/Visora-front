@@ -52,6 +52,10 @@ export function SettingsPage({
   const usageUsed = usage?.requestsUsed ?? 0;
   const usageLimit = usage?.monthlyLimit ?? accountPlan?.monthlyLimit ?? 0;
   const usagePercent = usageLimit > 0 ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
+  const pendingPlan = accountPlan?.stripePendingPlanId;
+  const pendingPlanDate = accountPlan?.stripePlanChangeEffectiveAt
+    ? new Date(accountPlan.stripePlanChangeEffectiveAt).toLocaleDateString()
+    : null;
 
   const selectPlan = async (planId: PlanId) => {
     setPlanError(null);
@@ -126,7 +130,7 @@ export function SettingsPage({
         <div style={{ display: "flex", justifyContent: "space-between", gap: "20px", alignItems: "flex-start", marginBottom: "18px" }}>
           <div>
             <div style={{ fontSize: "15px", fontWeight: 600, marginBottom: "4px" }}>Plan</div>
-            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>New subscriptions use Visora checkout. Active subscriptions are managed in the billing portal.</div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Upgrades apply immediately. Downgrades and free cancellations apply at the end of the current billing period.</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {accountPlan?.stripeCustomerId && (
@@ -138,9 +142,16 @@ export function SettingsPage({
           </div>
         </div>
 
+        {pendingPlan && (
+          <div style={{ marginBottom: "14px", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(174,191,255,0.22)", background: "rgba(126,155,255,0.08)", color: "rgba(255,255,255,0.72)", fontSize: "12.5px", lineHeight: 1.55 }}>
+            Plan change scheduled: <strong style={{ color: "#fff", textTransform: "capitalize" }}>{pendingPlan}</strong>{pendingPlanDate ? " on " + pendingPlanDate : " at the end of the billing period"}. Select your current plan to cancel the pending change.
+          </div>
+        )}
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
           {plans.map((plan) => {
             const current = accountPlan?.planId === plan.planId;
+            const canCancelPendingChange = Boolean(current && pendingPlan);
             const loading = savingPlan === plan.planId;
 
             return (
@@ -148,7 +159,7 @@ export function SettingsPage({
                 key={plan.planId}
                 type="button"
                 onClick={() => selectPlan(plan.planId)}
-                disabled={current || savingPlan !== null}
+                disabled={(current && !canCancelPendingChange) || savingPlan !== null}
                 style={{
                   textAlign: "left",
                   padding: "16px",
@@ -157,7 +168,7 @@ export function SettingsPage({
                   background: current ? "rgba(126,155,255,0.1)" : "#0a0a0a",
                   color: "#fff",
                   fontFamily: "inherit",
-                  cursor: current || savingPlan !== null ? "default" : "pointer",
+                  cursor: (current && !canCancelPendingChange) || savingPlan !== null ? "default" : "pointer",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "baseline" }}>
@@ -166,7 +177,7 @@ export function SettingsPage({
                 </div>
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "rgba(255,255,255,0.48)", lineHeight: 1.45 }}>{plan.monthlyLimit} moderations / month</div>
                 <div style={{ marginTop: "4px", fontSize: "12px", color: "rgba(255,255,255,0.36)", lineHeight: 1.45 }}>{plan.limits}</div>
-                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? "Current plan" : loading ? (plan.planId === "free" ? "Updating..." : "Opening payment...") : (plan.planId === "free" ? "Switch to free" : "Pay") }</div>
+                <div style={{ marginTop: "12px", fontSize: "12px", color: current ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{current ? (canCancelPendingChange ? "Cancel scheduled change" : "Current plan") : loading ? "Updating..." : pendingPlan === plan.planId ? "Scheduled" : (plan.planId === "free" ? "Switch to free" : "Switch plan") }</div>
               </button>
             );
           })}

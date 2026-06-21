@@ -21,6 +21,7 @@ import { ToastViewport, type DashboardNotify, type DashboardToast } from "./Toas
 import type { ApiKey, ModLog, Page, Project, ReviewItem, UsageSummary, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "./types";
 import type { PolicyMap, PolicyPatch } from "./usePolicyStore";
 import {
+  changeBillingPlan,
   clearSession,
   createBillingPortalSession,
   createDashboardProject,
@@ -543,26 +544,29 @@ export default function Dashboard() {
   const changePlan = async (planId: PlanId) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
-    if (planId !== "free") {
-      if (accountPlan?.stripeCustomerId) {
-        const portal = await createBillingPortalSession(session.idToken);
-        window.location.assign(portal.url);
-        return;
-      }
-
+    if (!accountPlan?.stripeCustomerId && planId !== "free") {
       window.location.assign(`/checkout?plan=${planId}`);
       return;
     }
 
-    if (accountPlan?.stripeCustomerId) {
-      const portal = await createBillingPortalSession(session.idToken);
-      window.location.assign(portal.url);
+    if (!accountPlan?.stripeCustomerId && planId === "free") {
+      await updateAccountPlan(session.idToken, planId);
+      await refreshDashboardData();
+      notify({ kind: "success", title: "Plan updated", message: "Your account is now on the free plan." });
       return;
     }
 
-    await updateAccountPlan(session.idToken, planId);
+    const result = await changeBillingPlan(session.idToken, planId);
+    setAccountPlan(result.account);
     await refreshDashboardData();
-    notify({ kind: "success", title: "Plan updated", message: "Your account is now on the free plan." });
+
+    if (result.changeType === "scheduled") {
+      const effectiveDate = result.effectiveAt ? new Date(result.effectiveAt).toLocaleDateString() : "the end of the billing period";
+      notify({ kind: "success", title: "Plan change scheduled", message: `${planId} will take effect on ${effectiveDate}.` });
+      return;
+    }
+
+    notify({ kind: "success", title: "Plan updated", message: `Your account is now on ${planId}.` });
   };
 
   const manageBilling = async () => {

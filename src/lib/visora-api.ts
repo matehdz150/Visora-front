@@ -50,6 +50,12 @@ export interface BillingSubscriptionIntent {
   planId: Exclude<PlanId, "free">;
 }
 
+export interface BillingPlanChangeResponse {
+  account: DashboardAccount;
+  changeType: "none" | "immediate" | "scheduled";
+  effectiveAt?: string;
+}
+
 export interface DashboardAccount {
   accountId: string;
   email: string;
@@ -63,6 +69,10 @@ export interface DashboardAccount {
   stripeSubscriptionId?: string;
   stripeSubscriptionStatus?: string;
   stripeCurrentPeriodEnd?: string;
+  stripePendingPlanId?: PlanId;
+  stripePlanChangeEffectiveAt?: string;
+  stripeScheduleId?: string;
+  stripeCancelAtPeriodEnd?: boolean;
 }
 
 export interface ModerationDecisionExplanation {
@@ -649,6 +659,19 @@ export async function createBillingCheckoutSession(idToken: string, planId: Excl
   });
 
   return parseResponse<{ url: string }>(response);
+}
+
+export async function changeBillingPlan(idToken: string, planId: PlanId): Promise<BillingPlanChangeResponse> {
+  const response = await fetch(`${API_BASE_URL}/billing/change-plan/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ planId }),
+  });
+
+  return parseResponse<BillingPlanChangeResponse>(response);
 }
 
 export async function createBillingPortalSession(idToken: string): Promise<{ url: string }> {

@@ -234,6 +234,14 @@ body {
   color: #fff !important;
 }
 
+.lp-hero-title-mobile {
+  display: none;
+}
+
+.lp-hero-title-desktop {
+  display: inline;
+}
+
 /* ---- Auth (login / register) ------------------------------------------- */
 input::placeholder {
   color: rgba(255, 255, 255, 0.3);
@@ -518,6 +526,20 @@ select option {
   .lp-nav-mid { display: none !important; }
   .lp-hero { padding-top: 128px !important; }
 }
+@media (max-width: 860px) {
+  .lp-hero-title-desktop {
+    display: none !important;
+  }
+
+  .lp-hero-title-mobile {
+    display: block !important;
+  }
+
+  .lp-hero-title-mobile > span {
+    display: block;
+  }
+}
+
 @media (max-width: 640px) {
   .lp-root > nav { padding-left: 16px !important; padding-right: 16px !important; }
   .lp-root > section { padding-left: 16px !important; padding-right: 16px !important; }
@@ -590,4 +612,27 @@ select option {
 @media (max-width: 760px) {
   .dash-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .dash-scroll > * { min-width: 620px; }
+}
+
+
+@media (max-width: 860px) {
+  .legal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+
+  .legal-grid > aside {
+    position: static !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .legal-grid > aside > div {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .legal-grid > aside {
+    grid-template-columns: 1fr !important;
+  }
 }

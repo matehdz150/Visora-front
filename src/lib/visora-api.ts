@@ -11,6 +11,10 @@ const COGNITO_DOMAIN =
 const COGNITO_CLIENT_ID =
   process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID ?? "670ta8v3io1g1kat5jrgechpll";
 const GITHUB_CLIENT_ID = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID ?? "";
+const APP_ORIGIN =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  "https://visoracloud.com";
 
 export interface VisoraSession {
   idToken: string;
@@ -417,12 +421,43 @@ async function createCodeChallenge(codeVerifier: string): Promise<string> {
   return base64UrlEncode(digest);
 }
 
+export function getPublicAppOrigin() {
+  if (typeof window === "undefined") {
+    return APP_ORIGIN.replace(/\/$/, "");
+  }
+
+  const host = window.location.hostname;
+
+  if (host === "localhost" || host === "127.0.0.1") {
+    return window.location.origin;
+  }
+
+  if (host === "visoracloud.com" || host === "www.visoracloud.com") {
+    return window.location.origin;
+  }
+
+  return APP_ORIGIN.replace(/\/$/, "");
+}
+
+function ensureSupportedOAuthOrigin() {
+  if (typeof window === "undefined") return true;
+
+  const host = window.location.hostname;
+
+  if (host === "localhost" || host === "127.0.0.1" || host === "visoracloud.com" || host === "www.visoracloud.com") {
+    return true;
+  }
+
+  window.location.assign(`${APP_ORIGIN.replace(/\/$/, "")}${window.location.pathname}${window.location.search}`);
+  return false;
+}
+
 function getOAuthRedirectUri() {
-  return `${window.location.origin}/auth/callback/`;
+  return `${getPublicAppOrigin()}/auth/callback/`;
 }
 
 function getGitHubRedirectUri() {
-  return `${window.location.origin}/auth/github/callback/`;
+  return `${getPublicAppOrigin()}/auth/github/callback/`;
 }
 
 export async function startGoogleOAuth(params: {
@@ -430,6 +465,8 @@ export async function startGoogleOAuth(params: {
   planId?: PlanId;
   returnTo?: string;
 }): Promise<void> {
+  if (!ensureSupportedOAuthOrigin()) return;
+
   const csrf = createRandomString(32);
   const codeVerifier = createRandomString(96);
   const codeChallenge = await createCodeChallenge(codeVerifier);
@@ -462,6 +499,8 @@ export async function startGitHubOAuth(params: {
   planId?: PlanId;
   returnTo?: string;
 }): Promise<void> {
+  if (!ensureSupportedOAuthOrigin()) return;
+
   if (!GITHUB_CLIENT_ID) {
     throw new Error("GitHub sign in is not configured");
   }

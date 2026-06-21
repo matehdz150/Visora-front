@@ -858,7 +858,7 @@ export default function VisoraLanding({
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "9px 6px" }}>
                   {[
                     ["Contact", "/contact", "Send us a message"],
-                    ["Support", "mailto:support@visora.cloud", "support@visora.cloud"],
+                    ["Support", "mailto:support@visoracloud.com", "support@visoracloud.com"],
                     ["Docs", "/docs", "Integration guides"],
                   ].map(([label, href, hint]) => (
                     <a key={label} href={href} style={{ textDecoration: "none" }}>
@@ -997,7 +997,16 @@ export default function VisoraLanding({
               color: "#fff",
             }}
           >
-            Image moderation infrastructure for modern applications.
+            <span className="lp-hero-title-desktop">
+              Image moderation infrastructure for modern applications.
+            </span>
+            <span className="lp-hero-title-mobile">
+              <span>Image</span>
+              <span>moderation</span>
+              <span>infrastructure</span>
+              <span>for modern</span>
+              <span>applications</span>
+            </span>
           </h1>
           <p
             style={{
@@ -1855,6 +1864,9 @@ export default function VisoraLanding({
             ["Features", "/features/webhooks"],
             ["Docs", "/docs"],
             ["Pricing", "/pricing"],
+            ["Terms", "/terms"],
+            ["Privacy", "/privacy"],
+            ["Retention", "/data-retention"],
           ].map(([label, href]) => (
             <a
               key={label}

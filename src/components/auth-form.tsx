@@ -804,7 +804,13 @@ export default function AuthForm({ mode, selectedPlan }: { mode: Mode; selectedP
           >
             By continuing you agree to Visora&apos;s
             <br />
-            Terms of Service and Privacy Policy.
+            <Link href="/terms" style={{ color: "rgba(255,255,255,0.52)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" style={{ color: "rgba(255,255,255,0.52)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+              Privacy Policy
+            </Link>.
           </p>
         </form>
       </div>

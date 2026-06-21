@@ -8,6 +8,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { VisoraLogo } from "@/components/VisoraLogo";
 import {
   createBillingSubscriptionIntent,
+  getPublicAppOrigin,
   getStoredSession,
   type PlanId,
 } from "@/lib/visora-api";
@@ -56,7 +57,7 @@ function PaymentForm({ planId }: { planId: Exclude<PlanId, "free"> }) {
     const result = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/dashboard/?billing=success&plan=${planId}`,
+        return_url: `${getPublicAppOrigin()}/dashboard/?billing=success&plan=${planId}`,
       },
     });
 

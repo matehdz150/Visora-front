@@ -21,9 +21,9 @@ const inputStyle: React.CSSProperties = {
 };
 
 const contacts = [
-  { label: "Get help", email: "support@visora.cloud", href: "mailto:support@visora.cloud", note: "Account, API, dashboard, or integration issues." },
-  { label: "Product questions", email: "hello@visora.cloud", href: "mailto:hello@visora.cloud", note: "Plans, roadmap, partnerships, and general questions." },
-  { label: "Report security concerns", email: "security@visora.cloud", href: "mailto:security@visora.cloud", note: "Responsible disclosure and sensitive reports." },
+  { label: "Get help", email: "support@visoracloud.com", href: "mailto:support@visoracloud.com", note: "Account, API, dashboard, or integration issues." },
+  { label: "Product questions", email: "hello@visoracloud.com", href: "mailto:hello@visoracloud.com", note: "Plans, roadmap, partnerships, and general questions." },
+  { label: "Report security concerns", email: "security@visoracloud.com", href: "mailto:security@visoracloud.com", note: "Responsible disclosure and sensitive reports." },
 ];
 
 
@@ -57,7 +57,7 @@ export function ContactPage() {
 
     setSent(true);
     setSentEmail(email.trim());
-    window.location.href = "mailto:support@visora.cloud?subject=" + subject + "&body=" + body;
+    window.location.href = "mailto:support@visoracloud.com?subject=" + subject + "&body=" + body;
   }
 
   function reset() {
@@ -107,7 +107,7 @@ export function ContactPage() {
                   <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={5} placeholder="I'd like to know how Visora can help me with..." style={{ ...inputStyle, lineHeight: 1.6, resize: "none" }} />
                 </FieldShell>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "18px" }}>
-                  <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.5, color: "rgba(255,255,255,0.42)", maxWidth: "310px" }}>This opens your email client with a prepared message to support@visora.cloud.</p>
+                  <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.5, color: "rgba(255,255,255,0.42)", maxWidth: "310px" }}>This opens your email client with a prepared message to support@visoracloud.com.</p>
                   <button type="submit" disabled={!canSubmit} style={{ display: "inline-flex", alignItems: "center", gap: "12px", padding: "13px 16px 13px 24px", borderRadius: "40px", border: "none", fontFamily: "inherit", fontSize: "15px", fontWeight: 500, cursor: canSubmit ? "pointer" : "not-allowed", background: canSubmit ? "#fff" : "rgba(255,255,255,0.08)", color: canSubmit ? "#050505" : "rgba(255,255,255,0.4)", transition: "background .2s, transform .15s", flexShrink: 0 }}>
                     <span>Submit</span>
                     <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: canSubmit ? "rgba(5,5,5,0.1)" : "rgba(255,255,255,0.06)" }}>›</span>

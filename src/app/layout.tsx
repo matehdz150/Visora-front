@@ -22,40 +22,81 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  "https://visoracloud.com";
+
+const siteDescription =
+  "Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content using a single API.";
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Visora",
+  alternateName: "Visora Cloud",
+  url: siteUrl,
+  logo: siteUrl + "/visora-icon-512.png",
+  sameAs: ["https://www.npmjs.com/package/@visoracloud/client"],
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Visora",
+  alternateName: "Visora Cloud",
+  url: siteUrl,
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ??
-      process.env.NEXT_PUBLIC_APP_URL ??
-      "https://visoracloud.com"
-  ),
+  metadataBase: new URL(siteUrl),
   applicationName: "Visora",
   title: {
     default: "Visora — Image moderation API",
     template: "%s — Visora",
   },
-  description:
-    "Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content using a single API.",
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+  },
+  keywords: [
+    "image moderation API",
+    "content moderation API",
+    "AI moderation",
+    "brand safety API",
+    "moderation webhooks",
+  ],
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/visora-icon.svg", type: "image/svg+xml" },
+      { url: "/visora-icon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/visora-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/visora-icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/visora-icon.svg",
-    apple: "/visora-icon.svg",
+    shortcut: "/visora-icon-48.png",
+    apple: [{ url: "/visora-icon-180.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Visora — Image moderation API",
-    description:
-      "Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content using a single API.",
+    description: siteDescription,
     siteName: "Visora",
+    url: siteUrl,
     type: "website",
-    images: ["/visora-icon.svg"],
+    images: [
+      {
+        url: "/visora-og.png",
+        width: 1200,
+        height: 630,
+        alt: "Visora image moderation API",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Visora — Image moderation API",
-    description:
-      "Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content using a single API.",
-    images: ["/visora-icon.svg"],
+    description: siteDescription,
+    images: ["/visora-og.png"],
   },
 };
 
@@ -69,7 +110,16 @@ export default function RootLayout({
       lang="en"
       className={`${sora.variable} ${jetbrainsMono.variable} antialiased`}
     >
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([organizationJsonLd, websiteJsonLd]),
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

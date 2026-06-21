@@ -3,7 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { VisoraLogo } from "@/components/VisoraLogo";
-import { clearSession, getCurrentUser, getStoredSession, type CurrentUser } from "@/lib/visora-api";
+import {
+  clearSession,
+  getCurrentUser,
+  getStoredSession,
+  type CurrentUser,
+} from "@/lib/visora-api";
 
 /**
  * Visora — Image moderation landing page.
@@ -20,7 +25,6 @@ const MONO = "var(--font-jetbrains), monospace";
 type Props = {
   accent?: string;
   motion?: boolean;
-  showPanel?: boolean;
 };
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -58,14 +62,23 @@ function buildHero(accent: string, motion: boolean): React.ReactNode {
   const face = (key: string, tf: string, bg: string, border: string) =>
     React.createElement("div", {
       key,
-      style: { ...faceBase, transform: tf, background: bg, border: "1px solid " + border },
+      style: {
+        ...faceBase,
+        transform: tf,
+        background: bg,
+        border: "1px solid " + border,
+      },
     });
 
   const cube = (
     i: number,
     j: number,
     k: number,
-    opts: { lit?: boolean; detach?: { x?: number; y?: number; z?: number }; tag?: string } = {},
+    opts: {
+      lit?: boolean;
+      detach?: { x?: number; y?: number; z?: number };
+      tag?: string;
+    } = {},
   ) => {
     const lit = opts.lit;
     const d = opts.detach || {};
@@ -130,7 +143,13 @@ function buildHero(accent: string, motion: boolean): React.ReactNode {
     );
   };
 
-  const remove = new Set(["1,-1,-1", "-1,-1,1", "-1,-1,-1", "-1,1,-1", "0,1,1"]);
+  const remove = new Set([
+    "1,-1,-1",
+    "-1,-1,1",
+    "-1,-1,-1",
+    "-1,1,-1",
+    "0,1,1",
+  ]);
   const litSet = new Set(["0,-1,1", "1,0,1", "1,-1,1", "-1,0,1"]);
   const cubes: React.ReactNode[] = [];
   for (let i = -1; i <= 1; i++)
@@ -141,7 +160,9 @@ function buildHero(accent: string, motion: boolean): React.ReactNode {
         cubes.push(cube(i, j, k, { lit: litSet.has(key) }));
       }
   // detached floating module below-front
-  cubes.push(cube(0, 1, 1, { detach: { x: -8, y: 70, z: 34 }, lit: true, tag: "-d" }));
+  cubes.push(
+    cube(0, 1, 1, { detach: { x: -8, y: 70, z: 34 }, lit: true, tag: "-d" }),
+  );
 
   const cluster = React.createElement(
     "div",
@@ -279,7 +300,14 @@ function buildModes(accent: string): React.ReactNode {
       [
         React.createElement(
           "span",
-          { key: "n", style: { fontSize: "20px", fontWeight: 600, letterSpacing: "-0.02em" } },
+          {
+            key: "n",
+            style: {
+              fontSize: "20px",
+              fontWeight: 600,
+              letterSpacing: "-0.02em",
+            },
+          },
           m.name,
         ),
         React.createElement(
@@ -404,21 +432,30 @@ function buildSecurity(accent: string): React.ReactNode {
         } as React.CSSProperties,
       });
     else if (name === "iso")
-      inner = React.createElement("span", { style: { display: "flex", gap: "4px" } }, [
-        React.createElement("span", {
-          key: 1,
-          style: { width: "6px", height: "16px", borderRadius: "2px", background: rgba(0.9) },
-        }),
-        React.createElement("span", {
-          key: 2,
-          style: {
-            width: "6px",
-            height: "16px",
-            borderRadius: "2px",
-            background: "rgba(255,255,255,0.25)",
-          },
-        }),
-      ]);
+      inner = React.createElement(
+        "span",
+        { style: { display: "flex", gap: "4px" } },
+        [
+          React.createElement("span", {
+            key: 1,
+            style: {
+              width: "6px",
+              height: "16px",
+              borderRadius: "2px",
+              background: rgba(0.9),
+            },
+          }),
+          React.createElement("span", {
+            key: 2,
+            style: {
+              width: "6px",
+              height: "16px",
+              borderRadius: "2px",
+              background: "rgba(255,255,255,0.25)",
+            },
+          }),
+        ],
+      );
     else if (name === "store")
       inner = React.createElement(
         "span",
@@ -426,7 +463,12 @@ function buildSecurity(accent: string): React.ReactNode {
         [
           React.createElement("span", {
             key: 1,
-            style: { width: "18px", height: "5px", borderRadius: "2px", background: rgba(0.9) },
+            style: {
+              width: "18px",
+              height: "5px",
+              borderRadius: "2px",
+              background: rgba(0.9),
+            },
           }),
           React.createElement("span", {
             key: 2,
@@ -451,11 +493,22 @@ function buildSecurity(accent: string): React.ReactNode {
     else
       inner = React.createElement(
         "span",
-        { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3px" } },
+        {
+          style: {
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "3px",
+          },
+        },
         [
           React.createElement("span", {
             key: 1,
-            style: { width: "7px", height: "7px", borderRadius: "50%", background: rgba(0.9) },
+            style: {
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              background: rgba(0.9),
+            },
           }),
           React.createElement("span", {
             key: 2,
@@ -477,7 +530,12 @@ function buildSecurity(accent: string): React.ReactNode {
           }),
           React.createElement("span", {
             key: 4,
-            style: { width: "7px", height: "7px", borderRadius: "50%", background: rgba(0.9) },
+            style: {
+              width: "7px",
+              height: "7px",
+              borderRadius: "50%",
+              background: rgba(0.9),
+            },
           }),
         ],
       );
@@ -547,20 +605,22 @@ function useScrollEffects() {
   useEffect(() => {
     const reveal = () => {
       const h = window.innerHeight;
-      document.querySelectorAll<HTMLElement & { __shown?: boolean }>("[data-reveal]").forEach(
-        (el) => {
+      document
+        .querySelectorAll<HTMLElement & { __shown?: boolean }>("[data-reveal]")
+        .forEach((el) => {
           if (el.__shown) return;
           const r = el.getBoundingClientRect();
           if (r.top < h - 50 && r.bottom > -10) {
             el.__shown = true;
-            const delay = parseFloat(el.getAttribute("data-reveal-delay") || "0");
+            const delay = parseFloat(
+              el.getAttribute("data-reveal-delay") || "0",
+            );
             setTimeout(() => {
               el.style.opacity = "1";
               el.style.transform = "none";
             }, delay);
           }
-        },
-      );
+        });
     };
 
     const nav = document.querySelector<HTMLElement>("[data-nav]");
@@ -604,7 +664,6 @@ function useScrollEffects() {
 export default function VisoraLanding({
   accent = "#7e9bff",
   motion = true,
-  showPanel = true,
 }: Props) {
   useScrollEffects();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -620,8 +679,10 @@ export default function VisoraLanding({
       if (!helpRef.current?.contains(target)) setHelpOpen(false);
     }
 
-    if (featuresOpen || helpOpen) document.addEventListener("pointerdown", closeMenusOnOutsideClick);
-    return () => document.removeEventListener("pointerdown", closeMenusOnOutsideClick);
+    if (featuresOpen || helpOpen)
+      document.addEventListener("pointerdown", closeMenusOnOutsideClick);
+    return () =>
+      document.removeEventListener("pointerdown", closeMenusOnOutsideClick);
   }, [featuresOpen, helpOpen]);
 
   useEffect(() => {
@@ -686,14 +747,29 @@ export default function VisoraLanding({
           padding: "18px 40px",
           background: "transparent",
           borderBottom: "1px solid rgba(255,255,255,0)",
-          transition: "background .4s ease, border-color .4s ease, backdrop-filter .4s ease",
+          transition:
+            "background .4s ease, border-color .4s ease, backdrop-filter .4s ease",
         }}
       >
-        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+          }}
+        >
           <VisoraLogo markSize={26} fontSize={18} tone="light" />
         </Link>
-        <div className="lp-nav-mid" style={{ display: "flex", alignItems: "center", gap: "34px" }}>
-          <div ref={featuresRef} onMouseEnter={() => setFeaturesOpen(true)} style={{ position: "relative" }}>
+        <div
+          className="lp-nav-mid"
+          style={{ display: "flex", alignItems: "center", gap: "34px" }}
+        >
+          <div
+            ref={featuresRef}
+            onMouseEnter={() => setFeaturesOpen(true)}
+            style={{ position: "relative" }}
+          >
             <button
               type="button"
               className="v-navlink"
@@ -725,7 +801,9 @@ export default function VisoraLanding({
                   height: "6px",
                   borderRight: "1.5px solid currentColor",
                   borderBottom: "1.5px solid currentColor",
-                  transform: featuresOpen ? "rotate(225deg) translateY(-1px)" : "rotate(45deg) translateY(-2px)",
+                  transform: featuresOpen
+                    ? "rotate(225deg) translateY(-1px)"
+                    : "rotate(45deg) translateY(-2px)",
                   transition: "transform .18s ease",
                   opacity: 0.75,
                 }}
@@ -742,20 +820,51 @@ export default function VisoraLanding({
                   padding: "12px",
                   borderRadius: "18px",
                   border: "1px solid rgba(255,255,255,0.12)",
-                  background: "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                  background:
+                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
                   boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
                   backdropFilter: "blur(18px)",
                   WebkitBackdropFilter: "blur(18px)",
                 }}
               >
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "8px",
+                  }}
+                >
                   {[
-                    ["Image Moderation", "/docs#moderate", "Scan uploads and image keys."],
-                    ["Policies", "/docs#policies", "Set project category actions."],
-                    ["Review Queue", "/docs#review-queue", "Route uncertain results to review."],
-                    ["Webhooks", "/features/webhooks", "Deliver signed event payloads."],
-                    ["Moderation Logs", "/docs#moderation-logs", "Inspect historical decisions."],
-                    ["API Keys", "/docs#authentication", "Manage project scoped keys."],
+                    [
+                      "Image Moderation",
+                      "/docs#moderate",
+                      "Scan uploads and image keys.",
+                    ],
+                    [
+                      "Policies",
+                      "/docs#policies",
+                      "Set project category actions.",
+                    ],
+                    [
+                      "Review Queue",
+                      "/docs#review-queue",
+                      "Route uncertain results to review.",
+                    ],
+                    [
+                      "Webhooks",
+                      "/features/webhooks",
+                      "Deliver signed event payloads.",
+                    ],
+                    [
+                      "Moderation Logs",
+                      "/docs#moderation-logs",
+                      "Inspect historical decisions.",
+                    ],
+                    [
+                      "API Keys",
+                      "/docs#authentication",
+                      "Manage project scoped keys.",
+                    ],
                   ].map(([label, href, hint]) => (
                     <a
                       key={label}
@@ -766,13 +875,35 @@ export default function VisoraLanding({
                         padding: "13px",
                         borderRadius: "12px",
                         border: "1px solid rgba(255,255,255,0.07)",
-                        background: label === "Webhooks" ? "rgba(126,155,255,0.09)" : "rgba(255,255,255,0.025)",
+                        background:
+                          label === "Webhooks"
+                            ? "rgba(126,155,255,0.09)"
+                            : "rgba(255,255,255,0.025)",
                         textDecoration: "none",
-                        transition: "background .2s ease, border-color .2s ease, transform .2s ease",
+                        transition:
+                          "background .2s ease, border-color .2s ease, transform .2s ease",
                       }}
                     >
-                      <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#fff", letterSpacing: 0 }}>{label}</div>
-                      <div style={{ marginTop: "7px", fontSize: "12px", lineHeight: 1.45, color: "rgba(255,255,255,0.48)" }}>{hint}</div>
+                      <div
+                        style={{
+                          fontSize: "13.5px",
+                          fontWeight: 600,
+                          color: "#fff",
+                          letterSpacing: 0,
+                        }}
+                      >
+                        {label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: "7px",
+                          fontSize: "12px",
+                          lineHeight: 1.45,
+                          color: "rgba(255,255,255,0.48)",
+                        }}
+                      >
+                        {hint}
+                      </div>
                     </a>
                   ))}
                 </div>
@@ -797,7 +928,11 @@ export default function VisoraLanding({
               {label}
             </a>
           ))}
-          <div ref={helpRef} onMouseEnter={() => setHelpOpen(true)} style={{ position: "relative" }}>
+          <div
+            ref={helpRef}
+            onMouseEnter={() => setHelpOpen(true)}
+            style={{ position: "relative" }}
+          >
             <button
               type="button"
               className="v-navlink"
@@ -829,7 +964,9 @@ export default function VisoraLanding({
                   height: "6px",
                   borderRight: "1.5px solid currentColor",
                   borderBottom: "1.5px solid currentColor",
-                  transform: helpOpen ? "rotate(225deg) translateY(-1px)" : "rotate(45deg) translateY(-2px)",
+                  transform: helpOpen
+                    ? "rotate(225deg) translateY(-1px)"
+                    : "rotate(45deg) translateY(-2px)",
                   transition: "transform .18s ease",
                   opacity: 0.75,
                 }}
@@ -849,21 +986,58 @@ export default function VisoraLanding({
                   padding: "16px",
                   borderRadius: "20px",
                   border: "1px solid rgba(255,255,255,0.12)",
-                  background: "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                  background:
+                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
                   boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
                   backdropFilter: "blur(18px)",
                   WebkitBackdropFilter: "blur(18px)",
                 }}
               >
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "9px 6px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                    padding: "9px 6px",
+                  }}
+                >
                   {[
                     ["Contact", "/contact", "Send us a message"],
-                    ["Support", "mailto:support@visoracloud.com", "support@visoracloud.com"],
+                    [
+                      "Support",
+                      "mailto:support@visoracloud.com",
+                      "support@visoracloud.com",
+                    ],
                     ["Docs", "/docs", "Integration guides"],
                   ].map(([label, href, hint]) => (
-                    <a key={label} href={href} style={{ textDecoration: "none" }}>
-                      <div style={{ fontSize: "21px", lineHeight: 1.1, letterSpacing: "-0.035em", color: label === "Contact" ? "#fff" : "rgba(255,255,255,0.58)", fontWeight: 500 }}>{label}</div>
-                      <div style={{ marginTop: "5px", fontSize: "11.5px", color: "rgba(255,255,255,0.34)" }}>{hint}</div>
+                    <a
+                      key={label}
+                      href={href}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "21px",
+                          lineHeight: 1.1,
+                          letterSpacing: "-0.035em",
+                          color:
+                            label === "Contact"
+                              ? "#fff"
+                              : "rgba(255,255,255,0.58)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: "5px",
+                          fontSize: "11.5px",
+                          color: "rgba(255,255,255,0.34)",
+                        }}
+                      >
+                        {hint}
+                      </div>
                     </a>
                   ))}
                 </div>
@@ -875,7 +1049,8 @@ export default function VisoraLanding({
                     minHeight: "168px",
                     borderRadius: "16px",
                     border: "1px solid rgba(255,255,255,0.1)",
-                    background: "radial-gradient(circle at 70% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.02))",
+                    background:
+                      "radial-gradient(circle at 70% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.02))",
                     padding: "18px",
                     textDecoration: "none",
                     display: "flex",
@@ -883,12 +1058,50 @@ export default function VisoraLanding({
                     justifyContent: "space-between",
                   }}
                 >
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.28 }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundImage:
+                        "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+                      backgroundSize: "28px 28px",
+                      opacity: 0.28,
+                    }}
+                  />
                   <div style={{ position: "relative" }}>
-                    <div style={{ fontSize: "22px", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#fff", marginBottom: "8px" }}>Need help integrating?</div>
-                    <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.52)" }}>Tell us what you are building and we will point you in the right direction.</p>
+                    <div
+                      style={{
+                        fontSize: "22px",
+                        lineHeight: 1.15,
+                        letterSpacing: "-0.035em",
+                        color: "#fff",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Need help integrating?
+                    </div>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "12.5px",
+                        lineHeight: 1.55,
+                        color: "rgba(255,255,255,0.52)",
+                      }}
+                    >
+                      Tell us what you are building and we will point you in the
+                      right direction.
+                    </p>
                   </div>
-                  <span style={{ position: "relative", fontSize: "12.5px", color: "#aebfff", fontWeight: 500 }}>Open contact →</span>
+                  <span
+                    style={{
+                      position: "relative",
+                      fontSize: "12.5px",
+                      color: "#aebfff",
+                      fontWeight: 500,
+                    }}
+                  >
+                    Open contact →
+                  </span>
                 </a>
               </div>
             ) : null}
@@ -1018,11 +1231,18 @@ export default function VisoraLanding({
               fontWeight: 300,
             }}
           >
-            Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content
-            using a single API.
+            Detect nudity, violence, weapons, drugs, hate symbols, gambling, and
+            unsafe content using a single API.
           </p>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "38px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              marginTop: "38px",
+            }}
+          >
             <Link
               href={currentUser ? "/dashboard" : "/register"}
               className="v-btn-primary"
@@ -1064,9 +1284,28 @@ export default function VisoraLanding({
             </Link>
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "14px 26px", marginTop: "40px" }}>
-            {["API First", "Project Isolation", "Custom Policies", "Usage-Based Plans"].map((label) => (
-              <div key={label} style={{ display: "inline-flex", alignItems: "center", gap: "9px" }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "14px 26px",
+              marginTop: "40px",
+            }}
+          >
+            {[
+              "API First",
+              "Project Isolation",
+              "Custom Policies",
+              "Usage-Based Plans",
+            ].map((label) => (
+              <div
+                key={label}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "9px",
+                }}
+              >
                 <span
                   style={{
                     display: "inline-flex",
@@ -1082,7 +1321,13 @@ export default function VisoraLanding({
                 >
                   ✓
                 </span>
-                <span style={{ fontFamily: MONO, fontSize: "13px", color: "rgba(255,255,255,0.6)" }}>
+                <span
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "13px",
+                    color: "rgba(255,255,255,0.6)",
+                  }}
+                >
                   {label}
                 </span>
               </div>
@@ -1090,130 +1335,12 @@ export default function VisoraLanding({
           </div>
         </div>
 
-        {/* right: 3D object + glass panel */}
-        <div className="lp-hero-visual" style={{ position: "relative", minHeight: "560px" }}>
+        {/* right: 3D object */}
+        <div
+          className="lp-hero-visual"
+          style={{ position: "relative", minHeight: "560px" }}
+        >
           {buildHero(accent, motion)}
-          {showPanel && (
-            <div
-              data-reveal=""
-              data-reveal-delay="260"
-              className="r-hide-sm"
-              style={{
-                opacity: 0,
-                transform: "translateY(26px)",
-                transition:
-                  "opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1)",
-                position: "absolute",
-                bottom: "8px",
-                left: "-6px",
-                width: "296px",
-                padding: "18px 18px 16px",
-                borderRadius: "16px",
-                background: "rgba(14,15,20,0.66)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                boxShadow: "0 30px 70px rgba(0,0,0,0.6)",
-                zIndex: 6,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "16px",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "11px",
-                    letterSpacing: "0.08em",
-                    color: "rgba(255,255,255,0.4)",
-                  }}
-                >
-                  moderation.result
-                </span>
-                <span
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "10px",
-                    letterSpacing: "0.1em",
-                    color: "#ff9b9b",
-                    background: "rgba(255,90,90,0.1)",
-                    border: "1px solid rgba(255,90,90,0.25)",
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                  }}
-                >
-                  REJECT
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "14px" }}>
-                <span
-                  style={{
-                    fontSize: "44px",
-                    fontWeight: 600,
-                    letterSpacing: "-0.04em",
-                    color: "#fff",
-                    lineHeight: 1,
-                  }}
-                >
-                  92
-                </span>
-                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>risk score</span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "13px",
-                  padding: "9px 0",
-                  borderTop: "1px solid rgba(255,255,255,0.07)",
-                }}
-              >
-                <span style={{ color: "rgba(255,255,255,0.45)" }}>Category</span>
-                <span style={{ color: "rgba(255,255,255,0.85)" }}>Violence</span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "13px",
-                  padding: "9px 0",
-                  borderTop: "1px solid rgba(255,255,255,0.07)",
-                  marginBottom: "14px",
-                }}
-              >
-                <span style={{ color: "rgba(255,255,255,0.45)" }}>Decision</span>
-                <span style={{ color: "rgba(255,255,255,0.85)" }}>Reject</span>
-              </div>
-              <div
-                style={{
-                  fontFamily: MONO,
-                  fontSize: "11.5px",
-                  lineHeight: 1.7,
-                  background: "rgba(0,0,0,0.4)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderRadius: "10px",
-                  padding: "11px 13px",
-                }}
-              >
-                <div style={{ color: "rgba(255,255,255,0.4)" }}>
-                  <span style={{ color: "#aebfff" }}>POST</span> /moderate
-                </div>
-                <div style={{ color: "rgba(255,255,255,0.35)" }}>{"{"}</div>
-                <div style={{ color: "rgba(255,255,255,0.55)", paddingLeft: "12px" }}>
-                  &quot;safe&quot;: <span style={{ color: "#ff9b9b" }}>false</span>,
-                </div>
-                <div style={{ color: "rgba(255,255,255,0.55)", paddingLeft: "12px" }}>
-                  &quot;action&quot;: <span style={{ color: "#c7d2ff" }}>&quot;reject&quot;</span>
-                </div>
-                <div style={{ color: "rgba(255,255,255,0.35)" }}>{"}"}</div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -1254,7 +1381,14 @@ export default function VisoraLanding({
             opacity: 0.62,
           }}
         >
-          {["API Keys", "Policy Engine", "Review Queue", "Moderation Logs", "Brand Safety", "Developer SDK"].map((name) => (
+          {[
+            "API Keys",
+            "Policy Engine",
+            "Review Queue",
+            "Moderation Logs",
+            "Brand Safety",
+            "Developer SDK",
+          ].map((name) => (
             <span
               key={name}
               style={{
@@ -1290,7 +1424,14 @@ export default function VisoraLanding({
             marginBottom: "56px",
           }}
         >
-          <span style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.2em", color: "#8fa0d8" }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              color: "#8fa0d8",
+            }}
+          >
             DEVELOPERS
           </span>
           <h2
@@ -1317,14 +1458,28 @@ export default function VisoraLanding({
             Drop-in moderation that is predictable, composable, and fast.
           </p>
         </div>
-        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div
+          className="r-cols-2"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "20px",
+          }}
+        >
           {[
             {
               title: "Moderation API",
               desc: "One request. One response. A moderation decision your app can use.",
               icon: (
                 <>
-                  <span style={{ width: "20px", height: "3px", borderRadius: "2px", background: "#aebfff" }} />
+                  <span
+                    style={{
+                      width: "20px",
+                      height: "3px",
+                      borderRadius: "2px",
+                      background: "#aebfff",
+                    }}
+                  />
                   <span
                     style={{
                       width: "13px",
@@ -1354,7 +1509,14 @@ export default function VisoraLanding({
                       background: "rgba(255,255,255,0.3)",
                     }}
                   />
-                  <span style={{ width: "15px", height: "3px", borderRadius: "2px", background: "#aebfff" }} />
+                  <span
+                    style={{
+                      width: "15px",
+                      height: "3px",
+                      borderRadius: "2px",
+                      background: "#aebfff",
+                    }}
+                  />
                   <span
                     style={{
                       width: "9px",
@@ -1376,10 +1538,24 @@ export default function VisoraLanding({
               desc: "Built for small apps first, with plans and limits that can grow with usage.",
               icon: (
                 <>
-                  <span style={{ borderRadius: "2px", background: "rgba(255,255,255,0.3)" }} />
-                  <span style={{ borderRadius: "2px", background: "#aebfff" }} />
-                  <span style={{ borderRadius: "2px", background: "#aebfff" }} />
-                  <span style={{ borderRadius: "2px", background: "rgba(255,255,255,0.3)" }} />
+                  <span
+                    style={{
+                      borderRadius: "2px",
+                      background: "rgba(255,255,255,0.3)",
+                    }}
+                  />
+                  <span
+                    style={{ borderRadius: "2px", background: "#aebfff" }}
+                  />
+                  <span
+                    style={{ borderRadius: "2px", background: "#aebfff" }}
+                  />
+                  <span
+                    style={{
+                      borderRadius: "2px",
+                      background: "rgba(255,255,255,0.3)",
+                    }}
+                  />
                 </>
               ),
               iconStyle: {
@@ -1426,7 +1602,14 @@ export default function VisoraLanding({
               >
                 {card.icon}
               </div>
-              <h3 style={{ margin: "0 0 10px", fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em" }}>
+              <h3
+                style={{
+                  margin: "0 0 10px",
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                }}
+              >
                 {card.title}
               </h3>
               <p
@@ -1465,7 +1648,14 @@ export default function VisoraLanding({
             marginBottom: "56px",
           }}
         >
-          <span style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.2em", color: "#8fa0d8" }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              color: "#8fa0d8",
+            }}
+          >
             POLICY ENGINE
           </span>
           <h2
@@ -1480,7 +1670,14 @@ export default function VisoraLanding({
             Three modes. One decision boundary.
           </h2>
         </div>
-        <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+        <div
+          className="r-cols-2"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "20px",
+          }}
+        >
           {buildModes(accent)}
         </div>
       </section>
@@ -1495,7 +1692,15 @@ export default function VisoraLanding({
           padding: "90px 40px",
         }}
       >
-        <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr", gap: "60px", alignItems: "start" }}>
+        <div
+          className="r-stack"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "0.85fr 1fr",
+            gap: "60px",
+            alignItems: "start",
+          }}
+        >
           <div
             data-reveal=""
             style={{
@@ -1507,7 +1712,14 @@ export default function VisoraLanding({
               top: "120px",
             }}
           >
-            <span style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.2em", color: "#8fa0d8" }}>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: "12px",
+                letterSpacing: "0.2em",
+                color: "#8fa0d8",
+              }}
+            >
               SECURITY
             </span>
             <h2
@@ -1531,11 +1743,13 @@ export default function VisoraLanding({
                 fontWeight: 300,
               }}
             >
-              Every image and every decision stays isolated to your project. No shared buckets, no
-              leaked context.
+              Every image and every decision stays isolated to your project. No
+              shared buckets, no leaked context.
             </p>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {buildSecurity(accent)}
           </div>
         </div>
@@ -1562,7 +1776,14 @@ export default function VisoraLanding({
             marginBottom: "48px",
           }}
         >
-          <span style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.2em", color: "#8fa0d8" }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "12px",
+              letterSpacing: "0.2em",
+              color: "#8fa0d8",
+            }}
+          >
             API
           </span>
           <h2
@@ -1583,7 +1804,8 @@ export default function VisoraLanding({
           style={{
             opacity: 0,
             transform: "translateY(26px)",
-            transition: "opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1)",
+            transition:
+              "opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1)",
             maxWidth: "820px",
             margin: "0 auto",
             borderRadius: "16px",
@@ -1604,23 +1826,67 @@ export default function VisoraLanding({
             }}
           >
             <span style={{ display: "flex", gap: "7px" }}>
-              <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "rgba(255,255,255,0.14)" }} />
-              <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "rgba(255,255,255,0.14)" }} />
-              <span style={{ width: "11px", height: "11px", borderRadius: "50%", background: "rgba(255,255,255,0.14)" }} />
+              <span
+                style={{
+                  width: "11px",
+                  height: "11px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.14)",
+                }}
+              />
+              <span
+                style={{
+                  width: "11px",
+                  height: "11px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.14)",
+                }}
+              />
+              <span
+                style={{
+                  width: "11px",
+                  height: "11px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.14)",
+                }}
+              />
             </span>
-            <span style={{ fontFamily: MONO, fontSize: "12px", color: "rgba(255,255,255,0.4)", marginLeft: "4px" }}>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.4)",
+                marginLeft: "4px",
+              }}
+            >
               moderate.sh
             </span>
           </div>
-          <div style={{ fontFamily: MONO, fontSize: "14px", lineHeight: 1.85, padding: "24px 26px" }}>
+          <div
+            style={{
+              fontFamily: MONO,
+              fontSize: "14px",
+              lineHeight: 1.85,
+              padding: "24px 26px",
+            }}
+          >
             <div style={{ color: "rgba(255,255,255,0.4)" }}>
               <span style={{ color: "rgba(255,255,255,0.3)" }}>$</span>{" "}
-              <span style={{ color: "#aebfff" }}>curl</span> -X POST https://api.visora.dev/moderate \
+              <span style={{ color: "#aebfff" }}>curl</span> -X POST
+              https://api.visora.dev/moderate \
             </div>
-            <div style={{ color: "rgba(255,255,255,0.4)", paddingLeft: "22px" }}>
-              -H <span style={{ color: "#c7d2ff" }}>&quot;Authorization: Bearer $VISORA_KEY&quot;</span> \
+            <div
+              style={{ color: "rgba(255,255,255,0.4)", paddingLeft: "22px" }}
+            >
+              -H{" "}
+              <span style={{ color: "#c7d2ff" }}>
+                &quot;Authorization: Bearer $VISORA_KEY&quot;
+              </span>{" "}
+              \
             </div>
-            <div style={{ color: "rgba(255,255,255,0.4)", paddingLeft: "22px" }}>
+            <div
+              style={{ color: "rgba(255,255,255,0.4)", paddingLeft: "22px" }}
+            >
               -F <span style={{ color: "#c7d2ff" }}>image=@upload.jpg</span>
             </div>
             <div style={{ height: "18px" }} />
@@ -1628,7 +1894,9 @@ export default function VisoraLanding({
             <div style={{ paddingLeft: "22px" }}>
               <span style={{ color: "#8fa0d8" }}>&quot;moderationId&quot;</span>
               <span style={{ color: "rgba(255,255,255,0.4)" }}>:</span>{" "}
-              <span style={{ color: "#c7d2ff" }}>&quot;mod_01KV9F2X3Q&quot;</span>
+              <span style={{ color: "#c7d2ff" }}>
+                &quot;mod_01KV9F2X3Q&quot;
+              </span>
               <span style={{ color: "rgba(255,255,255,0.4)" }}>,</span>
             </div>
             <div style={{ paddingLeft: "22px" }}>
@@ -1684,7 +1952,14 @@ export default function VisoraLanding({
           }}
         >
           <div>
-            <span style={{ fontFamily: MONO, fontSize: "12px", letterSpacing: "0.2em", color: "#8fa0d8" }}>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: "12px",
+                letterSpacing: "0.2em",
+                color: "#8fa0d8",
+              }}
+            >
               FAQ
             </span>
             <h2
@@ -1699,7 +1974,9 @@ export default function VisoraLanding({
               Clear before you integrate.
             </h2>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {[
               {
                 q: "What is Visora?",
@@ -1727,8 +2004,26 @@ export default function VisoraLanding({
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <div style={{ fontSize: "15px", fontWeight: 600, color: "rgba(255,255,255,0.9)", marginBottom: "7px" }}>{item.q}</div>
-                <div style={{ fontSize: "14px", lineHeight: 1.6, color: "rgba(255,255,255,0.52)", fontWeight: 300 }}>{item.a}</div>
+                <div
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    color: "rgba(255,255,255,0.9)",
+                    marginBottom: "7px",
+                  }}
+                >
+                  {item.q}
+                </div>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    lineHeight: 1.6,
+                    color: "rgba(255,255,255,0.52)",
+                    fontWeight: 300,
+                  }}
+                >
+                  {item.a}
+                </div>
               </div>
             ))}
           </div>
@@ -1791,9 +2086,18 @@ export default function VisoraLanding({
               fontWeight: 300,
             }}
           >
-            Use Visora from your backend with the @visoracloud/client SDK or the REST API.
+            Use Visora from your backend with the @visoracloud/client SDK or the
+            REST API.
           </p>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", marginTop: "40px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "14px",
+              marginTop: "40px",
+            }}
+          >
             <Link
               href={currentUser ? "/dashboard" : "/register"}
               className="v-btn-primary-lg"
@@ -1872,12 +2176,22 @@ export default function VisoraLanding({
               key={label}
               href={href}
               className="v-footlink"
-              style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", textDecoration: "none" }}
+              style={{
+                fontSize: "13px",
+                color: "rgba(255,255,255,0.45)",
+                textDecoration: "none",
+              }}
             >
               {label}
             </a>
           ))}
-          <span style={{ fontFamily: MONO, fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "12px",
+              color: "rgba(255,255,255,0.3)",
+            }}
+          >
             © 2026
           </span>
         </div>

@@ -544,12 +544,13 @@ export default function Dashboard() {
   const changePlan = async (planId: PlanId) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
-    if (!accountPlan?.stripeCustomerId && planId !== "free") {
-      window.location.assign(`/checkout?plan=${planId}`);
-      return;
+    const hasActiveSubscription = Boolean(accountPlan?.stripeSubscriptionId && ["active", "trialing", "past_due"].includes(accountPlan.stripeSubscriptionStatus ?? ""));
+
+    if (!hasActiveSubscription && planId !== "free") {
+      throw new Error("Enter payment details in Settings to activate this plan");
     }
 
-    if (!accountPlan?.stripeCustomerId && planId === "free") {
+    if (!hasActiveSubscription && planId === "free") {
       await updateAccountPlan(session.idToken, planId);
       await refreshDashboardData();
       notify({ kind: "success", title: "Plan updated", message: "Your account is now on the free plan." });
@@ -567,6 +568,14 @@ export default function Dashboard() {
     }
 
     notify({ kind: "success", title: "Plan updated", message: `Your account is now on ${planId}.` });
+  };
+
+  const refreshBillingAfterPayment = async () => {
+    if (!session?.idToken) throw new Error("Missing dashboard session");
+
+    const syncedAccount = await syncBillingAccount(session.idToken);
+    setAccountPlan(syncedAccount);
+    await refreshDashboardData();
   };
 
   const manageBilling = async () => {
@@ -631,7 +640,7 @@ export default function Dashboard() {
     }
     if (page === "create-project") return <CreateProjectPage onCancel={() => setPage("projects")} onCreateProject={createProject} notify={notify} />;
     if (page === "keys") return <ApiKeysPage projects={projects} apiKeys={apiKeys} rawApiKey={rawApiKey} onDismissRawKey={() => setRawApiKey(null)} onCreateApiKey={createApiKey} onRenameApiKey={renameApiKey} onRevokeApiKey={revokeApiKey} onRotateApiKey={rotateApiKey} notify={notify} />;
-    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} onChangePlan={changePlan} onManageBilling={manageBilling} onDeleteAccount={deleteCurrentAccount} notify={notify} />;
+    if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} idToken={session?.idToken ?? null} onChangePlan={changePlan} onManageBilling={manageBilling} onBillingActivated={refreshBillingAfterPayment} onDeleteAccount={deleteCurrentAccount} notify={notify} />;
     return null;
   };
 

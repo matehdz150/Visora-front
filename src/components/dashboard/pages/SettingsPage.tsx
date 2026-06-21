@@ -1,13 +1,84 @@
 import React, { useState } from "react";
+import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { AnimatePresence } from "framer-motion";
 import { API_BASE } from "../constants";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { card } from "../styles";
 import type { UsageSummary } from "../types";
 import type { DashboardNotify } from "../Toast";
-import type { CurrentUser, DashboardAccount, PlanId } from "@/lib/visora-api";
+import {
+  createBillingSubscriptionIntent,
+  getPublicAppOrigin,
+  type CurrentUser,
+  type DashboardAccount,
+  type PlanId,
+} from "@/lib/visora-api";
 import { SettingsEmptyState } from "@/components/empty-states";
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "");
+const paidPlans = new Set<PlanId>(["starter", "growth", "scale"]);
+
+function isPaidPlan(planId: PlanId): planId is Exclude<PlanId, "free"> {
+  return paidPlans.has(planId);
+}
+
+function InlinePaymentForm({
+  planId,
+  onCancel,
+  onPaymentComplete,
+  notify,
+}: {
+  planId: Exclude<PlanId, "free">;
+  onCancel: () => void;
+  onPaymentComplete: () => Promise<void>;
+  notify: DashboardNotify;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    const result = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${getPublicAppOrigin()}/dashboard/?billing=success&plan=${planId}`,
+      },
+      redirect: "if_required",
+    });
+
+    if (result.error) {
+      setError(result.error.message ?? "Payment could not be completed");
+      setSubmitting(false);
+      return;
+    }
+
+    await onPaymentComplete();
+    notify({ kind: "success", title: "Subscription activated", message: `Your ${planId} plan is being synced.` });
+    setSubmitting(false);
+  };
+
+  return (
+    <form onSubmit={submit} style={{ display: "grid", gap: "14px" }}>
+      <div style={{ padding: "14px", borderRadius: "12px", background: "#101010", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <PaymentElement />
+      </div>
+      {error && <div style={{ padding: "11px 13px", borderRadius: "10px", border: "1px solid rgba(255,155,155,0.28)", background: "rgba(255,90,90,0.08)", color: "#ffb7b7", fontSize: "12.5px", lineHeight: 1.45 }}>{error}</div>}
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button type="button" onClick={onCancel} disabled={submitting} style={{ flex: 1, padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: submitting ? "not-allowed" : "pointer" }}>Cancel</button>
+        <button type="submit" disabled={!stripe || !elements || submitting} style={{ flex: 1, padding: "11px 14px", borderRadius: "10px", border: "none", background: submitting ? "rgba(255,255,255,0.55)" : "#fff", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer" }}>{submitting ? "Processing..." : "Subscribe"}</button>
+      </div>
+    </form>
+  );
+}
 const plans: Array<{
   planId: PlanId;
   name: string;
@@ -28,8 +99,10 @@ export function SettingsPage({
   usage,
   workspace,
   onWorkspaceChange,
+  idToken,
   onChangePlan,
   onManageBilling,
+  onBillingActivated,
   onDeleteAccount,
   notify,
 }: {
@@ -39,8 +112,10 @@ export function SettingsPage({
   usage: UsageSummary | null;
   workspace: string;
   onWorkspaceChange: (v: string) => void;
+  idToken: string | null;
   onChangePlan: (planId: PlanId) => Promise<void>;
   onManageBilling: () => Promise<void>;
+  onBillingActivated: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
   notify: DashboardNotify;
 }) {
@@ -49,9 +124,13 @@ export function SettingsPage({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<Exclude<PlanId, "free"> | null>(null);
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const usageUsed = usage?.requestsUsed ?? 0;
   const usageLimit = usage?.monthlyLimit ?? accountPlan?.monthlyLimit ?? 0;
   const usagePercent = usageLimit > 0 ? Math.min(100, (usageUsed / usageLimit) * 100) : 0;
+  const hasActiveSubscription = Boolean(accountPlan?.stripeSubscriptionId && ["active", "trialing", "past_due"].includes(accountPlan.stripeSubscriptionStatus ?? ""));
   const pendingPlan = accountPlan?.stripePendingPlanId;
   const pendingPlanDate = accountPlan?.stripePlanChangeEffectiveAt
     ? new Date(accountPlan.stripePlanChangeEffectiveAt).toLocaleDateString()
@@ -59,6 +138,33 @@ export function SettingsPage({
 
   const selectPlan = async (planId: PlanId) => {
     setPlanError(null);
+
+    if (isPaidPlan(planId) && !hasActiveSubscription) {
+      if (!idToken) {
+        const message = "Missing dashboard session";
+        setPlanError(message);
+        notify({ kind: "error", title: "Could not start payment", message });
+        return;
+      }
+
+      setCheckoutPlan(planId);
+      setCheckoutClientSecret(null);
+      setCheckoutLoading(true);
+
+      try {
+        const intent = await createBillingSubscriptionIntent(idToken, planId);
+        setCheckoutClientSecret(intent.clientSecret);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Could not start payment";
+        setPlanError(message);
+        setCheckoutPlan(null);
+        notify({ kind: "error", title: "Could not start payment", message });
+      } finally {
+        setCheckoutLoading(false);
+      }
+      return;
+    }
+
     setSavingPlan(planId);
 
     try {
@@ -66,10 +172,21 @@ export function SettingsPage({
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not update plan";
       setPlanError(message);
-      notify({ kind: "error", title: planId === "free" ? "Could not update plan" : "Could not start checkout", message });
+      notify({ kind: "error", title: "Could not update plan", message });
     } finally {
       setSavingPlan(null);
     }
+  };
+
+  const closeInlineCheckout = () => {
+    setCheckoutPlan(null);
+    setCheckoutClientSecret(null);
+    setCheckoutLoading(false);
+  };
+
+  const completeInlineCheckout = async () => {
+    closeInlineCheckout();
+    await onBillingActivated();
   };
 
   const openBillingPortal = async () => {
@@ -183,6 +300,24 @@ export function SettingsPage({
           })}
         </div>
         {planError && <div style={{ marginTop: "14px", color: "#ffb7b7", fontSize: "13px" }}>{planError}</div>}
+
+        {checkoutPlan && (
+          <div style={{ marginTop: "16px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.035)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "14px", alignItems: "start", marginBottom: "14px" }}>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Activate {plans.find((plan) => plan.planId === checkoutPlan)?.name}</div>
+                <div style={{ marginTop: "4px", fontSize: "12px", color: "rgba(255,255,255,0.46)", lineHeight: 1.45 }}>Enter payment details here. You will stay in Settings.</div>
+              </div>
+              <div style={{ fontSize: "12px", color: "#c5d0ff", fontWeight: 700 }}>{plans.find((plan) => plan.planId === checkoutPlan)?.price}/mo</div>
+            </div>
+            {checkoutLoading && <div style={{ padding: "14px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.58)", fontSize: "12.5px" }}>Preparing secure payment...</div>}
+            {checkoutClientSecret && (
+              <Elements stripe={stripePromise} options={{ clientSecret: checkoutClientSecret, appearance: { theme: "night", variables: { colorPrimary: "#aebfff", colorBackground: "#101010", colorText: "#ffffff", colorDanger: "#ff9b9b", borderRadius: "10px" } } }}>
+                <InlinePaymentForm planId={checkoutPlan} onCancel={closeInlineCheckout} onPaymentComplete={completeInlineCheckout} notify={notify} />
+              </Elements>
+            )}
+          </div>
+        )}
 
         <div style={{ marginTop: "20px", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "18px", alignItems: "baseline" }}>

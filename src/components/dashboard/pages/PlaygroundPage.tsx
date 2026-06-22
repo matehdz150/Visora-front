@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { FilterSelect } from "../shared";
-import { brandPill, cap, card, fmtRisk, pill, riskColor, sectionLabel } from "../styles";
+import { cap, card, fmtRisk, sectionLabel } from "../styles";
 import type { Project } from "../types";
 import type { DashboardNotify } from "../Toast";
 import { moderateDashboardImageUpload, redactDashboardImageUpload, type ModerationResponse, type RedactionResponse } from "@/lib/visora-api";
@@ -31,6 +31,39 @@ export function PlaygroundPage({
   const selectedProject = projects.find((item) => item.id === project) ?? null;
   const workflow = selectedProject?.projectType ?? "moderation";
   const originalPreviewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  const neutralPill = (label: string): React.CSSProperties => ({
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "28px",
+    padding: "5px 12px",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    background: "#050505",
+    color: label === "reject" || label === "unsafe" || label === "fail" ? "rgba(255,255,255,0.86)" : "rgba(255,255,255,0.74)",
+    fontFamily: "inherit",
+    fontSize: "13px",
+    fontWeight: 600,
+  });
+  const softDecisionColors = (value: string) => {
+    if (value === "reject" || value === "unsafe" || value === "fail") return { color: "#d89b9b", border: "rgba(216,155,155,0.2)", background: "rgba(216,155,155,0.055)" };
+    if (value === "review" || value === "caution") return { color: "#cdb98a", border: "rgba(205,185,138,0.2)", background: "rgba(205,185,138,0.055)" };
+    return { color: "#9fceb3", border: "rgba(159,206,179,0.2)", background: "rgba(159,206,179,0.055)" };
+  };
+  const softPill = (value: string): React.CSSProperties => {
+    const colors = softDecisionColors(value);
+    return {
+      ...neutralPill(value),
+      color: colors.color,
+      border: `1px solid ${colors.border}`,
+      background: colors.background,
+    };
+  };
+  const softRiskColor = (value: number) => {
+    if (value >= 85) return "#d89b9b";
+    if (value >= 60) return "#cdb98a";
+    return "#9fceb3";
+  };
 
   useEffect(() => {
     if (initialProjectId && initialProjectId !== project) {
@@ -133,7 +166,7 @@ export function PlaygroundPage({
               </div>
             )}
 
-            <button disabled={!file || !project || status === "loading"} onClick={runProcessing} style={{ width: "100%", marginTop: "16px", padding: "12px", borderRadius: "10px", border: "none", background: file && project ? (workflow === "redaction" ? "#7ee0a8" : "#aebfff") : "rgba(174,191,255,0.4)", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: file && project && status !== "loading" ? "pointer" : "not-allowed" }}>
+            <button disabled={!file || !project || status === "loading"} onClick={runProcessing} style={{ width: "100%", marginTop: "16px", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: file && project ? "#fff" : "rgba(255,255,255,0.32)", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: file && project && status !== "loading" ? "pointer" : "not-allowed" }}>
               {status === "loading" ? (workflow === "redaction" ? "Uploading and redacting..." : "Uploading and moderating...") : workflow === "redaction" ? "Upload and redact" : "Upload and moderate"}
             </button>
 
@@ -149,7 +182,7 @@ export function PlaygroundPage({
         {/* RIGHT: result */}
         <div style={{ position: "sticky", top: "30px", ...card, borderRadius: "16px", overflow: "hidden" }}>
           <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: status === "done" ? (workflow === "redaction" ? "#7ee0a8" : "#aebfff") : "rgba(255,255,255,0.25)", boxShadow: status === "done" ? `0 0 8px 1px ${workflow === "redaction" ? "rgba(126,224,168,0.8)" : "rgba(126,155,255,0.8)"}` : "none" }} />
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: status === "done" ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.25)" }} />
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{workflow === "redaction" ? "REDACTION RESULT" : "MODERATION RESULT"}</span>
           </div>
           <div style={{ padding: "22px" }}>
@@ -165,13 +198,13 @@ export function PlaygroundPage({
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "10px", marginBottom: "18px" }}>
                   {[
-                    { label: "Faces", value: redactionResult.facesBlurred, color: "#7ee0a8" },
-                    { label: "Text", value: redactionResult.textBlurred, color: "#aebfff" },
-                    { label: "Plates", value: redactionResult.licensePlatesBlurred, color: "#e8c98a" },
+                    { label: "Faces", value: redactionResult.facesBlurred },
+                    { label: "Text", value: redactionResult.textBlurred },
+                    { label: "Plates", value: redactionResult.licensePlatesBlurred },
                   ].map((item) => (
                     <div key={item.label} style={{ padding: "14px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
                       <div style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.42)", marginBottom: "6px" }}>{item.label}</div>
-                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "22px", color: item.color, fontWeight: 700 }}>{item.value}</div>
+                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "22px", color: "rgba(255,255,255,0.86)", fontWeight: 700 }}>{item.value}</div>
                     </div>
                   ))}
                 </div>
@@ -183,9 +216,9 @@ export function PlaygroundPage({
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", padding: "11px 12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000", fontSize: "12.5px" }}>
                     <span style={{ color: "rgba(255,255,255,0.45)" }}>Regions blurred</span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#7ee0a8" }}>{redactionResult.regions.length}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.82)" }}>{redactionResult.regions.length}</span>
                   </div>
-                  <a href={redactionResult.redactedImageUrl} target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", marginTop: "6px", padding: "11px", borderRadius: "10px", border: "1px solid rgba(126,224,168,0.28)", background: "rgba(126,224,168,0.08)", color: "#7ee0a8", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>Open processed image</a>
+                  <a href={redactionResult.redactedImageUrl} target="_blank" rel="noreferrer" style={{ display: "block", textAlign: "center", marginTop: "6px", padding: "11px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "#050505", color: "rgba(255,255,255,0.78)", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>Open processed image</a>
                 </div>
               </>
             ) : moderationResult ? (
@@ -193,23 +226,23 @@ export function PlaygroundPage({
                 <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
                   <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
                     <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" }}>Action</div>
-                    <span style={{ ...pill(moderationResult.action), fontSize: "14px", padding: "5px 14px" }}>{cap(moderationResult.action)}</span>
+                    <span style={softPill(moderationResult.action)}>{cap(moderationResult.action)}</span>
                   </div>
                   <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
                     <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "6px" }}>Risk score</div>
-                    <div style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.03em", color: riskColor(moderationResult.riskScore ?? 0) }}>{fmtRisk(moderationResult.riskScore ?? 0)}</div>
+                    <div style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.03em", color: softRiskColor(moderationResult.riskScore ?? 0) }}>{fmtRisk(moderationResult.riskScore ?? 0)}</div>
                   </div>
                 </div>
 
                 <div style={{ display: "flex", gap: "12px", marginBottom: "22px" }}>
                   <div style={{ flex: 1, padding: "14px 16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>Brand safety</span>
-                    <span style={brandPill(moderationResult.brandSafety?.level ?? "safe")}>{cap(moderationResult.brandSafety?.level ?? "safe")}</span>
+                    <span style={softPill(moderationResult.brandSafety?.level ?? "safe")}>{cap(moderationResult.brandSafety?.level ?? "safe")}</span>
                   </div>
                   <div style={{ flex: 1, padding: "14px 16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>Compliance</span>
                     {moderationResult.compliance ? (
-                      <span style={moderationResult.compliance.passed ? brandPill("safe") : brandPill("unsafe")}>{moderationResult.compliance.passed ? "Pass" : "Fail"}</span>
+                      <span style={softPill(moderationResult.compliance.passed ? "pass" : "fail")}>{moderationResult.compliance.passed ? "Pass" : "Fail"}</span>
                     ) : (
                       <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>—</span>
                     )}
@@ -217,7 +250,7 @@ export function PlaygroundPage({
                 </div>
 
                 {moderationResult.explanation && (
-                  <div style={{ marginBottom: "22px", padding: "16px", borderRadius: "13px", border: "1px solid rgba(174,191,255,0.18)", background: "rgba(174,191,255,0.055)" }}>
+                  <div style={{ marginBottom: "22px", padding: "16px", borderRadius: "13px", border: "1px solid rgba(255,255,255,0.08)", background: "#000" }}>
                     <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.42)", marginBottom: "9px" }}>POLICY DECISION</div>
                     <div style={{ fontSize: "14px", lineHeight: 1.55, color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{moderationResult.explanation.message}</div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "14px" }}>
@@ -248,7 +281,7 @@ export function PlaygroundPage({
                   ) : moderationResult.labels.map((label) => (
                     <div key={`${label.name}-${label.confidence}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
                       <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.78)" }}>{label.name}</span>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: riskColor(label.confidence) }}>{fmtRisk(label.confidence)}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: softRiskColor(label.confidence) }}>{fmtRisk(label.confidence)}</span>
                     </div>
                   ))}
                 </div>

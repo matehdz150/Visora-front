@@ -11,7 +11,7 @@ function Skeleton({ style }: { style?: React.CSSProperties }) {
 
 function SidebarSkeleton() {
   return (
-    <aside className="dash-sidebar" style={{ position: "fixed", top: 0, left: 0, bottom: 0, width: "250px", background: "#0b0b0b", borderRight: "1px solid rgba(255,255,255,0.08)", padding: "22px 18px", zIndex: 20 }}>
+    <aside className="dash-sidebar" style={{ position: "fixed", top: 0, left: 0, bottom: 0, width: "250px", background: "#000", borderRight: "1px solid rgba(255,255,255,0.08)", padding: "22px 18px", zIndex: 20 }}>
       <div style={{ display: "flex", alignItems: "center", gap: "11px", marginBottom: "28px" }}>
         <Skeleton style={{ width: "26px", height: "26px", borderRadius: "7px" }} />
         <Skeleton style={{ width: "74px", height: "18px" }} />

@@ -297,11 +297,11 @@ input::placeholder {
 
 /* ---- Dashboard ---------------------------------------------------------- */
 .v-navbtn:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: #050505 !important;
   color: #fff !important;
 }
 .v-row:hover {
-  background: rgba(255, 255, 255, 0.025) !important;
+  background: #000 !important;
 }
 .v-projcard:hover {
   border-color: rgba(255, 255, 255, 0.18) !important;
@@ -311,7 +311,7 @@ input::placeholder {
   transform: translateY(-1px) !important;
 }
 select option {
-  background: #0f0f0f;
+  background: #050505;
   color: #fff;
 }
 
@@ -492,6 +492,32 @@ select option {
   border-color: rgba(255, 255, 255, 0.18) !important;
   transform: translateY(-3px) !important;
 }
+.nav-dropdown-link {
+  --nav-dropdown-title: rgba(255, 255, 255, 0.58);
+  --nav-dropdown-hint: rgba(255, 255, 255, 0.34);
+  display: block !important;
+  margin: -5px -8px !important;
+  padding: 5px 8px !important;
+  border-radius: 10px !important;
+  transition: background .18s ease, color .18s ease !important;
+}
+.nav-dropdown-link:hover {
+  --nav-dropdown-title: #fff;
+  --nav-dropdown-hint: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+.nav-dropdown-title {
+  color: var(--nav-dropdown-title) !important;
+  transition: color .18s ease !important;
+}
+.nav-dropdown-hint {
+  color: var(--nav-dropdown-hint) !important;
+  transition: color .18s ease !important;
+}
+.nav-dropdown-card:hover {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  background: radial-gradient(circle at 70% 10%, rgba(126,155,255,0.23), rgba(255,255,255,0.045) 42%, rgba(255,255,255,0.025)) !important;
+}
 
 /* =========================================================================
    RESPONSIVE LAYER  (mobile + tablet only — desktop design is untouched)
@@ -600,6 +626,7 @@ select option {
     box-shadow: 24px 0 80px rgba(0, 0, 0, 0.6) !important;
   }
   .dash-main { margin-left: 0 !important; padding-top: 54px !important; }
+  .dash-topbar { display: none !important; }
   .dash-mobilebar { display: flex !important; }
   .dash-overlay { display: block; }
 }

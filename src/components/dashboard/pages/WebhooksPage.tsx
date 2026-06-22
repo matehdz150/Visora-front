@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Project, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "../types";
 import { card, sectionLabel } from "../styles";
 
@@ -23,17 +24,6 @@ const STATUS_STYLE: Record<WebhookEventStatus, { color: string; bg: string; bd: 
   pending: { color: "#aebfff", bg: "rgba(126,155,255,0.1)", bd: "rgba(126,155,255,0.22)" },
   failed: { color: "#ff9b9b", bg: "rgba(255,90,90,0.1)", bd: "rgba(255,90,90,0.24)" },
   skipped: { color: "rgba(255,255,255,0.55)", bg: "rgba(255,255,255,0.04)", bd: "rgba(255,255,255,0.1)" },
-};
-
-const selectStyle: React.CSSProperties = {
-  borderRadius: "10px",
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.035)",
-  color: "rgba(255,255,255,0.82)",
-  fontFamily: "inherit",
-  fontSize: "13px",
-  padding: "9px 10px",
-  outline: "none",
 };
 
 function statusPill(status: WebhookEventStatus) {
@@ -135,24 +125,33 @@ export function WebhooksPage({
       </div>
 
       <div className="r-cols-2" style={{ ...card, padding: "16px", marginTop: "18px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
-        <select value={projectFilter} onChange={(event) => { setProjectFilter(event.target.value); void refresh({ projectId: event.target.value }); }} style={selectStyle}>
-          <option value="all">All projects</option>
-          {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-        </select>
-        <select value={statusFilter} onChange={(event) => { const status = event.target.value as WebhookEventStatus | "all"; setStatusFilter(status); void refresh({ status }); }} style={selectStyle}>
-          <option value="all">All statuses</option>
-          <option value="delivered">Delivered</option>
-          <option value="failed">Failed</option>
-          <option value="pending">Pending</option>
-          <option value="skipped">Skipped</option>
-        </select>
-        <select value={eventTypeFilter} onChange={(event) => { const eventType = event.target.value as WebhookEventType | "all"; setEventTypeFilter(eventType); void refresh({ eventType }); }} style={selectStyle}>
-          <option value="all">All event types</option>
-          <option value="moderation.completed">Moderation completed</option>
-          <option value="moderation.review_required">Review required</option>
-          <option value="review.approved">Review approved</option>
-          <option value="review.rejected">Review rejected</option>
-        </select>
+        <Select value={projectFilter} onValueChange={(value) => { setProjectFilter(value); void refresh({ projectId: value }); }}>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All projects</SelectItem>
+            {projects.map((project) => <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={(value) => { const status = value as WebhookEventStatus | "all"; setStatusFilter(status); void refresh({ status }); }}>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="delivered">Delivered</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="skipped">Skipped</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={eventTypeFilter} onValueChange={(value) => { const eventType = value as WebhookEventType | "all"; setEventTypeFilter(eventType); void refresh({ eventType }); }}>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All event types</SelectItem>
+            <SelectItem value="moderation.completed">Moderation completed</SelectItem>
+            <SelectItem value="moderation.review_required">Review required</SelectItem>
+            <SelectItem value="review.approved">Review approved</SelectItem>
+            <SelectItem value="review.rejected">Review rejected</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.45fr 0.95fr", gap: "20px", marginTop: "18px", alignItems: "start" }}>

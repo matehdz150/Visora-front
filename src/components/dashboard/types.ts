@@ -20,6 +20,20 @@ export type BrandLevel = "safe" | "caution" | "unsafe";
 export type Mode = "strict" | "balanced" | "relaxed";
 export type ReviewMode = "enabled" | "disabled";
 export type ReviewFallbackAction = "allow" | "reject";
+export type ProjectType = "moderation" | "redaction";
+export type RedactionStyle = "blur" | "black_box";
+export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document";
+
+export interface RedactionSettings {
+  faceBlur: boolean;
+  textBlur: boolean;
+  licensePlateBlur: boolean;
+  redactionStyle: RedactionStyle;
+  textCategories: RedactionTextCategory[];
+  customWords: string[];
+  ignoredWords: string[];
+  minConfidence: number;
+}
 
 export type CompliancePack =
   | "marketplace"
@@ -32,6 +46,7 @@ export type CompliancePack =
 export type Page =
   | "overview"
   | "moderations"
+  | "redactions"
   | "reviews"
   | "webhooks"
   | "admin"
@@ -124,6 +139,8 @@ export interface Policy {
 export interface Project {
   id: string;
   name: string;
+  projectType: ProjectType;
+  redactionSettings: RedactionSettings;
   planId: string;
   mode: Mode;
   monthMods: string;

@@ -45,13 +45,13 @@ export function ModDetail({ mod, onClose }: { mod: ModLog; onClose: () => void }
   return (
     <>
       <motion.div variants={drawerBackdropVariants} initial="initial" animate="animate" exit="exit" onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)", zIndex: 40 }} />
-      <motion.div variants={drawerVariants} initial="initial" animate="animate" exit="exit" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "560px", maxWidth: "92vw", background: "#0b0b0b", borderLeft: "1px solid rgba(255,255,255,0.1)", zIndex: 41, overflowY: "auto", boxShadow: "-30px 0 80px rgba(0,0,0,0.6)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, background: "#0b0b0b", zIndex: 2 }}>
+      <motion.div variants={drawerVariants} initial="initial" animate="animate" exit="exit" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "560px", maxWidth: "92vw", background: "#000", borderLeft: "1px solid rgba(255,255,255,0.1)", zIndex: 41, overflowY: "auto", boxShadow: "-30px 0 80px rgba(0,0,0,0.6)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 26px", borderBottom: "1px solid rgba(255,255,255,0.07)", position: "sticky", top: 0, background: "#000", zIndex: 2 }}>
           <div>
             <div style={{ fontSize: "17px", fontWeight: 600, letterSpacing: "-0.02em" }}>Moderation detail</div>
             <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "3px" }}>{mod.moderationId}</div>
           </div>
-          <button onClick={onClose} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "15px" }}>✕</button>
+          <button onClick={onClose} style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "15px" }}>✕</button>
         </div>
 
         <div style={{ padding: "24px 26px" }}>

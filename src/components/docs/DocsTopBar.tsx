@@ -12,6 +12,11 @@ interface DocsTopBarProps {
 }
 
 function scrollToHref(href: string) {
+  if (!href.startsWith("#")) {
+    window.location.href = href;
+    return;
+  }
+
   const element = document.getElementById(href.replace("#", ""));
   if (!element) return;
 

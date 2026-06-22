@@ -68,12 +68,12 @@ function InlinePaymentForm({
 
   return (
     <form onSubmit={submit} style={{ display: "grid", gap: "14px" }}>
-      <div style={{ padding: "14px", borderRadius: "12px", background: "#101010", border: "1px solid rgba(255,255,255,0.1)" }}>
+      <div style={{ padding: "14px", borderRadius: "12px", background: "#050505", border: "1px solid rgba(255,255,255,0.1)" }}>
         <PaymentElement />
       </div>
       {error && <div style={{ padding: "11px 13px", borderRadius: "10px", border: "1px solid rgba(255,155,155,0.28)", background: "rgba(255,90,90,0.08)", color: "#ffb7b7", fontSize: "12.5px", lineHeight: 1.45 }}>{error}</div>}
       <div style={{ display: "flex", gap: "10px" }}>
-        <button type="button" onClick={onCancel} disabled={submitting} style={{ flex: 1, padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: submitting ? "not-allowed" : "pointer" }}>Cancel</button>
+        <button type="button" onClick={onCancel} disabled={submitting} style={{ flex: 1, padding: "11px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "#000", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: submitting ? "not-allowed" : "pointer" }}>Cancel</button>
         <button type="submit" disabled={!stripe || !elements || submitting} style={{ flex: 1, padding: "11px 14px", borderRadius: "10px", border: "none", background: submitting ? "rgba(255,255,255,0.55)" : "#fff", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 700, cursor: submitting ? "not-allowed" : "pointer" }}>{submitting ? "Processing..." : "Subscribe"}</button>
       </div>
     </form>
@@ -240,7 +240,7 @@ export function SettingsPage({
         <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300, marginBottom: "16px" }}>All requests target this stage.</div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", borderRadius: "10px", background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)" }}>
           <code style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: "12.5px", color: "rgba(255,255,255,0.7)", wordBreak: "break-all" }}>{API_BASE}</code>
-          <button onClick={copyApiBase} style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)", color: "#fff", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Copy</button>
+          <button onClick={copyApiBase} style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.14)", background: "#000", color: "#fff", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Copy</button>
         </div>
       </div>
 
@@ -252,7 +252,7 @@ export function SettingsPage({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {accountPlan?.stripeCustomerId && (
-              <button type="button" onClick={openBillingPortal} disabled={openingPortal} style={{ padding: "7px 11px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.84)", fontFamily: "inherit", fontSize: "12px", cursor: openingPortal ? "not-allowed" : "pointer" }}>{openingPortal ? "Opening..." : "Manage billing"}</button>
+              <button type="button" onClick={openBillingPortal} disabled={openingPortal} style={{ padding: "7px 11px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.14)", background: "#000", color: "rgba(255,255,255,0.84)", fontFamily: "inherit", fontSize: "12px", cursor: openingPortal ? "not-allowed" : "pointer" }}>{openingPortal ? "Opening..." : "Manage billing"}</button>
             )}
             {accountPlan && (
               <span style={{ fontSize: "12px", color: "#c5d0ff", background: "rgba(126,155,255,0.1)", border: "1px solid rgba(126,155,255,0.24)", padding: "5px 10px", borderRadius: "20px", textTransform: "capitalize" }}>{accountPlan.planId}</span>
@@ -303,7 +303,7 @@ export function SettingsPage({
         {planError && <div style={{ marginTop: "14px", color: "#ffb7b7", fontSize: "13px" }}>{planError}</div>}
 
         {checkoutPlan && (
-          <div style={{ marginTop: "16px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.035)" }}>
+          <div style={{ marginTop: "16px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.12)", background: "#050505" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "14px", alignItems: "start", marginBottom: "14px" }}>
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Activate {plans.find((plan) => plan.planId === checkoutPlan)?.name}</div>
@@ -311,9 +311,9 @@ export function SettingsPage({
               </div>
               <div style={{ fontSize: "12px", color: "#c5d0ff", fontWeight: 700 }}>{plans.find((plan) => plan.planId === checkoutPlan)?.price}/mo</div>
             </div>
-            {checkoutLoading && <div style={{ padding: "14px", borderRadius: "10px", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.58)", fontSize: "12.5px" }}>Preparing secure payment...</div>}
+            {checkoutLoading && <div style={{ padding: "14px", borderRadius: "10px", background: "#000", color: "rgba(255,255,255,0.58)", fontSize: "12.5px" }}>Preparing secure payment...</div>}
             {checkoutClientSecret && (
-              <Elements stripe={stripePromise} options={{ clientSecret: checkoutClientSecret, appearance: { theme: "night", variables: { colorPrimary: "#aebfff", colorBackground: "#101010", colorText: "#ffffff", colorDanger: "#ff9b9b", borderRadius: "10px" } } }}>
+              <Elements stripe={stripePromise} options={{ clientSecret: checkoutClientSecret, appearance: { theme: "night", variables: { colorPrimary: "#aebfff", colorBackground: "#050505", colorText: "#ffffff", colorDanger: "#ff9b9b", borderRadius: "10px" } } }}>
                 <InlinePaymentForm planId={checkoutPlan} onCancel={closeInlineCheckout} onPaymentComplete={completeInlineCheckout} notify={notify} />
               </Elements>
             )}
@@ -342,7 +342,7 @@ export function SettingsPage({
         <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300, marginBottom: "18px" }}>How members sign in to the dashboard.</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "11px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ width: "34px", height: "34px", borderRadius: "8px", background: "linear-gradient(140deg,#23252c,#101116)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#aebfff", fontSize: "14px" }}>C</span>
+            <span style={{ width: "34px", height: "34px", borderRadius: "8px", background: "#000", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#aebfff", fontSize: "14px" }}>C</span>
             <div>
               <div style={{ fontSize: "14px", color: "#fff" }}>Email &amp; password</div>
               <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>Amazon Cognito · {currentUser?.email}</div>

@@ -4,7 +4,7 @@ import { VisoraLogo } from "@/components/VisoraLogo";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Simple monthly pricing for Visora image moderation API plans.",
+  description: "Simple monthly pricing for Visora image moderation and redaction API plans.",
 };
 
 const MONO = "var(--font-jetbrains), monospace";
@@ -20,6 +20,7 @@ const plans = [
     projects: "1 project",
     apiKeys: "1 API key",
     retention: "7 days",
+    redaction: "Not included",
     cta: "Start free",
     featured: false,
   },
@@ -33,6 +34,7 @@ const plans = [
     projects: "3 projects",
     apiKeys: "3 API keys",
     retention: "30 days",
+    redaction: "Included",
     cta: "Choose Starter",
     featured: false,
   },
@@ -46,6 +48,7 @@ const plans = [
     projects: "5 projects",
     apiKeys: "5 API keys",
     retention: "60 days",
+    redaction: "Included",
     cta: "Choose Plus",
     featured: false,
   },
@@ -59,6 +62,7 @@ const plans = [
     projects: "10 projects",
     apiKeys: "10 API keys",
     retention: "90 days",
+    redaction: "Included",
     cta: "Choose Growth",
     featured: true,
   },
@@ -72,6 +76,7 @@ const plans = [
     projects: "50 projects",
     apiKeys: "50 API keys",
     retention: "180 days",
+    redaction: "Included",
     cta: "Choose Scale",
     featured: false,
   },
@@ -79,6 +84,8 @@ const plans = [
 
 const featureRows = [
   ["Image moderation API", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Redaction API", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Face, text, and license plate blur", "No", "Yes", "Yes", "Yes", "Yes"],
   ["Brand safety result", "Yes", "Yes", "Yes", "Yes", "Yes"],
   ["Project scoped uploads", "Yes", "Yes", "Yes", "Yes", "Yes"],
   ["Custom policies", "Basic", "Yes", "Yes", "Yes", "Yes"],
@@ -113,8 +120,8 @@ export default function PricingPage() {
         <div style={{ position: "absolute", top: "-280px", left: "50%", transform: "translateX(-50%)", width: "980px", height: "600px", background: "radial-gradient(ellipse at center, rgba(126,155,255,0.12), rgba(126,155,255,0) 64%)", pointerEvents: "none" }} />
         <div style={{ position: "relative", maxWidth: "760px" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 10px", borderRadius: "999px", background: "rgba(126,155,255,0.08)", border: "1px solid rgba(126,155,255,0.18)", color: "#aebfff", fontFamily: MONO, fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Pricing</div>
-          <h1 style={{ margin: "22px 0 0", fontSize: "clamp(34px, 8vw, 58px)", lineHeight: 1.02, fontWeight: 600, letterSpacing: "-0.055em" }}>Simple Visora Cloud plans for image moderation.</h1>
-          <p style={{ margin: "20px 0 0", maxWidth: "620px", color: "rgba(255,255,255,0.55)", fontSize: "17px", lineHeight: 1.7, fontWeight: 300 }}>Start free, then upgrade when you need more projects, longer log retention, compliance packs, and higher monthly usage.</p>
+          <h1 style={{ margin: "22px 0 0", fontSize: "clamp(34px, 8vw, 58px)", lineHeight: 1.02, fontWeight: 600, letterSpacing: "-0.055em" }}>Simple Visora Cloud plans for moderation and redaction.</h1>
+          <p style={{ margin: "20px 0 0", maxWidth: "650px", color: "rgba(255,255,255,0.55)", fontSize: "17px", lineHeight: 1.7, fontWeight: 300 }}>Start free with image moderation, then upgrade when you need redaction projects, longer retention, compliance packs, and higher monthly usage.</p>
         </div>
       </section>
 
@@ -133,7 +140,8 @@ export default function PricingPage() {
               <div style={{ height: "1px", background: "rgba(255,255,255,0.07)", margin: "24px 0" }} />
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {[
-                  ["Included", `${plan.included} moderations / month`],
+                  ["Included", `${plan.included} API requests / month`],
+                  ["Redaction API", plan.redaction],
                   ["Overage", plan.overage],
                   ["Projects", plan.projects],
                   ["API keys", plan.apiKeys],
@@ -154,7 +162,7 @@ export default function PricingPage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px", marginBottom: "18px" }}>
           <div>
             <h2 style={{ margin: 0, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.035em" }}>Plan comparison</h2>
-            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Paid plans are billed monthly through Stripe. The webhook updates account limits after checkout is completed.</p>
+            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Paid plans include moderation and redaction projects. Free is limited to image moderation while you test the API.</p>
           </div>
         </div>
 
@@ -179,7 +187,8 @@ export default function PricingPage() {
           <div style={{ display: "grid", gap: "12px" }}>
             {[
               ["How does billing work?", "Paid plans use monthly Stripe subscriptions. Choose a plan, complete payment in Visora checkout, and your account updates after Stripe confirms the subscription."],
-              ["What counts as a moderation?", "A successful protected moderation request counts toward monthly usage. Validation or authentication failures are not counted."],
+              ["What counts toward usage?", "A successful protected moderation or redaction request counts toward monthly usage. Validation or authentication failures are not counted."],
+              ["Is Redaction API included?", "Redaction API is available on paid plans. It supports face blur, selected text blur, custom words, ID-document sensitive fields, and license plate redaction."],
               ["What is the difference between Visora and Visora Cloud?", "Visora is the image moderation product and API. Visora Cloud is the hosted dashboard where accounts manage projects, plans, keys, policies, and logs."],
               ["Which SDK should I use?", "Use @visoracloud/client from Node.js or TypeScript server code. API keys should not be exposed in browser code."],
             ].map(([question, answer]) => (

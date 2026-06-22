@@ -24,6 +24,14 @@ export function NavIcon({ name, on }: { name: string; on: boolean }) {
         <span style={{ height: "2.5px", borderRadius: "2px", background: col, width: "10px" }} />
       </span>,
     );
+  if (name === "redactions")
+    return wrap(
+      <span style={{ position: "relative", width: "16px", height: "14px" }}>
+        <span style={{ position: "absolute", left: 0, top: "2px", width: "14px", height: "10px", borderRadius: "3px", border: "1.5px solid " + col }} />
+        <span style={{ position: "absolute", left: "3px", top: "5px", width: "10px", height: "4px", borderRadius: "1px", background: acc }} />
+        <span style={{ position: "absolute", left: "7px", top: 0, width: "1.5px", height: "14px", borderRadius: "2px", background: col, transform: "rotate(28deg)" }} />
+      </span>,
+    );
   if (name === "webhooks")
     return wrap(
       <span style={{ position: "relative", width: "15px", height: "14px" }}>

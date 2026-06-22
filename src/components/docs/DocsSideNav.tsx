@@ -2,15 +2,15 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { MONO, text } from "./theme";
-import { NAV_GROUPS } from "./data";
+import { NAV_GROUPS, type NavGroup } from "./data";
 
 /** Left sidebar: grouped documentation navigation with smooth in-page scrolling. */
-export function DocsSideNav() {
-  const items = useMemo(() => NAV_GROUPS.flatMap((group) => group.items), []);
+export function DocsSideNav({ groups = NAV_GROUPS }: { groups?: NavGroup[] }) {
+  const items = useMemo(() => groups.flatMap((group) => group.items), [groups]);
   const [activeHref, setActiveHref] = useState(items[0]?.href ?? "#overview");
 
   useEffect(() => {
-    const ids = items.map((item) => item.href.replace("#", ""));
+    const ids = items.filter((item) => item.href.startsWith("#")).map((item) => item.href.replace("#", ""));
     const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
@@ -42,6 +42,8 @@ export function DocsSideNav() {
   }, [items]);
 
   function handleClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (!href.startsWith("#")) return;
+
     event.preventDefault();
 
     const element = document.getElementById(href.replace("#", ""));
@@ -54,7 +56,7 @@ export function DocsSideNav() {
 
   return (
     <nav className="docs-sidenav" style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", overflowY: "auto", scrollBehavior: "smooth", padding: "30px 18px 60px", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-      {NAV_GROUPS.map((group) => (
+      {groups.map((group) => (
         <div key={group.title} style={{ marginBottom: "26px" }}>
           <div style={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "0.12em", color: text.ghost, textTransform: "uppercase", padding: "0 12px", marginBottom: "10px" }}>{group.title}</div>
           {group.items.map((item) => {

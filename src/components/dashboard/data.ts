@@ -2,15 +2,26 @@
  * Visora dashboard — mock data. Every record matches a ModerateAPI response
  * shape, so swapping these arrays for live fetches is a drop-in change.
  */
-import type { ApiKey, Label, ModLog, Project } from "./types";
+import type { ApiKey, Label, ModLog, Project, RedactionSettings } from "./types";
+
+const REDACTION_DEFAULTS: RedactionSettings = {
+  faceBlur: true,
+  textBlur: false,
+  licensePlateBlur: false,
+  redactionStyle: "blur",
+  textCategories: [],
+  customWords: [],
+  ignoredWords: [],
+  minConfidence: 80,
+};
 
 export const PROJECTS: Project[] = [
-  { id: "proj_marketplace", name: "Marketplace", planId: "pro", mode: "balanced", monthMods: "48,210", created: "Jan 12, 2025", updated: "Jun 16, 02:32 PM", compliancePack: "marketplace" },
-  { id: "proj_community", name: "Community", planId: "pro", mode: "strict", monthMods: "92,540", created: "Feb 03, 2025", updated: "Jun 16, 01:58 PM", compliancePack: "social" },
-  { id: "proj_mobile", name: "Mobile App", planId: "free", mode: "balanced", monthMods: "812", created: "Mar 21, 2025", updated: "Jun 16, 09:02 AM" },
-  { id: "proj_avatars", name: "Avatars", planId: "free", mode: "relaxed", monthMods: "230", created: "Apr 09, 2025", updated: "Jun 15, 10:19 PM", compliancePack: "dating" },
-  { id: "proj_forum", name: "Forum", planId: "pro", mode: "strict", monthMods: "27,995", created: "May 17, 2025", updated: "Jun 15, 09:44 PM", compliancePack: "kids" },
-  { id: "proj_onboarding", name: "Onboarding", planId: "free", mode: "balanced", monthMods: "514", created: "Jun 01, 2025", updated: "Jun 10, 10:31 AM" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_marketplace", name: "Marketplace", planId: "pro", mode: "balanced", monthMods: "48,210", created: "Jan 12, 2025", updated: "Jun 16, 02:32 PM", compliancePack: "marketplace" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_community", name: "Community", planId: "pro", mode: "strict", monthMods: "92,540", created: "Feb 03, 2025", updated: "Jun 16, 01:58 PM", compliancePack: "social" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_mobile", name: "Mobile App", planId: "free", mode: "balanced", monthMods: "812", created: "Mar 21, 2025", updated: "Jun 16, 09:02 AM" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_avatars", name: "Avatars", planId: "free", mode: "relaxed", monthMods: "230", created: "Apr 09, 2025", updated: "Jun 15, 10:19 PM", compliancePack: "dating" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_forum", name: "Forum", planId: "pro", mode: "strict", monthMods: "27,995", created: "May 17, 2025", updated: "Jun 15, 09:44 PM", compliancePack: "kids" },
+  { projectType: "moderation", redactionSettings: REDACTION_DEFAULTS, id: "proj_onboarding", name: "Onboarding", planId: "free", mode: "balanced", monthMods: "514", created: "Jun 01, 2025", updated: "Jun 10, 10:31 AM" },
 ];
 
 export const PROJECT_NAME: Record<string, string> = Object.fromEntries(

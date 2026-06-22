@@ -1,9 +1,10 @@
 import React from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORY_LABEL } from "./constants";
 import { decColors } from "./styles";
 import type { Policy, ScoredLabel } from "./types";
 
-/** Styled native <select> used by the moderation filters and playground. */
+/** Shadcn/Radix select used by dashboard filters and playground controls. */
 export function FilterSelect({
   value,
   onChange,
@@ -18,15 +19,16 @@ export function FilterSelect({
   block?: boolean;
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{ width: block ? "100%" : undefined, background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "10px 30px 10px 14px", color: "rgba(255,255,255,0.8)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer", backgroundImage: "linear-gradient(45deg,transparent 50%,rgba(255,255,255,0.4) 50%),linear-gradient(135deg,rgba(255,255,255,0.4) 50%,transparent 50%)", backgroundPosition: "calc(100% - 16px) center, calc(100% - 11px) center", backgroundSize: "5px 5px, 5px 5px", backgroundRepeat: "no-repeat" }}
-    >
-      {options.map((o) => (
-        <option key={o} value={o} style={{ background: "#0f0f0f" }}>{render(o)}</option>
-      ))}
-    </select>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={block ? "w-full" : undefined}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o} value={o}>{render(o)}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 

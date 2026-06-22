@@ -124,7 +124,7 @@ export function ApiKeysPage({
           <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.5)", fontWeight: 300, marginBottom: "12px" }}>The raw key is shown once and never stored. Only a SHA-256 hash is kept server-side.</div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", borderRadius: "10px", background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)" }}>
             <code style={{ flex: 1, fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#aebfff", wordBreak: "break-all" }}>{rawApiKey}</code>
-            <button onClick={copyRawKey} style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)", color: "#fff", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Copy</button>
+            <button onClick={copyRawKey} style={{ padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.14)", background: "#000", color: "#fff", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Copy</button>
           </div>
         </div>
       )}
@@ -165,12 +165,12 @@ export function ApiKeysPage({
         {renamingKey && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRenamingKey(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.62)", backdropFilter: "blur(4px)", zIndex: 70 }} />
-            <motion.div role="dialog" aria-modal="true" initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.98 }} transition={{ duration: 0.2, ease: "easeOut" }} style={{ position: "fixed", left: "50%", top: "50%", translate: "-50% -50%", zIndex: 71, width: "420px", maxWidth: "calc(100vw - 40px)", background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "24px", boxShadow: "0 34px 90px rgba(0,0,0,0.62)" }}>
+            <motion.div role="dialog" aria-modal="true" initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.98 }} transition={{ duration: 0.2, ease: "easeOut" }} style={{ position: "fixed", left: "50%", top: "50%", translate: "-50% -50%", zIndex: 71, width: "420px", maxWidth: "calc(100vw - 40px)", background: "#050505", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "24px", boxShadow: "0 34px 90px rgba(0,0,0,0.62)" }}>
               <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 600, letterSpacing: "-0.02em" }}>Rename API key</h2>
               <p style={{ margin: "10px 0 16px", fontSize: "13.5px", lineHeight: 1.6, color: "rgba(255,255,255,0.55)", fontWeight: 300 }}>Give this key a name your team can recognize later.</p>
-              <input autoFocus value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void confirmRename(); }} style={{ width: "100%", boxSizing: "border-box", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#fff", fontFamily: "inherit", fontSize: "14px", padding: "11px 12px", outline: "none" }} />
+              <input autoFocus value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void confirmRename(); }} style={{ width: "100%", boxSizing: "border-box", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "#000", color: "#fff", fontFamily: "inherit", fontSize: "14px", padding: "11px 12px", outline: "none" }} />
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
-                <button onClick={() => setRenamingKey(null)} style={{ padding: "9px 14px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer" }}>Cancel</button>
+                <button onClick={() => setRenamingKey(null)} style={{ padding: "9px 14px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.12)", background: "#000", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer" }}>Cancel</button>
                 <button onClick={() => void confirmRename()} disabled={busyKey === renamingKey.apiKeyHash} style={{ padding: "9px 15px", borderRadius: "9px", border: "none", background: "#fff", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: busyKey === renamingKey.apiKeyHash ? "not-allowed" : "pointer" }}>{busyKey === renamingKey.apiKeyHash ? "Saving..." : "Save name"}</button>
               </div>
             </motion.div>

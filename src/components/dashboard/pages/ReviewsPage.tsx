@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORY_LABEL } from "../constants";
 import { brandPill, cap, card, fmtRisk, pill, riskCell } from "../styles";
 import type { Category, Project, ReviewItem } from "../types";
@@ -83,19 +84,23 @@ export function ReviewsPage({
           </div>
           <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>Review images that landed in a human decision state.</p>
         </div>
-        <select
+        <Select
           value={projectFilter}
-          onChange={(event) => {
-            setProjectFilter(event.target.value);
+          onValueChange={(value) => {
+            setProjectFilter(value);
             setSelectedId(null);
           }}
-          style={{ background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "10px 14px", color: "rgba(255,255,255,0.8)", fontFamily: "inherit", fontSize: "13px" }}
         >
-          <option value="all">All projects</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>{project.name}</option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All projects</SelectItem>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {reviews.length === 0 ? (
@@ -135,15 +140,15 @@ export function ReviewsPage({
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginTop: "16px" }}>
-              <div style={{ padding: "13px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ padding: "13px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.38)", marginBottom: "5px" }}>Project</div>
                 <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.86)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{projectName[selected.projectId] ?? selected.project}</div>
               </div>
-              <div style={{ padding: "13px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ padding: "13px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.38)", marginBottom: "5px" }}>Brand safety</div>
                 <span style={brandPill(selected.brandLevel)}>{cap(selected.brandLevel)}</span>
               </div>
-              <button onClick={() => onOpenModeration(selected)} style={{ padding: "13px", borderRadius: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}>
+              <button onClick={() => onOpenModeration(selected)} style={{ padding: "13px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)", textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}>
                 <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.38)", marginBottom: "5px" }}>Moderation ID</div>
                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.72)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{selected.moderationId}</div>
               </button>
@@ -156,7 +161,7 @@ export function ReviewsPage({
               </div>
             )}
 
-            <div style={{ marginTop: "18px", padding: "16px", borderRadius: "14px", background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <div style={{ marginTop: "18px", padding: "16px", borderRadius: "14px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.72)", marginBottom: "12px" }}>Detected labels</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                 {(selected.labels ?? []).slice(0, 6).map((label) => (
@@ -178,8 +183,8 @@ export function ReviewsPage({
               <button disabled={busy} onClick={() => decideSelected("approved")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", padding: "16px", borderRadius: "13px", background: "rgba(126,224,168,0.12)", border: "1px solid rgba(126,224,168,0.32)", color: "#7ee0a8", fontFamily: "inherit", fontSize: "15px", fontWeight: 600, cursor: busy ? "wait" : "pointer" }}>Approve</button>
             </div>
             <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "12px" }}>
-              <button disabled={busy || filtered.length < 2} onClick={skipSelected} style={{ padding: "9px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.68)", fontFamily: "inherit", fontSize: "13px", cursor: busy ? "wait" : "pointer" }}>Skip</button>
-              <button disabled={busy} onClick={() => decideSelected("ignored")} style={{ padding: "9px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.68)", fontFamily: "inherit", fontSize: "13px", cursor: busy ? "wait" : "pointer" }}>Ignore</button>
+              <button disabled={busy || filtered.length < 2} onClick={skipSelected} style={{ padding: "9px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", background: "#000", color: "rgba(255,255,255,0.68)", fontFamily: "inherit", fontSize: "13px", cursor: busy ? "wait" : "pointer" }}>Skip</button>
+              <button disabled={busy} onClick={() => decideSelected("ignored")} style={{ padding: "9px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", background: "#000", color: "rgba(255,255,255,0.68)", fontFamily: "inherit", fontSize: "13px", cursor: busy ? "wait" : "pointer" }}>Ignore</button>
             </div>
           </section>
 

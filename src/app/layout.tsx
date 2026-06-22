@@ -28,7 +28,7 @@ const siteUrl =
   "https://visoracloud.com";
 
 const siteDescription =
-  "Detect nudity, violence, weapons, drugs, hate symbols, gambling, and unsafe content using a single API.";
+  "Detect unsafe image content and redact sensitive details like faces, text, and license plates using a single API.";
 
 const organizationJsonLd = {
   "@context": "https://schema.org",

@@ -46,13 +46,13 @@ export function modeBadge(m: Mode): CSSProperties {
   let color = "rgba(255,255,255,0.7)";
   if (m === "strict") color = "#aebfff";
   else if (m === "relaxed") color = "#7ee0a8";
-  return { fontSize: "11px", fontWeight: 500, color, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 10px", borderRadius: "20px" };
+  return { fontSize: "11px", fontWeight: 500, color, background: "#000", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 10px", borderRadius: "20px" };
 }
 
 export function planBadge(): CSSProperties {
-  return { fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 10px", borderRadius: "20px" };
+  return { fontSize: "11px", fontWeight: 500, color: "rgba(255,255,255,0.7)", background: "#000", border: "1px solid rgba(255,255,255,0.1)", padding: "3px 10px", borderRadius: "20px" };
 }
 
-export const card: CSSProperties = { background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px" };
+export const card: CSSProperties = { background: "#050505", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px" };
 export const sectionLabel: CSSProperties = { fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.55)", letterSpacing: "0.02em", marginBottom: "16px" };
 export const drawerLabel: CSSProperties = { fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)", margin: "24px 0 12px" };

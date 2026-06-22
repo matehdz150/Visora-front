@@ -5,6 +5,7 @@ import { DocsTopBar } from "./DocsTopBar";
 import { DocsSideNav } from "./DocsSideNav";
 import { DocsToc } from "./DocsToc";
 import { QuickstartArticle } from "./content/QuickstartArticle";
+import { NAV_GROUPS, TOC_ITEMS, type NavGroup, type TocItem } from "./data";
 
 function clearSearchHighlight() {
   const css = globalThis.CSS as typeof CSS & { highlights?: { delete: (name: string) => void } };
@@ -64,7 +65,15 @@ function applySearchHighlight(root: HTMLElement, query: string) {
  * is searchable from the top bar, and matches are highlighted with the CSS
  * Custom Highlight API so React-owned markup stays untouched.
  */
-export default function DocsPage() {
+export function DocsShell({
+  children,
+  navGroups = NAV_GROUPS,
+  tocItems = TOC_ITEMS,
+}: {
+  children: (articleRef: React.Ref<HTMLElement>) => React.ReactNode;
+  navGroups?: NavGroup[];
+  tocItems?: TocItem[];
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const articleRef = useRef<HTMLElement | null>(null);
 
@@ -81,10 +90,18 @@ export default function DocsPage() {
       <style>{"::highlight(docs-search) { background: rgba(174, 191, 255, 0.18); color: #fff; text-decoration: underline; text-decoration-color: #aebfff; text-underline-offset: 3px; }"}</style>
       <DocsTopBar searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
       <div className="docs-grid" style={{ display: "grid", gridTemplateColumns: "248px minmax(0, 1fr) 220px", maxWidth: "1320px", margin: "0 auto" }}>
-        <DocsSideNav />
-        <QuickstartArticle articleRef={articleRef} />
-        <DocsToc />
+        <DocsSideNav groups={navGroups} />
+        {children(articleRef)}
+        <DocsToc items={tocItems} />
       </div>
     </div>
+  );
+}
+
+export default function DocsPage() {
+  return (
+    <DocsShell>
+      {(articleRef) => <QuickstartArticle articleRef={articleRef} />}
+    </DocsShell>
   );
 }

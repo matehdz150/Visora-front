@@ -7,7 +7,31 @@ import type {
   DashboardReviewItem,
 } from "@/lib/visora-api";
 import { makePolicy } from "./engine";
-import type { ApiKey, Category, CompliancePack, ModLog, Policy, Project, ReviewItem, UsageSummary } from "./types";
+import type { ApiKey, Category, CompliancePack, ModLog, Policy, Project, ProjectType, RedactionSettings, ReviewItem, UsageSummary } from "./types";
+
+export const DEFAULT_REDACTION_SETTINGS: RedactionSettings = {
+  faceBlur: true,
+  textBlur: false,
+  licensePlateBlur: false,
+  redactionStyle: "blur",
+  textCategories: [],
+  customWords: [],
+  ignoredWords: [],
+  minConfidence: 80,
+};
+
+export function normalizeRedactionSettings(settings?: Partial<RedactionSettings>): RedactionSettings {
+  return {
+    faceBlur: settings?.faceBlur ?? DEFAULT_REDACTION_SETTINGS.faceBlur,
+    textBlur: settings?.textBlur ?? DEFAULT_REDACTION_SETTINGS.textBlur,
+    licensePlateBlur: settings?.licensePlateBlur ?? DEFAULT_REDACTION_SETTINGS.licensePlateBlur,
+    redactionStyle: settings?.redactionStyle === "black_box" ? "black_box" : "blur",
+    textCategories: Array.isArray(settings?.textCategories) ? settings.textCategories : [],
+    customWords: Array.isArray(settings?.customWords) ? settings.customWords : [],
+    ignoredWords: Array.isArray(settings?.ignoredWords) ? settings.ignoredWords : [],
+    minConfidence: Math.max(0, Math.min(100, settings?.minConfidence ?? DEFAULT_REDACTION_SETTINGS.minConfidence)),
+  };
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -26,6 +50,8 @@ export function mapProject(project: DashboardProject, policy?: DashboardPolicy):
   return {
     id: project.projectId,
     name: project.name,
+    projectType: (project.projectType ?? "moderation") as ProjectType,
+    redactionSettings: normalizeRedactionSettings(project.redactionSettings),
     planId: project.planId,
     mode: policy?.mode ?? "balanced",
     monthMods: formatNumber(project.monthModerations ?? 0),

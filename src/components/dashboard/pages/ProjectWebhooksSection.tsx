@@ -23,7 +23,7 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
   borderRadius: "10px",
   border: "1px solid rgba(255,255,255,0.12)",
-  background: "rgba(255,255,255,0.04)",
+  background: "#050505",
   color: "#fff",
   fontFamily: "inherit",
   fontSize: "14px",
@@ -42,7 +42,7 @@ function formatDate(value: string) {
 
 function eventPill(event: WebhookEventType) {
   return (
-    <span key={event} style={{ padding: "4px 8px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.035)", color: "rgba(255,255,255,0.62)", fontSize: "11px", whiteSpace: "nowrap" }}>
+    <span key={event} style={{ padding: "4px 8px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.09)", background: "#000", color: "rgba(255,255,255,0.62)", fontSize: "11px", whiteSpace: "nowrap" }}>
       {EVENT_LABEL[event]}
     </span>
   );
@@ -144,7 +144,7 @@ export function ProjectWebhooksSection({
             </div>
             <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
               <button onClick={() => void navigator.clipboard.writeText(webhookSecret)} style={{ padding: "8px 11px", borderRadius: "8px", border: "none", background: "#fff", color: "#050505", fontFamily: "inherit", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>Copy</button>
-              <button onClick={onDismissWebhookSecret} style={{ padding: "8px 11px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.65)", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Dismiss</button>
+              <button onClick={onDismissWebhookSecret} style={{ padding: "8px 11px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", background: "#000", color: "rgba(255,255,255,0.65)", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>Dismiss</button>
             </div>
           </div>
         </div>

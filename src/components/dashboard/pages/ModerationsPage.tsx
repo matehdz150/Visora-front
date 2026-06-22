@@ -52,7 +52,7 @@ export function ModerationsPage({
       <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", margin: "28px 0 18px" }}>
         <div style={{ position: "relative", flex: 1, minWidth: "240px" }}>
           <span style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", width: "13px", height: "13px", border: "1.5px solid rgba(255,255,255,0.35)", borderRadius: "50%" }} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by ID, project, image key…" className="v-input" style={{ width: "100%", background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "10px 14px 10px 34px", color: "#fff", fontFamily: "inherit", fontSize: "13px" }} />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by ID, project, image key…" className="v-input" style={{ width: "100%", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", padding: "10px 14px 10px 34px", color: "#fff", fontFamily: "inherit", fontSize: "13px" }} />
         </div>
         <FilterSelect value={fProject} onChange={setFProject} options={["All", ...projects.map((p) => p.id)]} render={(o) => (o === "All" ? "All" : projectName[o])} />
         <FilterSelect value={fDecision} onChange={setFDecision} options={["All", "allow", "review", "reject"]} render={(o) => (o === "All" ? "All" : cap(o))} />

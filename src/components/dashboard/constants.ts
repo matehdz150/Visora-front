@@ -109,6 +109,7 @@ export const DEFAULT_BLOCKED: Category[] = [
 export const NAV: [Page, string][] = [
   ["overview", "Overview"],
   ["moderations", "Moderations"],
+  ["redactions", "Redactions"],
   ["reviews", "Reviews"],
   ["webhooks", "Webhooks"],
   ["admin", "Admin"],

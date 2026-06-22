@@ -37,6 +37,20 @@ export interface CurrentUser {
 }
 
 export type PlanId = "free" | "starter" | "plus" | "growth" | "scale";
+export type ProjectType = "moderation" | "redaction";
+export type RedactionStyle = "blur" | "black_box";
+export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document";
+
+export interface RedactionSettings {
+  faceBlur: boolean;
+  textBlur: boolean;
+  licensePlateBlur: boolean;
+  redactionStyle: RedactionStyle;
+  textCategories: RedactionTextCategory[];
+  customWords: string[];
+  ignoredWords: string[];
+  minConfidence: number;
+}
 
 export interface DeleteAccountResponse {
   deleted: boolean;
@@ -112,10 +126,63 @@ export interface ModerationResponse {
   } | null;
 }
 
+export interface RedactionFace {
+  confidence: number;
+  boundingBox: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+}
+
+export interface RedactionRegion {
+  type: "face" | "text" | "license_plate";
+  text?: string;
+  confidence: number;
+  boundingBox: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+}
+
+export interface RedactionResponse {
+  redactionId: string;
+  imageKey: string;
+  redactedImageKey: string;
+  redactedImageUrl: string;
+  facesBlurred: number;
+  textBlurred: number;
+  licensePlatesBlurred: number;
+  faces: RedactionFace[];
+  regions: RedactionRegion[];
+}
+
+export interface RedactionLogEntry {
+  redactionId: string;
+  accountId: string;
+  projectId: string;
+  planId: string;
+  imageKey: string;
+  redactedImageKey: string;
+  style: RedactionStyle;
+  facesBlurred: number;
+  textBlurred: number;
+  licensePlatesBlurred: number;
+  regions: RedactionRegion[];
+  createdAt: string;
+  imageUrl?: string;
+  redactedImageUrl?: string;
+}
+
 export interface DashboardProject {
   accountId: string;
   projectId: string;
   name: string;
+  projectType?: ProjectType;
+  redactionSettings?: RedactionSettings;
   planId: string;
   monthlyLimit: number;
   monthModerations?: number;
@@ -728,6 +795,8 @@ export async function updateAccountPlan(idToken: string, planId: PlanId): Promis
 export async function createDashboardProject(params: {
   idToken: string;
   name: string;
+  projectType: ProjectType;
+  redactionSettings?: RedactionSettings;
 }): Promise<DashboardProject> {
   const response = await fetch(`${API_BASE_URL}/projects`, {
     method: "POST",
@@ -735,7 +804,32 @@ export async function createDashboardProject(params: {
       Authorization: `Bearer ${params.idToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name: params.name }),
+    body: JSON.stringify({
+      name: params.name,
+      projectType: params.projectType,
+      ...(params.redactionSettings ? { redactionSettings: params.redactionSettings } : {}),
+    }),
+  });
+  const payload = await parseResponse<{ project: DashboardProject }>(response);
+
+  return payload.project;
+}
+
+export async function saveDashboardRedactionSettings(params: {
+  idToken: string;
+  projectId: string;
+  redactionSettings: RedactionSettings;
+}): Promise<DashboardProject> {
+  const response = await fetch(`${API_BASE_URL}/projects/redaction-settings`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${params.idToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      projectId: params.projectId,
+      redactionSettings: params.redactionSettings,
+    }),
   });
   const payload = await parseResponse<{ project: DashboardProject }>(response);
 
@@ -904,6 +998,45 @@ export async function moderateDashboardImageUpload(params: {
   );
 
   return parseResponse<ModerationResponse>(response);
+}
+
+export async function redactDashboardImageUpload(params: {
+  idToken: string;
+  projectId: string;
+  image: File;
+}): Promise<RedactionResponse> {
+  const formData = new FormData();
+  formData.append("image", params.image);
+
+  const response = await fetch(
+    `${API_BASE_URL}/dashboard/redact?projectId=${encodeURIComponent(params.projectId)}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${params.idToken}`,
+      },
+      body: formData,
+    },
+  );
+
+  return parseResponse<RedactionResponse>(response);
+}
+
+export async function fetchDashboardRedactionLogs(params: {
+  idToken: string;
+  projectId: string;
+}): Promise<{ logs: RedactionLogEntry[] }> {
+  const response = await fetch(
+    `${API_BASE_URL}/dashboard/redaction-logs?projectId=${encodeURIComponent(params.projectId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${params.idToken}`,
+      },
+    },
+  );
+
+  return parseResponse<{ logs: RedactionLogEntry[] }>(response);
 }
 
 export async function listProjectWebhooks(params: {

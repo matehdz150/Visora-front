@@ -28,6 +28,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Authenticate", href: "#api-key-auth" },
       { label: "Server-side flow", href: "#integration-flow" },
       { label: "First moderation", href: "#first-request" },
+      { label: "Redaction API", href: "/docs/redaction" },
     ],
   },
   {
@@ -94,6 +95,7 @@ export const SEARCH_INDEX: SearchItem[] = [
   { title: "Authenticate", href: "#api-key-auth", description: "Use project API keys from server-side code and keep x-api-key secret." },
   { title: "Server-side flow", href: "#integration-flow", description: "Receive uploads in your backend, call Visora, branch on the moderation action, and store moderation ids." },
   { title: "First moderation", href: "#first-request", description: "Moderate an image with the Node SDK, Next.js route handlers, REST, or logs API." },
+  { title: "Redaction API", href: "/docs/redaction", description: "Blur faces, text, custom words, ID document fields, and license plates with redaction projects." },
   { title: "Handle decisions", href: "#handle-decisions", description: "Use allow, review, and reject actions to control your product flow." },
   { title: "Response model", href: "#response-model", description: "Read moderationId, safe, action, labels, riskScore, category, brandSafety, compliance, and explanation." },
   { title: "Decision explanations", href: "#decision-explanations", description: "Show policy explanations such as rejected because weapons matched reject action." },
@@ -136,6 +138,7 @@ export const NEXT_STEPS: NextStep[] = [
   { title: "Create a project", desc: "Projects own API keys, policies, usage, scoped uploads, review queue, and moderation logs.", href: "/dashboard" },
   { title: "Generate an API key", desc: "Use project API keys from server code only. Never ship them to a browser, mobile app, or public repo.", href: "#api-key-auth" },
   { title: "Wire the SDK", desc: "Call moderateImage from your backend upload route and branch on allow, review, or reject.", href: "#first-request" },
+  { title: "Add redaction", desc: "Use redaction projects for face blur, text blur, license plate blur, and redacted image delivery.", href: "/docs/redaction" },
   { title: "Tune policy", desc: "Configure category actions, thresholds, review mode, brand safety, and compliance packs per project.", href: "#policies" },
   { title: "Add webhooks", desc: "Send moderation and review events to your backend for automation, notifications, and audit workflows.", href: "#webhooks" },
 ];

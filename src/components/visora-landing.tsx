@@ -668,22 +668,25 @@ export default function VisoraLanding({
   useScrollEffects();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [docsOpen, setDocsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const featuresRef = useRef<HTMLDivElement | null>(null);
+  const docsRef = useRef<HTMLDivElement | null>(null);
   const helpRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     function closeMenusOnOutsideClick(event: PointerEvent) {
       const target = event.target as Node;
       if (!featuresRef.current?.contains(target)) setFeaturesOpen(false);
+      if (!docsRef.current?.contains(target)) setDocsOpen(false);
       if (!helpRef.current?.contains(target)) setHelpOpen(false);
     }
 
-    if (featuresOpen || helpOpen)
+    if (featuresOpen || docsOpen || helpOpen)
       document.addEventListener("pointerdown", closeMenusOnOutsideClick);
     return () =>
       document.removeEventListener("pointerdown", closeMenusOnOutsideClick);
-  }, [featuresOpen, helpOpen]);
+  }, [featuresOpen, docsOpen, helpOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -767,15 +770,32 @@ export default function VisoraLanding({
         >
           <div
             ref={featuresRef}
-            onMouseEnter={() => setFeaturesOpen(true)}
+            onMouseEnter={() => {
+              setFeaturesOpen(true);
+              setDocsOpen(false);
+              setHelpOpen(false);
+            }}
+            onMouseLeave={() => setFeaturesOpen(false)}
             style={{ position: "relative" }}
           >
             <button
               type="button"
               className="v-navlink"
-              onMouseEnter={() => setFeaturesOpen(true)}
-              onFocus={() => setFeaturesOpen(true)}
-              onClick={() => setFeaturesOpen(true)}
+              onMouseEnter={() => {
+                setFeaturesOpen(true);
+                setDocsOpen(false);
+                setHelpOpen(false);
+              }}
+              onFocus={() => {
+                setFeaturesOpen(true);
+                setDocsOpen(false);
+                setHelpOpen(false);
+              }}
+              onClick={() => {
+                setFeaturesOpen(true);
+                setDocsOpen(false);
+                setHelpOpen(false);
+              }}
               aria-expanded={featuresOpen}
               aria-haspopup="menu"
               style={{
@@ -810,15 +830,20 @@ export default function VisoraLanding({
               />
             </button>
             {featuresOpen ? (
+              <>
+              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-28px", height: "14px" }} />
               <div
                 role="menu"
                 style={{
                   position: "absolute",
                   top: "calc(100% + 14px)",
                   left: "-18px",
-                  width: "460px",
-                  padding: "12px",
-                  borderRadius: "18px",
+                  width: "430px",
+                  display: "grid",
+                  gridTemplateColumns: "142px 1fr",
+                  gap: "14px",
+                  padding: "16px",
+                  borderRadius: "20px",
                   border: "1px solid rgba(255,255,255,0.12)",
                   background:
                     "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
@@ -829,77 +854,67 @@ export default function VisoraLanding({
               >
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                    padding: "9px 6px",
                   }}
                 >
                   {[
                     [
-                      "Image Moderation",
+                      "Moderation",
                       "/docs#moderate",
                       "Scan uploads and image keys.",
                     ],
                     [
-                      "Policies",
-                      "/docs#policies",
-                      "Set project category actions.",
-                    ],
-                    [
-                      "Review Queue",
-                      "/docs#review-queue",
-                      "Route uncertain results to review.",
+                      "Redaction",
+                      "/features/redaction",
+                      "Blur faces, text, and plates.",
                     ],
                     [
                       "Webhooks",
                       "/features/webhooks",
-                      "Deliver signed event payloads.",
+                      "Deliver signed events.",
                     ],
                     [
-                      "Moderation Logs",
-                      "/docs#moderation-logs",
-                      "Inspect historical decisions.",
+                      "Review Queue",
+                      "/docs#review-queue",
+                      "Resolve manual decisions.",
                     ],
                     [
-                      "API Keys",
-                      "/docs#authentication",
-                      "Manage project scoped keys.",
+                      "Policies",
+                      "/docs#policies",
+                      "Set project rules.",
                     ],
                   ].map(([label, href, hint]) => (
                     <a
                       key={label}
                       href={href}
                       role="menuitem"
-                      style={{
-                        minHeight: "78px",
-                        padding: "13px",
-                        borderRadius: "12px",
-                        border: "1px solid rgba(255,255,255,0.07)",
-                        background:
-                          label === "Webhooks"
-                            ? "rgba(126,155,255,0.09)"
-                            : "rgba(255,255,255,0.025)",
-                        textDecoration: "none",
-                        transition:
-                          "background .2s ease, border-color .2s ease, transform .2s ease",
-                      }}
+                      className="nav-dropdown-link"
+                      style={{ textDecoration: "none" }}
                     >
                       <div
+                        className="nav-dropdown-title"
                         style={{
-                          fontSize: "13.5px",
-                          fontWeight: 600,
-                          color: "#fff",
-                          letterSpacing: 0,
+                          fontSize: label === "Review Queue" || label === "Moderation" ? "20px" : "21px",
+                          lineHeight: 1.1,
+                          letterSpacing: "-0.035em",
+                          color:
+                            label === "Moderation"
+                              ? "#fff"
+                              : "rgba(255,255,255,0.58)",
+                          fontWeight: 500,
                         }}
                       >
                         {label}
                       </div>
                       <div
+                        className="nav-dropdown-hint"
                         style={{
-                          marginTop: "7px",
-                          fontSize: "12px",
-                          lineHeight: 1.45,
-                          color: "rgba(255,255,255,0.48)",
+                          marginTop: "5px",
+                          fontSize: "11.5px",
+                          color: "rgba(255,255,255,0.34)",
                         }}
                       >
                         {hint}
@@ -907,38 +922,181 @@ export default function VisoraLanding({
                     </a>
                   ))}
                 </div>
+                <a
+                  href="/features/redaction"
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                    minHeight: "168px",
+                    borderRadius: "16px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    background:
+                      "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))",
+                    padding: "18px",
+                    textDecoration: "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.28 }} />
+                  <div style={{ position: "relative" }}>
+                    <div style={{ fontSize: "22px", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#fff", marginBottom: "8px" }}>Redaction</div>
+                    <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.52)" }}>Create paid-plan projects that return processed images with sensitive regions hidden.</p>
+                  </div>
+                  <span style={{ position: "relative", fontSize: "12.5px", color: "#aebfff", fontWeight: 500 }}>Explore redaction →</span>
+                </a>
               </div>
+              </>
             ) : null}
           </div>
-          {[
-            ["Documentation", "/docs"],
-            ["Pricing", "/pricing"],
-          ].map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              className="v-navlink"
-              style={{
-                fontSize: "14px",
-                color: "rgba(255,255,255,0.7)",
-                textDecoration: "none",
-                transition: "color .2s",
-              }}
-            >
-              {label}
-            </a>
-          ))}
           <div
-            ref={helpRef}
-            onMouseEnter={() => setHelpOpen(true)}
+            ref={docsRef}
+            onMouseEnter={() => {
+              setDocsOpen(true);
+              setFeaturesOpen(false);
+              setHelpOpen(false);
+            }}
+            onMouseLeave={() => setDocsOpen(false)}
             style={{ position: "relative" }}
           >
             <button
               type="button"
               className="v-navlink"
-              onMouseEnter={() => setHelpOpen(true)}
-              onFocus={() => setHelpOpen(true)}
-              onClick={() => setHelpOpen(true)}
+              onMouseEnter={() => {
+                setDocsOpen(true);
+                setFeaturesOpen(false);
+                setHelpOpen(false);
+              }}
+              onFocus={() => {
+                setDocsOpen(true);
+                setFeaturesOpen(false);
+                setHelpOpen(false);
+              }}
+              onClick={() => {
+                setDocsOpen(true);
+                setFeaturesOpen(false);
+                setHelpOpen(false);
+              }}
+              aria-expanded={docsOpen}
+              aria-haspopup="menu"
+              style={{
+                appearance: "none",
+                border: 0,
+                background: "transparent",
+                padding: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                fontFamily: "inherit",
+                fontSize: "14px",
+                color: "rgba(255,255,255,0.7)",
+                cursor: "pointer",
+                transition: "color .2s",
+              }}
+            >
+              Documentation
+              <span
+                aria-hidden="true"
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRight: "1.5px solid currentColor",
+                  borderBottom: "1.5px solid currentColor",
+                  transform: docsOpen
+                    ? "rotate(225deg) translateY(-1px)"
+                    : "rotate(45deg) translateY(-2px)",
+                  transition: "transform .18s ease",
+                  opacity: 0.75,
+                }}
+              />
+            </button>
+            {docsOpen ? (
+              <>
+              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-28px", height: "14px" }} />
+              <div
+                role="menu"
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 14px)",
+                  left: "-18px",
+                  width: "430px",
+                  display: "grid",
+                  gridTemplateColumns: "142px 1fr",
+                  gap: "14px",
+                  padding: "16px",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background:
+                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                  boxShadow: "0 28px 76px rgba(0,0,0,0.58)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "9px 6px" }}>
+                  {[
+                    ["Moderation", "/docs", "API reference"],
+                    ["Redaction", "/docs/redaction", "Blur workflows"],
+                  ].map(([label, href, hint]) => (
+                    <a key={label} href={href} role="menuitem" className="nav-dropdown-link" style={{ textDecoration: "none" }}>
+                      <div className="nav-dropdown-title" style={{ fontSize: "21px", lineHeight: 1.1, letterSpacing: "-0.035em", color: label === "Moderation" ? "#fff" : "rgba(255,255,255,0.58)", fontWeight: 500 }}>{label}</div>
+                      <div className="nav-dropdown-hint" style={{ marginTop: "5px", fontSize: "11.5px", color: "rgba(255,255,255,0.34)" }}>{hint}</div>
+                    </a>
+                  ))}
+                </div>
+                <a href="/docs/redaction" className="nav-dropdown-card" style={{ position: "relative", overflow: "hidden", minHeight: "168px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)", background: "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))", padding: "18px", textDecoration: "none", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.28 }} />
+                  <div style={{ position: "relative" }}>
+                    <div style={{ fontSize: "22px", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#fff", marginBottom: "8px" }}>Developer docs</div>
+                    <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.52)" }}>Choose the moderation or redaction guide for your integration.</p>
+                  </div>
+                  <span style={{ position: "relative", fontSize: "12.5px", color: "#aebfff", fontWeight: 500 }}>Open redaction docs →</span>
+                </a>
+              </div>
+              </>
+            ) : null}
+          </div>
+          <a
+            href="/pricing"
+            className="v-navlink"
+            style={{
+              fontSize: "14px",
+              color: "rgba(255,255,255,0.7)",
+              textDecoration: "none",
+              transition: "color .2s",
+            }}
+          >
+            Pricing
+          </a>
+          <div
+            ref={helpRef}
+            onMouseEnter={() => {
+              setHelpOpen(true);
+              setFeaturesOpen(false);
+              setDocsOpen(false);
+            }}
+            onMouseLeave={() => setHelpOpen(false)}
+            style={{ position: "relative" }}
+          >
+            <button
+              type="button"
+              className="v-navlink"
+              onMouseEnter={() => {
+                setHelpOpen(true);
+                setFeaturesOpen(false);
+                setDocsOpen(false);
+              }}
+              onFocus={() => {
+                setHelpOpen(true);
+                setFeaturesOpen(false);
+                setDocsOpen(false);
+              }}
+              onClick={() => {
+                setHelpOpen(true);
+                setFeaturesOpen(false);
+                setDocsOpen(false);
+              }}
               aria-expanded={helpOpen}
               aria-haspopup="menu"
               style={{
@@ -973,6 +1131,8 @@ export default function VisoraLanding({
               />
             </button>
             {helpOpen ? (
+              <>
+              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-190px", height: "14px" }} />
               <div
                 role="menu"
                 style={{
@@ -1013,9 +1173,11 @@ export default function VisoraLanding({
                     <a
                       key={label}
                       href={href}
+                      className="nav-dropdown-link"
                       style={{ textDecoration: "none" }}
                     >
                       <div
+                        className="nav-dropdown-title"
                         style={{
                           fontSize: "21px",
                           lineHeight: 1.1,
@@ -1030,6 +1192,7 @@ export default function VisoraLanding({
                         {label}
                       </div>
                       <div
+                        className="nav-dropdown-hint"
                         style={{
                           marginTop: "5px",
                           fontSize: "11.5px",
@@ -1043,6 +1206,7 @@ export default function VisoraLanding({
                 </div>
                 <a
                   href="/contact"
+                  className="nav-dropdown-card"
                   style={{
                     position: "relative",
                     overflow: "hidden",
@@ -1104,6 +1268,7 @@ export default function VisoraLanding({
                   </span>
                 </a>
               </div>
+              </>
             ) : null}
           </div>
         </div>
@@ -1232,7 +1397,8 @@ export default function VisoraLanding({
             }}
           >
             Detect nudity, violence, weapons, drugs, hate symbols, gambling, and
-            unsafe content using a single API.
+            unsafe content — and blur or black-box faces, text, and license
+            plates — using a single API.
           </p>
 
           <div

@@ -2,17 +2,17 @@
 
 import React, { useEffect, useState } from "react";
 import { MONO, text } from "./theme";
-import { TOC_ITEMS } from "./data";
+import { TOC_ITEMS, type TocItem } from "./data";
 
 /**
  * Right rail "On this page" with scroll-spy: highlights the section nearest the
  * top of the viewport using an IntersectionObserver over the heading ids.
  */
-export function DocsToc() {
-  const [activeHref, setActiveHref] = useState(TOC_ITEMS[0]?.href ?? "");
+export function DocsToc({ items = TOC_ITEMS }: { items?: TocItem[] }) {
+  const [activeHref, setActiveHref] = useState(items[0]?.href ?? "");
 
   useEffect(() => {
-    const ids = TOC_ITEMS.map((t) => t.href.replace("#", ""));
+    const ids = items.map((t) => t.href.replace("#", ""));
     const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
@@ -33,7 +33,7 @@ export function DocsToc() {
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [items]);
 
   function handleClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
     event.preventDefault();
@@ -50,7 +50,7 @@ export function DocsToc() {
     <aside className="docs-toc" style={{ position: "sticky", top: "57px", alignSelf: "start", height: "calc(100vh - 57px)", padding: "44px 24px 60px" }}>
       <div style={{ fontFamily: MONO, fontSize: "11px", letterSpacing: "0.12em", color: text.ghost, textTransform: "uppercase", marginBottom: "14px" }}>On this page</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "2px", borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
-        {TOC_ITEMS.map((item) => {
+        {items.map((item) => {
           const on = item.href === activeHref;
           return (
             <a

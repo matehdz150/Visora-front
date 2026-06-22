@@ -8,6 +8,7 @@ import { ModDetail } from "./ModDetail";
 import { DashboardSkeleton } from "./DashboardSkeleton";
 import { OverviewPage } from "./pages/OverviewPage";
 import { ModerationsPage } from "./pages/ModerationsPage";
+import { RedactionsPage } from "./pages/RedactionsPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { WebhooksPage } from "./pages/WebhooksPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -18,7 +19,7 @@ import { CreateProjectPage, type CreateProjectInput } from "./pages/CreateProjec
 import { ApiKeysPage } from "./pages/ApiKeysPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ToastViewport, type DashboardNotify, type DashboardToast } from "./Toast";
-import type { ApiKey, ModLog, Page, Project, ReviewItem, UsageSummary, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "./types";
+import type { ApiKey, ModLog, Page, Project, RedactionSettings, ReviewItem, UsageSummary, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "./types";
 import type { PolicyMap, PolicyPatch } from "./usePolicyStore";
 import {
   changeBillingPlan,
@@ -44,6 +45,7 @@ import {
   rotateProjectApiKey,
   rotateProjectWebhookSecret,
   saveDashboardPolicy,
+  saveDashboardRedactionSettings,
   syncBillingAccount,
   updateAccountPlan,
   type AdminOverviewData,
@@ -88,6 +90,7 @@ export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [playgroundProjectId, setPlaygroundProjectId] = useState<string | null>(null);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [moderationLogs, setModerationLogs] = useState<ModLog[]>([]);
   const [reviewQueue, setReviewQueue] = useState<ReviewItem[]>([]);
@@ -108,6 +111,7 @@ export default function Dashboard() {
   const [toasts, setToasts] = useState<DashboardToast[]>([]);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [savingPolicyId, setSavingPolicyId] = useState<string | null>(null);
+  const [savingRedactionSettingsId, setSavingRedactionSettingsId] = useState<string | null>(null);
   const [resolvingReviewId, setResolvingReviewId] = useState<string | null>(null);
   const toastIdRef = useRef(0);
 
@@ -172,6 +176,21 @@ export default function Dashboard() {
   const refreshDashboardData = async () => {
     if (!session?.idToken) return;
     await loadDashboardSnapshot(session.idToken);
+  };
+
+  const incrementProjectActivity = (projectId: string) => {
+    setProjects((prev) =>
+      prev.map((project) => {
+        if (project.id !== projectId) return project;
+
+        const current = Number(project.monthMods.replace(/,/g, "")) || 0;
+
+        return {
+          ...project,
+          monthMods: new Intl.NumberFormat("en-US").format(current + 1),
+        };
+      })
+    );
   };
 
   useEffect(() => {
@@ -289,12 +308,26 @@ export default function Dashboard() {
     void loadProjectWebhooks(projectId);
   };
 
+  const openPlaygroundProject = (projectId: string) => {
+    setPlaygroundProjectId(projectId);
+    setSelectedMod(null);
+    setSelectedProjectId(null);
+    setPage("playground");
+  };
+
   const createProject = async (input: CreateProjectInput) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
-    const project = await createDashboardProject({ idToken: session.idToken, name: input.name });
+    const project = await createDashboardProject({
+      idToken: session.idToken,
+      name: input.name,
+      projectType: input.projectType,
+      redactionSettings: input.projectType === "redaction" ? input.redactionSettings : undefined,
+    });
     const policy = makePolicy(input.mode);
-    const savedPolicy = await saveDashboardPolicy({ idToken: session.idToken, policy: toDashboardPolicy(project.projectId, policy) });
+    const savedPolicy = input.projectType === "moderation"
+      ? await saveDashboardPolicy({ idToken: session.idToken, policy: toDashboardPolicy(project.projectId, policy) })
+      : undefined;
     const uiProject = mapProject(project, savedPolicy);
 
     let createdApiKey: Awaited<ReturnType<typeof createProjectApiKey>> | null = null;
@@ -307,7 +340,9 @@ export default function Dashboard() {
     }
 
     setProjects((prev) => [...prev, uiProject]);
-    setPolicyByProject((prev) => ({ ...prev, [project.projectId]: mapPolicy(savedPolicy) }));
+    if (savedPolicy) {
+      setPolicyByProject((prev) => ({ ...prev, [project.projectId]: mapPolicy(savedPolicy) }));
+    }
     if (createdApiKey) {
       setRawApiKey(createdApiKey.rawApiKey);
       setApiKeys((prev) => [...prev, mapApiKey(createdApiKey, prev.length)]);
@@ -541,6 +576,29 @@ export default function Dashboard() {
     }
   };
 
+  const saveRedactionSettings = async (projectId: string, redactionSettings: RedactionSettings) => {
+    if (!session?.idToken) return;
+
+    setSavingRedactionSettingsId(projectId);
+    try {
+      const project = await saveDashboardRedactionSettings({
+        idToken: session.idToken,
+        projectId,
+        redactionSettings,
+      });
+      const policy = policyByProject[project.projectId];
+      const dashboardPolicy = policy ? toDashboardPolicy(project.projectId, policy) : undefined;
+      const mapped = mapProject(project, dashboardPolicy);
+
+      setProjects((prev) => prev.map((item) => (item.id === projectId ? mapped : item)));
+      notify({ kind: "success", title: "Redaction settings saved", message: "New /redact requests will use the updated project settings." });
+    } catch (err) {
+      notify({ kind: "error", title: "Could not save redaction settings", message: err instanceof Error ? err.message : "Please try again." });
+    } finally {
+      setSavingRedactionSettingsId(null);
+    }
+  };
+
   const changePlan = async (planId: PlanId) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
@@ -598,6 +656,7 @@ export default function Dashboard() {
     setPage(p);
     setSelectedMod(null);
     setMobileNavOpen(false);
+    if (p !== "playground") setPlaygroundProjectId(null);
     if (p !== "project-detail") setSelectedProjectId(null);
     if (p === "webhooks") void loadWebhookEvents();
     if (p === "admin" && session?.idToken) void loadAdminOverview(session.idToken);
@@ -605,14 +664,18 @@ export default function Dashboard() {
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
   const selectedProjectPolicy = selectedProject ? policyByProject[selectedProject.id] : null;
+  const redactionCount = projects
+    .filter((project) => project.projectType === "redaction")
+    .reduce((sum, project) => sum + (Number(project.monthMods.replace(/,/g, "")) || 0), 0);
 
   const renderPage = () => {
     if (page === "overview") return <OverviewPage projects={projects} logs={moderationLogs} stats={stats} usage={usage} onCreateProject={goToCreateProject} onSelectMod={setSelectedMod} onViewAll={() => setPage("moderations")} />;
     if (page === "moderations") return <ModerationsPage projects={projects} logs={moderationLogs} onSelectMod={setSelectedMod} />;
+    if (page === "redactions") return <RedactionsPage projects={projects} idToken={session?.idToken} onCreateProject={goToCreateProject} onSelectProject={openProject} onOpenPlayground={openPlaygroundProject} />;
     if (page === "reviews") return <ReviewsPage projects={projects} reviews={reviewQueue} resolvingReviewId={resolvingReviewId} onOpenModeration={openReviewModeration} onDecideReview={decideReview} />;
     if (page === "webhooks") return <WebhooksPage projects={projects} events={webhookEvents} loading={loadingWebhookEvents} onRefresh={loadWebhookEvents} onRetryWebhook={retryWebhook} />;
     if (page === "admin") return <AdminPage data={adminOverview} loading={loadingAdmin} error={adminError} onRefresh={() => loadAdminOverview(session?.idToken ?? "")} />;
-    if (page === "playground") return <PlaygroundPage projects={projects} idToken={session?.idToken ?? ""} onModerated={() => { void refreshDashboardData(); }} notify={notify} />;
+    if (page === "playground") return <PlaygroundPage projects={projects} idToken={session?.idToken ?? ""} initialProjectId={playgroundProjectId} onModerated={(projectId) => { incrementProjectActivity(projectId); void refreshDashboardData(); }} notify={notify} />;
     if (page === "projects") return <ProjectsPage accountId={accountId} projects={projects} onCreateProject={goToCreateProject} onSelectProject={openProject} />;
     if (page === "project-detail" && selectedProject && selectedProjectPolicy) {
       return (
@@ -627,6 +690,8 @@ export default function Dashboard() {
           onBack={() => { setSelectedProjectId(null); setPage("projects"); }}
           onSavePolicy={() => savePolicy(selectedProject.id)}
           savingPolicy={savingPolicyId === selectedProject.id}
+          onSaveRedactionSettings={(settings) => saveRedactionSettings(selectedProject.id, settings)}
+          savingRedactionSettings={savingRedactionSettingsId === selectedProject.id}
           onCreateApiKey={() => createApiKey(selectedProject.id)}
           onRenameProject={(name) => renameProject(selectedProject.id, name)}
           onDeleteProject={() => deleteProject(selectedProject.id)}
@@ -638,7 +703,7 @@ export default function Dashboard() {
         />
       );
     }
-    if (page === "create-project") return <CreateProjectPage onCancel={() => setPage("projects")} onCreateProject={createProject} notify={notify} />;
+    if (page === "create-project") return <CreateProjectPage accountPlanId={accountPlan?.planId ?? "free"} onCancel={() => setPage("projects")} onCreateProject={createProject} notify={notify} />;
     if (page === "keys") return <ApiKeysPage projects={projects} apiKeys={apiKeys} rawApiKey={rawApiKey} onDismissRawKey={() => setRawApiKey(null)} onCreateApiKey={createApiKey} onRenameApiKey={renameApiKey} onRevokeApiKey={revokeApiKey} onRotateApiKey={rotateApiKey} notify={notify} />;
     if (page === "settings") return <SettingsPage accountId={accountId} currentUser={currentUser} accountPlan={accountPlan} usage={usage} workspace={workspace} onWorkspaceChange={setWorkspace} idToken={session?.idToken ?? null} onChangePlan={changePlan} onManageBilling={manageBilling} onBillingActivated={refreshBillingAfterPayment} onDeleteAccount={deleteCurrentAccount} notify={notify} />;
     return null;
@@ -651,13 +716,13 @@ export default function Dashboard() {
   if (error) {
     return (
       <div style={{ minHeight: "100vh", background: "#050505", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-        <div style={{ width: "100%", maxWidth: "440px", background: "#0f0f0f", border: "1px solid rgba(255,90,90,0.22)", borderRadius: "16px", padding: "26px", textAlign: "center" }}>
+        <div style={{ width: "100%", maxWidth: "440px", background: "#050505", border: "1px solid rgba(255,90,90,0.22)", borderRadius: "16px", padding: "26px", textAlign: "center" }}>
           <div style={{ width: "42px", height: "42px", borderRadius: "11px", margin: "0 auto 16px", background: "rgba(255,90,90,0.1)", border: "1px solid rgba(255,90,90,0.25)" }} />
           <h1 style={{ margin: 0, fontSize: "19px", fontWeight: 600 }}>Could not load dashboard</h1>
           <p style={{ margin: "10px 0 0", fontSize: "13.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.55)", fontWeight: 300 }}>{error}</p>
           <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "22px" }}>
             <button onClick={() => window.location.reload()} style={{ padding: "9px 14px", borderRadius: "9px", border: "none", background: "#fff", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>Try again</button>
-            <button onClick={() => { clearSession(); router.replace("/login"); }} style={{ padding: "9px 14px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer" }}>Sign in again</button>
+            <button onClick={() => { clearSession(); router.replace("/login"); }} style={{ padding: "9px 14px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.12)", background: "#000", color: "rgba(255,255,255,0.72)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer" }}>Sign in again</button>
           </div>
         </div>
       </div>
@@ -667,8 +732,8 @@ export default function Dashboard() {
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#050505" }}>
       {/* Mobile top bar (hidden on desktop via CSS) */}
-      <div className="dash-mobilebar" style={{ position: "fixed", top: 0, left: 0, right: 0, height: "54px", zIndex: 30, alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: "rgba(11,11,11,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <button onClick={() => setMobileNavOpen(true)} aria-label="Open menu" style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", width: "38px", height: "38px", padding: "0 9px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", cursor: "pointer" }}>
+      <div className="dash-mobilebar" style={{ position: "fixed", top: 0, left: 0, right: 0, height: "54px", zIndex: 30, alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: "rgba(0,0,0,0.94)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <button onClick={() => setMobileNavOpen(true)} aria-label="Open menu" style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: "4px", width: "38px", height: "38px", padding: "0 9px", borderRadius: "9px", border: "1px solid rgba(255,255,255,0.1)", background: "#050505", cursor: "pointer" }}>
           <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
           <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
           <span style={{ height: "1.5px", background: "rgba(255,255,255,0.8)", borderRadius: "2px" }} />
@@ -682,11 +747,18 @@ export default function Dashboard() {
         <div className="dash-overlay" onClick={() => setMobileNavOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 55, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)" }} />
       )}
 
-      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} showAdmin={Boolean(adminOverview)} mobileOpen={mobileNavOpen} onSignOut={() => { clearSession(); router.replace("/login"); }} />
+      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} redactionCount={redactionCount} showAdmin={Boolean(adminOverview)} mobileOpen={mobileNavOpen} onSignOut={() => { clearSession(); router.replace("/login"); }} />
 
       <main className="dash-main" style={{ marginLeft: "250px", flex: 1, minHeight: "100vh", overflow: "hidden" }}>
+        <div className="dash-topbar" style={{ height: "82px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "22px", padding: "0 34px", background: "#000", borderBottom: "1px solid rgba(255,255,255,0.08)", position: "sticky", top: 0, zIndex: 18 }}>
+          <a href="/docs" style={{ color: "rgba(255,255,255,0.62)", fontSize: "14px", fontWeight: 500, textDecoration: "none" }}>Docs</a>
+          <a href="/contact" style={{ display: "inline-flex", alignItems: "center", gap: "10px", height: "38px", padding: "0 8px 0 16px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.1)", background: "#050505", color: "rgba(255,255,255,0.66)", fontSize: "14px", fontWeight: 600, textDecoration: "none", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+            <span>Need help?</span>
+            <span style={{ width: "24px", height: "24px", borderRadius: "9px", display: "grid", placeItems: "center", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.48)", fontSize: "12px", fontWeight: 700 }}>H</span>
+          </a>
+        </div>
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={`${page}-${selectedProjectId ?? "root"}`} className="dash-page-wrap" variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: "100vh" }}>
+          <motion.div key={`${page}-${selectedProjectId ?? "root"}`} className="dash-page-wrap" variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ minHeight: "calc(100vh - 82px)" }}>
             {renderPage()}
           </motion.div>
         </AnimatePresence>

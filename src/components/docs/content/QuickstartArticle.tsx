@@ -8,6 +8,7 @@ import { CodeBody, CodeCard, CodeCardHeader } from "../code/CodeCard";
 import { CodeLines } from "../code/CodeLines";
 import { CodeTabs } from "../code/CodeTabs";
 import { CopyButton } from "../code/CopyButton";
+import { highlightCode } from "../code/highlight";
 import { Callout, DecisionCard, DocFooterNav, InlineCode, Lead, NextStepCard, SectionHeading, StepHeading } from "../primitives";
 
 const API_BASE_URL = "https://6p0ws7vu2f.execute-api.us-east-1.amazonaws.com/dev";
@@ -234,13 +235,8 @@ const policyJson = [
   "}",
 ].join("\n");
 
-function plainLines(code: string): CodeLine[] {
-  return code.trim().split("\n").map((value) => ({ tokens: [[value, "rgba(255,255,255,0.86)"]] }));
-}
-
-
 function TextCodeCard({ title, code, status }: { title: string; code: string; status?: string }) {
-  const lines = useMemo(() => plainLines(code), [code]);
+  const lines = useMemo(() => highlightCode(code), [code]);
 
   return (
     <CodeCard>

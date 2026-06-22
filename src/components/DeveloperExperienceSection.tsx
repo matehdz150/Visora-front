@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { FlaskConical, ChevronDown, Play, ScanEye, Webhook } from "lucide-react";
 import { motion } from "framer-motion";
-import { Router, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const MONO = "'JetBrains Mono', monospace";
 

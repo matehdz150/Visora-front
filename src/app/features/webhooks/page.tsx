@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MarketingHeader } from "@/components/MarketingHeader";
 
 export const metadata: Metadata = {
   title: "Webhooks | Visora",
@@ -19,6 +20,8 @@ const webhooksHtml = String.raw`<style>
   @keyframes whGlow { 0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); } 50% { opacity: 0.95; transform: translate(-50%,-50%) scale(1.08); } }
   @keyframes whTravel { 0% { offset-distance: 0%; opacity: 0; } 14% { opacity: 1; } 86% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
   @keyframes whGridFloat { 0% { background-position: 0 0; } 100% { background-position: 0 -28px; } }
+
+.wh-root > nav { display: none !important; }
 
 @media (max-width: 900px) { .webhooks-nav-links { display: none !important; } }
 @media (max-width: 860px) {
@@ -307,5 +310,10 @@ const webhooksHtml = String.raw`<style>
 </div>`;
 
 export default function WebhooksFeaturePage() {
-  return <div dangerouslySetInnerHTML={{ __html: webhooksHtml }} />;
+  return (
+    <>
+      <MarketingHeader />
+      <div dangerouslySetInnerHTML={{ __html: webhooksHtml }} />
+    </>
+  );
 }

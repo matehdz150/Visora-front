@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MarketingHeader } from "@/components/MarketingHeader";
 
 export const metadata: Metadata = {
   title: "Redaction API | Visora",
@@ -16,6 +17,7 @@ const redactionHtml = String.raw`<style>
   @keyframes rdFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
   @keyframes rdSpin { 0% { transform: rotateX(60deg) rotateZ(-45deg); } 50% { transform: rotateX(60deg) rotateZ(-58deg); } 100% { transform: rotateX(60deg) rotateZ(-45deg); } }
   @keyframes rdGlow { 0%,100% { opacity: 0.55; transform: translate(-50%,-50%) scale(0.96); } 50% { opacity: 0.95; transform: translate(-50%,-50%) scale(1.08); } }
+  .rd-root > nav { display: none !important; }
   @media (max-width: 900px) { .rd-nav-links { display: none !important; } }
   @media (max-width: 860px) {
     .rd-root > nav, .rd-root > section, .rd-root > footer { padding-left: 18px !important; padding-right: 18px !important; }
@@ -153,5 +155,10 @@ const redactionHtml = String.raw`<style>
 </div>`;
 
 export default function RedactionFeaturePage() {
-  return <div dangerouslySetInnerHTML={{ __html: redactionHtml }} />;
+  return (
+    <>
+      <MarketingHeader />
+      <div dangerouslySetInnerHTML={{ __html: redactionHtml }} />
+    </>
+  );
 }

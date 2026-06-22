@@ -98,7 +98,9 @@ export default function Dashboard() {
   const [loadingWebhookEvents, setLoadingWebhookEvents] = useState(false);
   const [webhooksByProject, setWebhooksByProject] = useState<Record<string, WebhookEndpoint[]>>({});
   const [loadingWebhooksProjectId, setLoadingWebhooksProjectId] = useState<string | null>(null);
-  const [webhookSecret, setWebhookSecret] = useState<{ projectId: string; secret: string } | null>(null);
+  const [webhookSecret, setWebhookSecret] = useState<{ projectId: string; webhookId?: string; secret: string } | null>(null);
+  const [accountWebhooks, setAccountWebhooks] = useState<WebhookEndpoint[]>([]);
+  const [loadingAccountWebhooks, setLoadingAccountWebhooks] = useState(false);
   const [adminOverview, setAdminOverview] = useState<AdminOverviewData | null>(null);
   const [loadingAdmin, setLoadingAdmin] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
@@ -294,6 +296,20 @@ export default function Dashboard() {
     }
   };
 
+  const loadAccountWebhooks = async () => {
+    if (!session?.idToken) return;
+
+    setLoadingAccountWebhooks(true);
+    try {
+      const webhooks = await listProjectWebhooks({ idToken: session.idToken });
+      setAccountWebhooks(webhooks.map(mapWebhook));
+    } catch (err) {
+      notify({ kind: "error", title: "Could not load webhooks", message: err instanceof Error ? err.message : "Please try again." });
+    } finally {
+      setLoadingAccountWebhooks(false);
+    }
+  };
+
   const openProject = (projectId: string) => {
     const project = projects.find((item) => item.id === projectId);
     setPolicyByProject((prev) =>
@@ -481,7 +497,8 @@ export default function Dashboard() {
         ...prev,
         [projectId]: [mapWebhook(result.webhook), ...(prev[projectId] ?? [])],
       }));
-      setWebhookSecret({ projectId, secret: result.secret });
+      setAccountWebhooks((prev) => [mapWebhook(result.webhook), ...prev]);
+      setWebhookSecret({ projectId, webhookId: result.webhook.webhookId, secret: result.secret });
       notify({ kind: "success", title: "Webhook created", message: "Copy the signing secret now. It will only be shown once." });
     } catch (err) {
       notify({ kind: "error", title: "Could not create webhook", message: err instanceof Error ? err.message : "Please try again." });
@@ -515,7 +532,8 @@ export default function Dashboard() {
           item.webhookId === webhookId ? mapWebhook(result.webhook) : item,
         ),
       }));
-      setWebhookSecret({ projectId, secret: result.secret });
+      setAccountWebhooks((prev) => prev.map((item) => (item.webhookId === webhookId ? mapWebhook(result.webhook) : item)));
+      setWebhookSecret({ projectId, webhookId, secret: result.secret });
       notify({ kind: "success", title: "Webhook secret rotated", message: "Copy the new signing secret now. The previous secret is retained for 24 hours." });
     } catch (err) {
       notify({ kind: "error", title: "Could not rotate webhook secret", message: err instanceof Error ? err.message : "Please try again." });
@@ -534,6 +552,7 @@ export default function Dashboard() {
           item.webhookId === webhookId ? mapWebhook(webhook) : item,
         ),
       }));
+      setAccountWebhooks((prev) => prev.map((item) => (item.webhookId === webhookId ? mapWebhook(webhook) : item)));
       notify({ kind: "success", title: "Webhook disabled", message: "Visora will stop sending events to this endpoint." });
     } catch (err) {
       notify({ kind: "error", title: "Could not disable webhook", message: err instanceof Error ? err.message : "Please try again." });
@@ -658,7 +677,7 @@ export default function Dashboard() {
     setMobileNavOpen(false);
     if (p !== "playground") setPlaygroundProjectId(null);
     if (p !== "project-detail") setSelectedProjectId(null);
-    if (p === "webhooks") void loadWebhookEvents();
+    if (p === "webhooks") { void loadAccountWebhooks(); void loadWebhookEvents(); }
     if (p === "admin" && session?.idToken) void loadAdminOverview(session.idToken);
   };
 
@@ -673,7 +692,7 @@ export default function Dashboard() {
     if (page === "moderations") return <ModerationsPage projects={projects} logs={moderationLogs} onSelectMod={setSelectedMod} />;
     if (page === "redactions") return <RedactionsPage projects={projects} idToken={session?.idToken} onCreateProject={goToCreateProject} onSelectProject={openProject} onOpenPlayground={openPlaygroundProject} />;
     if (page === "reviews") return <ReviewsPage projects={projects} reviews={reviewQueue} resolvingReviewId={resolvingReviewId} onOpenModeration={openReviewModeration} onDecideReview={decideReview} />;
-    if (page === "webhooks") return <WebhooksPage projects={projects} events={webhookEvents} loading={loadingWebhookEvents} onRefresh={loadWebhookEvents} onRetryWebhook={retryWebhook} />;
+    if (page === "webhooks") return <WebhooksPage projects={projects} webhooks={accountWebhooks} events={webhookEvents} loading={loadingWebhookEvents} loadingWebhooks={loadingAccountWebhooks} newSecret={webhookSecret ?? null} onCreateWebhook={createWebhook} onDisableWebhook={disableWebhook} onRotateSecret={rotateWebhookSecret} onDismissSecret={() => setWebhookSecret(null)} onRefresh={loadWebhookEvents} onRetryWebhook={retryWebhook} />;
     if (page === "admin") return <AdminPage data={adminOverview} loading={loadingAdmin} error={adminError} onRefresh={() => loadAdminOverview(session?.idToken ?? "")} />;
     if (page === "playground") return <PlaygroundPage projects={projects} idToken={session?.idToken ?? ""} initialProjectId={playgroundProjectId} onModerated={(projectId) => { incrementProjectActivity(projectId); void refreshDashboardData(); }} notify={notify} />;
     if (page === "projects") return <ProjectsPage accountId={accountId} projects={projects} onCreateProject={goToCreateProject} onSelectProject={openProject} />;

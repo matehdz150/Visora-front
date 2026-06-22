@@ -18,6 +18,7 @@ const featureLinks = [
 const docsLinks = [
   ["Moderation", "/docs", "API reference"],
   ["Redaction", "/docs/redaction", "Blur workflows"],
+  ["Webhooks", "/docs/webhooks", "Signed event delivery"],
 ] as const;
 
 const helpLinks = [

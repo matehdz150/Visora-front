@@ -831,122 +831,168 @@ export default function VisoraLanding({
             </button>
             {featuresOpen ? (
               <>
-              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-28px", height: "14px" }} />
-              <div
-                role="menu"
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 14px)",
-                  left: "-18px",
-                  width: "430px",
-                  display: "grid",
-                  gridTemplateColumns: "142px 1fr",
-                  gap: "14px",
-                  padding: "16px",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background:
-                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
-                  boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
-                }}
-              >
                 <div
+                  aria-hidden="true"
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    padding: "9px 6px",
+                    position: "absolute",
+                    top: "100%",
+                    left: "-28px",
+                    right: "-28px",
+                    height: "14px",
                   }}
-                >
-                  {[
-                    [
-                      "Moderation",
-                      "/docs#moderate",
-                      "Scan uploads and image keys.",
-                    ],
-                    [
-                      "Redaction",
-                      "/features/redaction",
-                      "Blur faces, text, and plates.",
-                    ],
-                    [
-                      "Webhooks",
-                      "/features/webhooks",
-                      "Deliver signed events.",
-                    ],
-                    [
-                      "Review Queue",
-                      "/docs#review-queue",
-                      "Resolve manual decisions.",
-                    ],
-                    [
-                      "Policies",
-                      "/docs#policies",
-                      "Set project rules.",
-                    ],
-                  ].map(([label, href, hint]) => (
-                    <a
-                      key={label}
-                      href={href}
-                      role="menuitem"
-                      className="nav-dropdown-link"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <div
-                        className="nav-dropdown-title"
-                        style={{
-                          fontSize: label === "Review Queue" || label === "Moderation" ? "20px" : "21px",
-                          lineHeight: 1.1,
-                          letterSpacing: "-0.035em",
-                          color:
-                            label === "Moderation"
-                              ? "#fff"
-                              : "rgba(255,255,255,0.58)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {label}
-                      </div>
-                      <div
-                        className="nav-dropdown-hint"
-                        style={{
-                          marginTop: "5px",
-                          fontSize: "11.5px",
-                          color: "rgba(255,255,255,0.34)",
-                        }}
-                      >
-                        {hint}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-                <a
-                  href="/features/redaction"
+                />
+                <div
+                  role="menu"
                   style={{
-                    position: "relative",
-                    overflow: "hidden",
-                    minHeight: "168px",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    position: "absolute",
+                    top: "calc(100% + 14px)",
+                    left: "-18px",
+                    width: "430px",
+                    display: "grid",
+                    gridTemplateColumns: "142px 1fr",
+                    gap: "14px",
+                    padding: "16px",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(255,255,255,0.12)",
                     background:
-                      "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))",
-                    padding: "18px",
-                    textDecoration: "none",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
+                      "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                    boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
                   }}
                 >
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.28 }} />
-                  <div style={{ position: "relative" }}>
-                    <div style={{ fontSize: "22px", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#fff", marginBottom: "8px" }}>Redaction</div>
-                    <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.52)" }}>Create paid-plan projects that return processed images with sensitive regions hidden.</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "16px",
+                      padding: "9px 6px",
+                    }}
+                  >
+                    {[
+                      [
+                        "Moderation",
+                        "/docs#moderate",
+                        "Scan uploads and image keys.",
+                      ],
+                      [
+                        "Redaction",
+                        "/features/redaction",
+                        "Blur faces, text, and plates.",
+                      ],
+                      [
+                        "Webhooks",
+                        "/features/webhooks",
+                        "Deliver signed events.",
+                      ],
+                      [
+                        "Review Queue",
+                        "/docs#review-queue",
+                        "Resolve manual decisions.",
+                      ],
+                      ["Policies", "/docs#policies", "Set project rules."],
+                    ].map(([label, href, hint]) => (
+                      <a
+                        key={label}
+                        href={href}
+                        role="menuitem"
+                        className="nav-dropdown-link"
+                        style={{ textDecoration: "none" }}
+                      >
+                        <div
+                          className="nav-dropdown-title"
+                          style={{
+                            fontSize:
+                              label === "Review Queue" || label === "Moderation"
+                                ? "20px"
+                                : "21px",
+                            lineHeight: 1.1,
+                            letterSpacing: "-0.035em",
+                            color:
+                              label === "Moderation"
+                                ? "#fff"
+                                : "rgba(255,255,255,0.58)",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {label}
+                        </div>
+                        <div
+                          className="nav-dropdown-hint"
+                          style={{
+                            marginTop: "5px",
+                            fontSize: "11.5px",
+                            color: "rgba(255,255,255,0.34)",
+                          }}
+                        >
+                          {hint}
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                  <span style={{ position: "relative", fontSize: "12.5px", color: "#aebfff", fontWeight: 500 }}>Explore redaction →</span>
-                </a>
-              </div>
+                  <a
+                    href="/features/redaction"
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      minHeight: "168px",
+                      borderRadius: "16px",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      background:
+                        "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))",
+                      padding: "18px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        backgroundImage:
+                          "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.28,
+                      }}
+                    />
+                    <div style={{ position: "relative" }}>
+                      <div
+                        style={{
+                          fontSize: "22px",
+                          lineHeight: 1.15,
+                          letterSpacing: "-0.035em",
+                          color: "#fff",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Redaction
+                      </div>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12.5px",
+                          lineHeight: 1.55,
+                          color: "rgba(255,255,255,0.52)",
+                        }}
+                      >
+                        Create paid-plan projects that return processed images
+                        with sensitive regions hidden.
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        position: "relative",
+                        fontSize: "12.5px",
+                        color: "#aebfff",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Explore redaction →
+                    </span>
+                  </a>
+                </div>
               </>
             ) : null}
           </div>
@@ -1013,47 +1059,148 @@ export default function VisoraLanding({
             </button>
             {docsOpen ? (
               <>
-              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-28px", height: "14px" }} />
-              <div
-                role="menu"
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 14px)",
-                  left: "-18px",
-                  width: "430px",
-                  display: "grid",
-                  gridTemplateColumns: "142px 1fr",
-                  gap: "14px",
-                  padding: "16px",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background:
-                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
-                  boxShadow: "0 28px 76px rgba(0,0,0,0.58)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px", padding: "9px 6px" }}>
-                  {[
-                    ["Moderation", "/docs", "API reference"],
-                    ["Redaction", "/docs/redaction", "Blur workflows"],
-                  ].map(([label, href, hint]) => (
-                    <a key={label} href={href} role="menuitem" className="nav-dropdown-link" style={{ textDecoration: "none" }}>
-                      <div className="nav-dropdown-title" style={{ fontSize: "21px", lineHeight: 1.1, letterSpacing: "-0.035em", color: label === "Moderation" ? "#fff" : "rgba(255,255,255,0.58)", fontWeight: 500 }}>{label}</div>
-                      <div className="nav-dropdown-hint" style={{ marginTop: "5px", fontSize: "11.5px", color: "rgba(255,255,255,0.34)" }}>{hint}</div>
-                    </a>
-                  ))}
-                </div>
-                <a href="/docs/redaction" className="nav-dropdown-card" style={{ position: "relative", overflow: "hidden", minHeight: "168px", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)", background: "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))", padding: "18px", textDecoration: "none", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)", backgroundSize: "28px 28px", opacity: 0.28 }} />
-                  <div style={{ position: "relative" }}>
-                    <div style={{ fontSize: "22px", lineHeight: 1.15, letterSpacing: "-0.035em", color: "#fff", marginBottom: "8px" }}>Developer docs</div>
-                    <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.52)" }}>Choose the moderation or redaction guide for your integration.</p>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: "-28px",
+                    right: "-28px",
+                    height: "14px",
+                  }}
+                />
+                <div
+                  role="menu"
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 14px)",
+                    left: "-18px",
+                    width: "430px",
+                    display: "grid",
+                    gridTemplateColumns: "142px 1fr",
+                    gap: "14px",
+                    padding: "16px",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background:
+                      "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                    boxShadow: "0 28px 76px rgba(0,0,0,0.58)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "16px",
+                      padding: "9px 6px",
+                    }}
+                  >
+                    {[
+                      ["Moderation", "/docs", "API reference"],
+                      ["Redaction", "/docs/redaction", "Blur workflows"],
+                      ["Webhooks", "/docs/webhooks", "Signed event delivery"],
+                    ].map(([label, href, hint]) => (
+                      <a
+                        key={label}
+                        href={href}
+                        role="menuitem"
+                        className="nav-dropdown-link"
+                        style={{ textDecoration: "none" }}
+                      >
+                        <div
+                          className="nav-dropdown-title"
+                          style={{
+                            fontSize: "21px",
+                            lineHeight: 1.1,
+                            letterSpacing: "-0.035em",
+                            color:
+                              label === "Moderation"
+                                ? "#fff"
+                                : "rgba(255,255,255,0.58)",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {label}
+                        </div>
+                        <div
+                          className="nav-dropdown-hint"
+                          style={{
+                            marginTop: "5px",
+                            fontSize: "11.5px",
+                            color: "rgba(255,255,255,0.34)",
+                          }}
+                        >
+                          {hint}
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                  <span style={{ position: "relative", fontSize: "12.5px", color: "#aebfff", fontWeight: 500 }}>Open redaction docs →</span>
-                </a>
-              </div>
+                  <a
+                    href="/docs/redaction"
+                    className="nav-dropdown-card"
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      minHeight: "168px",
+                      borderRadius: "16px",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      background:
+                        "radial-gradient(circle at 70% 10%, rgba(126,155,255,0.18), rgba(255,255,255,0.035) 42%, rgba(255,255,255,0.02))",
+                      padding: "18px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        backgroundImage:
+                          "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.28,
+                      }}
+                    />
+                    <div style={{ position: "relative" }}>
+                      <div
+                        style={{
+                          fontSize: "22px",
+                          lineHeight: 1.15,
+                          letterSpacing: "-0.035em",
+                          color: "#fff",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Developer docs
+                      </div>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12.5px",
+                          lineHeight: 1.55,
+                          color: "rgba(255,255,255,0.52)",
+                        }}
+                      >
+                        Choose the moderation or redaction guide for your
+                        integration.
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        position: "relative",
+                        fontSize: "12.5px",
+                        color: "#aebfff",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Open redaction docs →
+                    </span>
+                  </a>
+                </div>
               </>
             ) : null}
           </div>
@@ -1132,142 +1279,151 @@ export default function VisoraLanding({
             </button>
             {helpOpen ? (
               <>
-              <div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "-28px", right: "-190px", height: "14px" }} />
-              <div
-                role="menu"
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 14px)",
-                  right: "-160px",
-                  width: "430px",
-                  display: "grid",
-                  gridTemplateColumns: "142px 1fr",
-                  gap: "14px",
-                  padding: "16px",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  background:
-                    "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
-                  boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
-                }}
-              >
                 <div
+                  aria-hidden="true"
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    padding: "9px 6px",
+                    position: "absolute",
+                    top: "100%",
+                    left: "-28px",
+                    right: "-190px",
+                    height: "14px",
                   }}
-                >
-                  {[
-                    ["Contact", "/contact", "Send us a message"],
-                    [
-                      "Support",
-                      "mailto:support@visoracloud.com",
-                      "support@visoracloud.com",
-                    ],
-                    ["Docs", "/docs", "Integration guides"],
-                  ].map(([label, href, hint]) => (
-                    <a
-                      key={label}
-                      href={href}
-                      className="nav-dropdown-link"
-                      style={{ textDecoration: "none" }}
-                    >
-                      <div
-                        className="nav-dropdown-title"
-                        style={{
-                          fontSize: "21px",
-                          lineHeight: 1.1,
-                          letterSpacing: "-0.035em",
-                          color:
-                            label === "Contact"
-                              ? "#fff"
-                              : "rgba(255,255,255,0.58)",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {label}
-                      </div>
-                      <div
-                        className="nav-dropdown-hint"
-                        style={{
-                          marginTop: "5px",
-                          fontSize: "11.5px",
-                          color: "rgba(255,255,255,0.34)",
-                        }}
-                      >
-                        {hint}
-                      </div>
-                    </a>
-                  ))}
-                </div>
-                <a
-                  href="/contact"
-                  className="nav-dropdown-card"
+                />
+                <div
+                  role="menu"
                   style={{
-                    position: "relative",
-                    overflow: "hidden",
-                    minHeight: "168px",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    position: "absolute",
+                    top: "calc(100% + 14px)",
+                    right: "-160px",
+                    width: "430px",
+                    display: "grid",
+                    gridTemplateColumns: "142px 1fr",
+                    gap: "14px",
+                    padding: "16px",
+                    borderRadius: "20px",
+                    border: "1px solid rgba(255,255,255,0.12)",
                     background:
-                      "radial-gradient(circle at 70% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.02))",
-                    padding: "18px",
-                    textDecoration: "none",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
+                      "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,20,0.94))",
+                    boxShadow: "0 34px 90px rgba(0,0,0,0.64)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
                   }}
                 >
                   <div
                     style={{
-                      position: "absolute",
-                      inset: 0,
-                      backgroundImage:
-                        "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
-                      backgroundSize: "28px 28px",
-                      opacity: 0.28,
-                    }}
-                  />
-                  <div style={{ position: "relative" }}>
-                    <div
-                      style={{
-                        fontSize: "22px",
-                        lineHeight: 1.15,
-                        letterSpacing: "-0.035em",
-                        color: "#fff",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      Need help integrating?
-                    </div>
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "12.5px",
-                        lineHeight: 1.55,
-                        color: "rgba(255,255,255,0.52)",
-                      }}
-                    >
-                      Tell us what you are building and we will point you in the
-                      right direction.
-                    </p>
-                  </div>
-                  <span
-                    style={{
-                      position: "relative",
-                      fontSize: "12.5px",
-                      color: "#aebfff",
-                      fontWeight: 500,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "16px",
+                      padding: "9px 6px",
                     }}
                   >
-                    Open contact →
-                  </span>
-                </a>
-              </div>
+                    {[
+                      ["Contact", "/contact", "Send us a message"],
+                      [
+                        "Support",
+                        "mailto:support@visoracloud.com",
+                        "support@visoracloud.com",
+                      ],
+                      ["Docs", "/docs", "Integration guides"],
+                    ].map(([label, href, hint]) => (
+                      <a
+                        key={label}
+                        href={href}
+                        className="nav-dropdown-link"
+                        style={{ textDecoration: "none" }}
+                      >
+                        <div
+                          className="nav-dropdown-title"
+                          style={{
+                            fontSize: "21px",
+                            lineHeight: 1.1,
+                            letterSpacing: "-0.035em",
+                            color:
+                              label === "Contact"
+                                ? "#fff"
+                                : "rgba(255,255,255,0.58)",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {label}
+                        </div>
+                        <div
+                          className="nav-dropdown-hint"
+                          style={{
+                            marginTop: "5px",
+                            fontSize: "11.5px",
+                            color: "rgba(255,255,255,0.34)",
+                          }}
+                        >
+                          {hint}
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                  <a
+                    href="/contact"
+                    className="nav-dropdown-card"
+                    style={{
+                      position: "relative",
+                      overflow: "hidden",
+                      minHeight: "168px",
+                      borderRadius: "16px",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      background:
+                        "radial-gradient(circle at 70% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.02))",
+                      padding: "18px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        backgroundImage:
+                          "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.28,
+                      }}
+                    />
+                    <div style={{ position: "relative" }}>
+                      <div
+                        style={{
+                          fontSize: "22px",
+                          lineHeight: 1.15,
+                          letterSpacing: "-0.035em",
+                          color: "#fff",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Need help integrating?
+                      </div>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: "12.5px",
+                          lineHeight: 1.55,
+                          color: "rgba(255,255,255,0.52)",
+                        }}
+                      >
+                        Tell us what you are building and we will point you in
+                        the right direction.
+                      </p>
+                    </div>
+                    <span
+                      style={{
+                        position: "relative",
+                        fontSize: "12.5px",
+                        color: "#aebfff",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Open contact →
+                    </span>
+                  </a>
+                </div>
               </>
             ) : null}
           </div>
@@ -1389,16 +1545,14 @@ export default function VisoraLanding({
           <p
             style={{
               margin: "28px 0 0",
-              maxWidth: "470px",
+              maxWidth: "490px",
               fontSize: "18px",
               lineHeight: 1.55,
               color: "rgba(255,255,255,0.62)",
               fontWeight: 300,
             }}
           >
-            Detect nudity, violence, weapons, drugs, hate symbols, gambling, and
-            unsafe content — and blur or black-box faces, text, and license
-            plates — using a single API.
+            Detect unsafe content and automatically blur faces, documents, text, and other sensitive information.
           </p>
 
           <div
@@ -1462,7 +1616,6 @@ export default function VisoraLanding({
               "API First",
               "Project Isolation",
               "Custom Policies",
-              "Usage-Based Plans",
             ].map((label) => (
               <div
                 key={label}

@@ -39,7 +39,7 @@ export interface CurrentUser {
 export type PlanId = "free" | "starter" | "plus" | "growth" | "scale";
 export type ProjectType = "moderation" | "redaction";
 export type RedactionStyle = "blur" | "black_box";
-export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document";
+export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document" | "pii" | "financial" | "medical" | "dates";
 
 export interface RedactionSettings {
   faceBlur: boolean;
@@ -1042,10 +1042,10 @@ export async function fetchDashboardRedactionLogs(params: {
 
 export async function listProjectWebhooks(params: {
   idToken: string;
-  projectId: string;
+  projectId?: string;
 }): Promise<DashboardWebhookEndpoint[]> {
-  const searchParams = new URLSearchParams({ projectId: params.projectId });
-  const response = await fetch(API_BASE_URL + "/webhooks?" + searchParams.toString(), {
+  const query = params.projectId ? "?" + new URLSearchParams({ projectId: params.projectId }).toString() : "";
+  const response = await fetch(API_BASE_URL + "/webhooks" + query, {
     method: "GET",
     headers: { Authorization: "Bearer " + params.idToken },
   });

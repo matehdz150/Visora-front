@@ -56,10 +56,14 @@ const redactionStyleOptions = [
 ] as const;
 
 const textCategoryOptions: Array<{ value: RedactionTextCategory; label: string; description: string }> = [
-  { value: "id_document", label: "ID documents", description: "Blur values while keeping field labels readable." },
-  { value: "sexual", label: "Sexual text", description: "Hide explicit words and adult references." },
-  { value: "profanity", label: "Profanity", description: "Hide offensive or vulgar words." },
-  { value: "credentials", label: "Credentials", description: "Hide tokens, passwords, and secret-like text." },
+  { value: "id_document", label: "Identity documents", description: "Passport, license, national ID — blur sensitive fields, not the whole document." },
+  { value: "pii", label: "PII text", description: "Emails, phone numbers, addresses, IDs, and tax numbers (RFC, CURP, SSN)." },
+  { value: "dates", label: "Dates", description: "Dates in any format — DOB, issue, and expiry (01/02/2024, 2024-01-02, Jan 5 2024)." },
+  { value: "financial", label: "Financial data", description: "Card numbers (Luhn-checked), bank accounts, IBAN, and CLABE." },
+  { value: "credentials", label: "Credentials", description: "Passwords, API keys, tokens, and secrets." },
+  { value: "medical", label: "Legal / medical", description: "Patient IDs, record numbers, and case numbers near their labels." },
+  { value: "sexual", label: "Sexual text", description: "Explicit words and adult references." },
+  { value: "profanity", label: "Profanity", description: "Offensive or vulgar words." },
 ];
 
 function slugify(name: string) {
@@ -207,7 +211,7 @@ export function CreateProjectPage({
     redactionSettings.faceBlur ? "Faces" : null,
     redactionSettings.textBlur ? "Text" : null,
     redactionSettings.licensePlateBlur ? "License plates" : null,
-    redactionSettings.textBlur && redactionSettings.textCategories.length > 0 ? "Text categories" : null,
+    redactionSettings.textBlur && redactionSettings.textCategories.length > 0 ? `${redactionSettings.textCategories.length} categories` : null,
     redactionSettings.textBlur && redactionSettings.customWords.length > 0 ? "Custom words" : null,
     redactionSettings.textBlur && redactionSettings.ignoredWords.length > 0 ? "Ignored words" : null,
   ].filter(Boolean).join(", ") || "No blur enabled";
@@ -356,7 +360,7 @@ export function CreateProjectPage({
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   ["faceBlur", "Face blur", "Blur detected faces in uploaded images."],
-                  ["textBlur", "Text blur", "Blur visible text such as signs, documents, or IDs."],
+                  ["textBlur", "Text blur", "Redact text in the image. Leave categories empty to blur all text, or pick categories below to redact only specific data."],
                   ["licensePlateBlur", "License plate blur", "Blur detected text that looks like a vehicle plate."],
                 ].map(([key, title, description]) => {
                   const settingKey = key as keyof Pick<RedactionSettings, "faceBlur" | "textBlur" | "licensePlateBlur">;
@@ -388,7 +392,8 @@ export function CreateProjectPage({
               {redactionSettings.textBlur && (
                 <>
                   <div style={{ marginTop: "18px" }}>
-                    <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", marginBottom: "10px" }}>Text handling</div>
+                    <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.72)", marginBottom: "4px" }}>Detection categories</div>
+                    <div style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.4)", marginBottom: "10px", lineHeight: 1.45 }}>Leave empty to blur all text, or pick categories to redact only those data types.</div>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
                       {textCategoryOptions.map((option) => {
                         const selected = redactionSettings.textCategories.includes(option.value);

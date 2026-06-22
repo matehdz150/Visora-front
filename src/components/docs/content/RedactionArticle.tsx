@@ -12,13 +12,23 @@ const API_BASE_URL = "https://6p0ws7vu2f.execute-api.us-east-1.amazonaws.com/dev
 
 const settingsRows = [
   ["faceBlur", "boolean", "Blur or black-box detected faces."],
-  ["textBlur", "boolean", "Enable OCR-based text redaction."],
+  ["textBlur", "boolean", "Master text redaction switch. With no categories it blurs all detected text; with categories it redacts only those data types."],
   ["licensePlateBlur", "boolean", "Redact license plate-like text detected in the image."],
   ["redactionStyle", "blur | black_box", "Choose visual treatment for redacted regions."],
-  ["textCategories", "sexual | profanity | credentials | id_document", "Optional text categories to redact when textBlur is enabled."],
+  ["textCategories", "id_document | pii | dates | financial | credentials | medical | sexual | profanity", "Selective detection categories (require textBlur). When set, only these data types are redacted instead of all text. id_document and medical blur sensitive values near their labels; pii/dates/financial/credentials match value patterns (emails, phones, dates in any format, cards, IBAN/CLABE, API keys, JWTs)."],
   ["customWords", "string[]", "Exact words or phrases your project wants to redact."],
   ["ignoredWords", "string[]", "Words that should not be redacted, useful for ID labels like name or address."],
   ["minConfidence", "number", "Minimum detection confidence from 0 to 100. Default is 80."],
+];
+
+const categoryRows = [
+  ["id_document", "Identity-document fields (passport, license, national ID) — blurs sensitive values near their labels, not the whole document."],
+  ["pii", "Emails, phone numbers, addresses, IDs, and tax numbers (RFC, CURP, SSN)."],
+  ["dates", "Dates in any format — DOB, issue, and expiry (01/02/2024, 2024-01-02, Jan 5 2024)."],
+  ["financial", "Card numbers (Luhn-checked), bank account numbers, IBAN, and CLABE."],
+  ["credentials", "Passwords, API keys (sk_, ghp_, AWS), tokens, JWTs, and secrets."],
+  ["medical", "Patient IDs, record numbers, and case numbers near their labels."],
+  ["sexual / profanity", "Explicit or offensive wording."],
 ];
 
 const errorRows = [
@@ -114,7 +124,15 @@ const responseCode = `{
 }`;
 
 const typesCode = `type RedactionStyle = "blur" | "black_box";
-type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document";
+type RedactionTextCategory =
+  | "id_document"   // passport, license, national ID — sensitive fields only
+  | "pii"           // emails, phones, addresses, IDs, tax numbers
+  | "dates"         // dates in any format — DOB, issue, expiry
+  | "financial"     // card numbers, bank accounts, IBAN, CLABE
+  | "credentials"   // passwords, API keys, tokens, secrets
+  | "medical"       // patient IDs, record numbers, case numbers
+  | "sexual"
+  | "profanity";
 
 interface RedactionSettings {
   faceBlur: boolean;
@@ -126,6 +144,47 @@ interface RedactionSettings {
   ignoredWords: string[];
   minConfidence: number;
 }`;
+
+const webhookEventCode = `{
+  "id": "evt_01KVMZ7P2YQ9XJ8R5C3F0N2T6B",
+  "type": "redaction.completed",
+  "createdAt": "2026-06-21T18:24:11.482Z",
+  "accountId": "acc_123",
+  "projectId": "proj_123",
+  "data": {
+    "redactionId": "red_01KVMZ6K4RBZ1PAMWJH7EK4XQW",
+    "imageKey": "accounts/acc_123/projects/proj_123/uploads/profile.jpg",
+    "redactedImageKey": "accounts/acc_123/projects/proj_123/redacted/01KVMZ6K.jpg",
+    "style": "blur",
+    "facesBlurred": 1,
+    "textBlurred": 2,
+    "licensePlatesBlurred": 1,
+    "regions": [
+      {
+        "type": "license_plate",
+        "text": "GR-3004D",
+        "confidence": 93.1,
+        "boundingBox": { "left": 0.41, "top": 0.78, "width": 0.14, "height": 0.05 }
+      }
+    ],
+    "createdAt": "2026-06-21T18:24:11.300Z"
+  }
+}`;
+
+const webhookHandlerCode = `import { createNextWebhookHandler } from "@visoracloud/client";
+
+// Visora signs every delivery; the handler verifies the signature for you.
+export const POST = createNextWebhookHandler({
+  secret: process.env.VISORA_WEBHOOK_SECRET!,
+  onEvent: async (event) => {
+    if (event.type === "redaction.completed") {
+      // event.data is narrowed to VisoraRedactionCompletedData
+      const { redactionId, redactedImageKey, regions } = event.data;
+      console.log("Redacted", redactionId, "->", redactedImageKey);
+      console.log(regions.length, "regions blurred");
+    }
+  },
+});`;
 
 function TextCodeCard({ title, code, status }: { title: string; code: string; status?: string }) {
   const lines = useMemo(() => highlightCode(code), [code]);
@@ -179,7 +238,9 @@ export const REDACTION_NAV_GROUPS = [
       { label: "SDK usage", href: "#sdk" },
       { label: "REST API", href: "#rest" },
       { label: "Project settings", href: "#settings" },
+      { label: "Detection categories", href: "#categories" },
       { label: "Response model", href: "#response" },
+      { label: "Webhooks", href: "#webhooks" },
       { label: "Errors", href: "#errors" },
     ],
   },
@@ -187,7 +248,7 @@ export const REDACTION_NAV_GROUPS = [
     title: "More Docs",
     items: [
       { label: "Moderation API", href: "/docs" },
-      { label: "Webhooks", href: "/docs#webhooks" },
+      { label: "Webhooks API", href: "/docs/webhooks" },
       { label: "Pricing", href: "/pricing" },
     ],
   },
@@ -198,7 +259,9 @@ export const REDACTION_TOC_ITEMS = [
   { label: "SDK", href: "#sdk" },
   { label: "REST", href: "#rest" },
   { label: "Settings", href: "#settings" },
+  { label: "Categories", href: "#categories" },
   { label: "Response", href: "#response" },
+  { label: "Webhooks", href: "#webhooks" },
   { label: "Errors", href: "#errors" },
 ];
 
@@ -240,9 +303,25 @@ export function RedactionArticle({ articleRef }: { articleRef?: React.Ref<HTMLEl
       <SimpleTable headers={["Setting", "Type", "Behavior"]} rows={settingsRows} />
       <TextCodeCard title="Exported SDK types" code={typesCode} />
 
+      <SectionHeading id="categories">Detection categories</SectionHeading>
+      <Lead><InlineCode>textCategories</InlineCode> requires <InlineCode>textBlur</InlineCode>. With text blur on and no categories, all detected text is blurred. Add categories to redact only specific data types instead. <InlineCode>id_document</InlineCode> and <InlineCode>medical</InlineCode> blur the sensitive value next to a label; the others match value patterns directly.</Lead>
+      <SimpleTable headers={["Category", "Detects"]} rows={categoryRows} />
+      <Callout>
+        Pattern-based categories are deterministic but not perfect. Validate on real images for your use case — addresses and generic IDs are the hardest to detect.
+      </Callout>
+
       <SectionHeading id="response">Response model</SectionHeading>
       <Lead>The response includes the original object key, the redacted object key, a temporary 5 minute <InlineCode>redactedImageUrl</InlineCode>, aggregate counts, and normalized bounding boxes for the redacted regions.</Lead>
       <TextCodeCard title="200 OK" code={responseCode} status="application/json" />
+
+      <SectionHeading id="webhooks">Webhooks</SectionHeading>
+      <Lead>Subscribe a <InlineCode>redaction</InlineCode> project endpoint to the <InlineCode>redaction.completed</InlineCode> event in the dashboard. Every successful <InlineCode>POST /redact</InlineCode> emits one. Deliveries are asynchronous, HMAC-signed, retried, and moved to a dead-letter queue after repeated failures, so they never block or slow the redaction response.</Lead>
+      <TextCodeCard title="redaction.completed event" code={webhookEventCode} status="POST to your endpoint" />
+      <Lead>Each delivery carries <InlineCode>visora-timestamp</InlineCode> and <InlineCode>visora-signature</InlineCode> headers. The SDK verifies the signature and narrows <InlineCode>event.data</InlineCode> by event type, so no manual casting is required.</Lead>
+      <TextCodeCard title="Next.js webhook route" code={webhookHandlerCode} />
+      <Callout>
+        Redaction endpoints only receive <InlineCode>redaction.completed</InlineCode>. Moderation and review events are scoped to moderation projects.
+      </Callout>
 
       <SectionHeading id="errors">Errors and constraints</SectionHeading>
       <SimpleTable headers={["Status", "Meaning"]} rows={errorRows} />

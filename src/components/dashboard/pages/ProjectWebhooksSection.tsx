@@ -2,20 +2,27 @@
 
 import React, { useState } from "react";
 import { cap, card, sectionLabel } from "../styles";
-import type { WebhookEndpoint, WebhookEventType } from "../types";
+import type { ProjectType, WebhookEndpoint, WebhookEventType } from "../types";
 
-const WEBHOOK_EVENTS: WebhookEventType[] = [
+const MODERATION_EVENTS: WebhookEventType[] = [
   "moderation.completed",
   "moderation.review_required",
   "review.approved",
   "review.rejected",
 ];
 
+const REDACTION_EVENTS: WebhookEventType[] = ["redaction.completed"];
+
+function eventsForProjectType(projectType?: ProjectType): WebhookEventType[] {
+  return projectType === "redaction" ? REDACTION_EVENTS : MODERATION_EVENTS;
+}
+
 const EVENT_LABEL: Record<WebhookEventType, string> = {
   "moderation.completed": "Moderation completed",
   "moderation.review_required": "Review required",
   "review.approved": "Review approved",
   "review.rejected": "Review rejected",
+  "redaction.completed": "Redaction completed",
 };
 
 const inputStyle: React.CSSProperties = {
@@ -52,6 +59,7 @@ export function ProjectWebhooksSection({
   webhooks,
   webhookSecret,
   loading,
+  projectType,
   onCreateWebhook,
   onDisableWebhook,
   onRotateWebhookSecret,
@@ -60,14 +68,17 @@ export function ProjectWebhooksSection({
   webhooks: WebhookEndpoint[];
   webhookSecret?: string | null;
   loading?: boolean;
+  projectType?: ProjectType;
   onCreateWebhook: (input: { name?: string; url: string; events: WebhookEventType[] }) => Promise<void>;
   onDisableWebhook: (webhookId: string) => Promise<void>;
   onRotateWebhookSecret: (webhookId: string) => Promise<void>;
   onDismissWebhookSecret: () => void;
 }) {
+  const availableEvents = eventsForProjectType(projectType);
+  const defaultEvent = availableEvents[0];
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [events, setEvents] = useState<WebhookEventType[]>(["moderation.completed"]);
+  const [events, setEvents] = useState<WebhookEventType[]>([defaultEvent]);
   const [creating, setCreating] = useState(false);
   const [disablingWebhookId, setDisablingWebhookId] = useState<string | null>(null);
   const [rotatingWebhookId, setRotatingWebhookId] = useState<string | null>(null);
@@ -95,7 +106,7 @@ export function ProjectWebhooksSection({
       });
       setName("");
       setUrl("");
-      setEvents(["moderation.completed"]);
+      setEvents([defaultEvent]);
     } finally {
       setCreating(false);
     }
@@ -165,7 +176,7 @@ export function ProjectWebhooksSection({
         <div>
           <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.45)", marginBottom: "8px" }}>Subscribed events</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {WEBHOOK_EVENTS.map((event) => {
+            {availableEvents.map((event) => {
               const checked = events.includes(event);
               return (
                 <button key={event} onClick={() => toggleEvent(event)} style={{ padding: "7px 10px", borderRadius: "9px", border: "1px solid " + (checked ? "rgba(126,155,255,0.4)" : "rgba(255,255,255,0.08)"), background: checked ? "rgba(126,155,255,0.12)" : "rgba(255,255,255,0.02)", color: checked ? "#fff" : "rgba(255,255,255,0.55)", fontFamily: "inherit", fontSize: "12px", cursor: "pointer" }}>

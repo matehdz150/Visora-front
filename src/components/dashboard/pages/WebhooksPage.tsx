@@ -10,6 +10,7 @@ const EVENT_LABEL: Record<WebhookEventType, string> = {
   "moderation.review_required": "Review required",
   "review.approved": "Review approved",
   "review.rejected": "Review rejected",
+  "redaction.completed": "Redaction completed",
 };
 
 const STATUS_LABEL: Record<WebhookEventStatus, string> = {
@@ -150,6 +151,7 @@ export function WebhooksPage({
             <SelectItem value="moderation.review_required">Review required</SelectItem>
             <SelectItem value="review.approved">Review approved</SelectItem>
             <SelectItem value="review.rejected">Review rejected</SelectItem>
+            <SelectItem value="redaction.completed">Redaction completed</SelectItem>
           </SelectContent>
         </Select>
       </div>

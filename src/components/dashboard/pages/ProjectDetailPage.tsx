@@ -345,6 +345,7 @@ export function ProjectDetailPage({
             webhooks={webhooks}
             webhookSecret={webhookSecret}
             loading={loadingWebhooks}
+            projectType={project.projectType}
             onCreateWebhook={onCreateWebhook}
             onDisableWebhook={onDisableWebhook}
             onRotateWebhookSecret={onRotateWebhookSecret}

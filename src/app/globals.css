@@ -597,6 +597,113 @@ select option {
   }
 }
 
+/* ---- Landing integration / developer sections -------------------------- */
+@media (max-width: 860px) {
+  .integration-section,
+  .developer-experience-section {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .integration-tech-list {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    gap: 18px !important;
+    padding: 2px 2px 12px !important;
+    margin-left: -2px !important;
+    margin-right: -2px !important;
+  }
+
+  .integration-tech-list > div {
+    min-width: 82px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .integration-code-card {
+    border-radius: 14px !important;
+  }
+
+  .integration-code-toolbar {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .integration-framework-list {
+    width: 100% !important;
+    padding-bottom: 4px !important;
+  }
+
+  .integration-framework-list > * {
+    min-width: auto !important;
+  }
+
+  .integration-code-toolbar > button {
+    align-self: flex-end !important;
+  }
+
+  .integration-code-body {
+    min-height: 340px !important;
+    padding: 20px 18px !important;
+    font-size: 13px !important;
+    line-height: 1.75 !important;
+  }
+
+  .developer-experience-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    margin-top: 38px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .integration-section {
+    text-align: left !important;
+  }
+
+  .integration-section > div:first-child {
+    text-align: center !important;
+  }
+
+  .integration-section h2,
+  .developer-experience-section h2 {
+    font-size: 36px !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  .integration-section p,
+  .developer-experience-section p {
+    font-size: 15px !important;
+  }
+
+  .integration-tech-list span[style*="width: 66px"] {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 14px !important;
+  }
+
+  .developer-experience-section {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  .developer-experience-card {
+    border-radius: 18px !important;
+  }
+
+  .developer-experience-animation {
+    height: 232px !important;
+  }
+
+  .developer-experience-card-copy {
+    padding: 0 22px 28px !important;
+  }
+
+  .developer-experience-card-copy h3 {
+    font-size: 19px !important;
+  }
+}
+
 /* ---- Auth (login / register / forgot) ----------------------------------- */
 @media (max-width: 880px) {
   .auth-brand { display: none !important; }

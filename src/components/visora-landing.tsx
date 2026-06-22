@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { VisoraLogo } from "@/components/VisoraLogo";
+import { IntegrationSection } from "@/components/IntegrationSection";
+import { DeveloperExperienceSection } from "@/components/DeveloperExperienceSection";
 import {
   clearSession,
   getCurrentUser,
@@ -1717,333 +1719,60 @@ export default function VisoraLanding({
             "opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1)",
           position: "relative",
           zIndex: 1,
-          maxWidth: "1180px",
+          maxWidth: "2180px",
           margin: "0 auto",
-          padding: "30px 40px 90px",
+          padding: "22px 40px 82px",
         }}
       >
-        <p
-          style={{
-            textAlign: "center",
-            fontFamily: MONO,
-            fontSize: "12px",
-            letterSpacing: "0.2em",
-            color: "rgba(255,255,255,0.35)",
-            margin: "0 0 34px",
-          }}
-        >
-          CORE PLATFORM CAPABILITIES
-        </p>
         <div
+          aria-hidden="true"
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "26px 56px",
-            opacity: 0.62,
+            position: "relative",
+            height: "74px",
+            overflow: "hidden",
+            borderTop: "1px solid rgba(255,255,255,0.12)",
+            borderLeft: "1px solid rgba(255,255,255,0.1)",
+            borderRight: "1px solid rgba(255,255,255,0.1)",
+            borderTopLeftRadius: "34px",
+            borderTopRightRadius: "34px",
+            background:
+              "black",
           }}
         >
-          {[
-            "API Keys",
-            "Policy Engine",
-            "Review Queue",
-            "Moderation Logs",
-            "Brand Safety",
-            "Developer SDK",
-          ].map((name) => (
-            <span
-              key={name}
-              style={{
-                fontSize: "19px",
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-                color: "rgba(255,255,255,0.7)",
-              }}
-            >
-              {name}
-            </span>
-          ))}
+          <div
+            style={{
+              position: "absolute",
+              top: "-78px",
+              left: "50%",
+              width: "460px",
+              height: "170px",
+              transform: "translateX(-50%)",
+              background:
+                "radial-gradient(ellipse at center, rgba(255,255,255,0.16), rgba(255,255,255,0.045) 42%, rgba(255,255,255,0) 72%)",
+              filter: "blur(18px)",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: "50%",
+              width: "620px",
+              height: "1px",
+              transform: "translateX(-50%)",
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.22), rgba(255,255,255,0))",
+            }}
+          />
         </div>
       </section>
 
-      {/* BUILT FOR DEVELOPERS */}
-      <section
-        style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: "1180px",
-          margin: "0 auto",
-          padding: "70px 40px",
-        }}
-      >
-        <div
-          data-reveal=""
-          style={{
-            opacity: 0,
-            transform: "translateY(26px)",
-            transition:
-              "opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1)",
-            marginBottom: "56px",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: MONO,
-              fontSize: "12px",
-              letterSpacing: "0.2em",
-              color: "#8fa0d8",
-            }}
-          >
-            DEVELOPERS
-          </span>
-          <h2
-            style={{
-              margin: "16px 0 0",
-              fontSize: "clamp(30px,3.4vw,44px)",
-              fontWeight: 600,
-              letterSpacing: "-0.035em",
-              lineHeight: 1.05,
-            }}
-          >
-            Built for developers.
-          </h2>
-          <p
-            style={{
-              margin: "16px 0 0",
-              maxWidth: "520px",
-              fontSize: "17px",
-              lineHeight: 1.55,
-              color: "rgba(255,255,255,0.55)",
-              fontWeight: 300,
-            }}
-          >
-            Drop-in moderation that is predictable, composable, and fast.
-          </p>
-        </div>
-        <div
-          className="r-cols-2"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "20px",
-          }}
-        >
-          {[
-            {
-              title: "Moderation API",
-              desc: "One request. One response. A moderation decision your app can use.",
-              icon: (
-                <>
-                  <span
-                    style={{
-                      width: "20px",
-                      height: "3px",
-                      borderRadius: "2px",
-                      background: "#aebfff",
-                    }}
-                  />
-                  <span
-                    style={{
-                      width: "13px",
-                      height: "3px",
-                      borderRadius: "2px",
-                      background: "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                </>
-              ),
-              iconStyle: {
-                flexDirection: "column" as const,
-                gap: "4px",
-              },
-              delay: undefined as string | undefined,
-            },
-            {
-              title: "Custom Policies",
-              desc: "Strict, balanced, or relaxed. Define exactly how aggressive moderation should be.",
-              icon: (
-                <>
-                  <span
-                    style={{
-                      width: "22px",
-                      height: "3px",
-                      borderRadius: "2px",
-                      background: "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                  <span
-                    style={{
-                      width: "15px",
-                      height: "3px",
-                      borderRadius: "2px",
-                      background: "#aebfff",
-                    }}
-                  />
-                  <span
-                    style={{
-                      width: "9px",
-                      height: "3px",
-                      borderRadius: "2px",
-                      background: "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                </>
-              ),
-              iconStyle: {
-                flexDirection: "column" as const,
-                gap: "4px",
-              },
-              delay: "90",
-            },
-            {
-              title: "Usage-Based Plans",
-              desc: "Built for small apps first, with plans and limits that can grow with usage.",
-              icon: (
-                <>
-                  <span
-                    style={{
-                      borderRadius: "2px",
-                      background: "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                  <span
-                    style={{ borderRadius: "2px", background: "#aebfff" }}
-                  />
-                  <span
-                    style={{ borderRadius: "2px", background: "#aebfff" }}
-                  />
-                  <span
-                    style={{
-                      borderRadius: "2px",
-                      background: "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                </>
-              ),
-              iconStyle: {
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gridTemplateRows: "1fr 1fr",
-                gap: "3px",
-                padding: "12px",
-              } as React.CSSProperties,
-              delay: "180",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              data-reveal=""
-              {...(card.delay ? { "data-reveal-delay": card.delay } : {})}
-              className="v-card"
-              style={{
-                opacity: 0,
-                transform: "translateY(26px)",
-                transition:
-                  "opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1), border-color .3s ease, background .3s ease",
-                padding: "30px",
-                borderRadius: "18px",
-                background: "rgba(255,255,255,0.022)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                backdropFilter: "blur(8px)",
-              }}
-            >
-              <div
-                style={{
-                  width: "46px",
-                  height: "46px",
-                  borderRadius: "12px",
-                  background:
-                    "radial-gradient(circle at 40% 30%, rgba(126,155,255,0.16), rgba(255,255,255,0.02))",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: "22px",
-                  ...card.iconStyle,
-                }}
-              >
-                {card.icon}
-              </div>
-              <h3
-                style={{
-                  margin: "0 0 10px",
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                {card.title}
-              </h3>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "14.5px",
-                  lineHeight: 1.6,
-                  color: "rgba(255,255,255,0.52)",
-                  fontWeight: 300,
-                }}
-              >
-                {card.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* DEVELOPERS — INTEGRATION */}
+      <IntegrationSection />
 
-      {/* MODERATION MODES */}
-      <section
-        style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: "1180px",
-          margin: "0 auto",
-          padding: "70px 40px",
-        }}
-      >
-        <div
-          data-reveal=""
-          style={{
-            opacity: 0,
-            transform: "translateY(26px)",
-            transition:
-              "opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1)",
-            marginBottom: "56px",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: MONO,
-              fontSize: "12px",
-              letterSpacing: "0.2em",
-              color: "#8fa0d8",
-            }}
-          >
-            POLICY ENGINE
-          </span>
-          <h2
-            style={{
-              margin: "16px 0 0",
-              fontSize: "clamp(30px,3.4vw,44px)",
-              fontWeight: 600,
-              letterSpacing: "-0.035em",
-              lineHeight: 1.05,
-            }}
-          >
-            Three modes. One decision boundary.
-          </h2>
-        </div>
-        <div
-          className="r-cols-2"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "20px",
-          }}
-        >
-          {buildModes(accent)}
-        </div>
-      </section>
+      {/* DEVELOPER EXPERIENCE */}
+      <DeveloperExperienceSection />
 
       {/* SECURITY */}
       <section

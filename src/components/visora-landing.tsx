@@ -670,6 +670,12 @@ export default function VisoraLanding({
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [docsOpen, setDocsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileNavSections: { title: string; links: [string, string, string][] }[] = [
+    { title: "Features", links: [["Moderation", "/docs#moderate", "Scan uploads and image keys."], ["Redaction", "/features/redaction", "Blur faces, text, and plates."], ["Webhooks", "/features/webhooks", "Deliver signed events."], ["Review Queue", "/docs#review-queue", "Resolve manual decisions."], ["Policies", "/docs#policies", "Set project rules."]] },
+    { title: "Documentation", links: [["Moderation", "/docs", "API reference"], ["Redaction", "/docs/redaction", "Blur workflows"], ["Webhooks", "/docs/webhooks", "Signed event delivery"]] },
+    { title: "Help", links: [["Contact", "/contact", "Send us a message"], ["Support", "mailto:support@visoracloud.com", "support@visoracloud.com"], ["Docs", "/docs", "Integration guides"]] },
+  ];
   const featuresRef = useRef<HTMLDivElement | null>(null);
   const docsRef = useRef<HTMLDivElement | null>(null);
   const helpRef = useRef<HTMLDivElement | null>(null);
@@ -1428,12 +1434,14 @@ export default function VisoraLanding({
             ) : null}
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           {currentUser ? (
             <>
               <span
+                className="lp-nav-mid"
                 title={currentUser.email}
                 style={{
+                  display: "inline-block",
                   maxWidth: "220px",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -1465,7 +1473,7 @@ export default function VisoraLanding({
             <>
               <Link
                 href="/login"
-                className="v-navlink"
+                className="lp-nav-mid v-navlink"
                 style={{
                   fontSize: "14px",
                   color: "rgba(255,255,255,0.7)",
@@ -1493,7 +1501,43 @@ export default function VisoraLanding({
               </Link>
             </>
           )}
+          <button
+            type="button"
+            className="lp-nav-burger"
+            aria-label="Menu"
+            aria-expanded={mobileOpen}
+            onClick={() => { setMobileOpen((value) => !value); setFeaturesOpen(false); setDocsOpen(false); setHelpOpen(false); }}
+            style={{ alignItems: "center", justifyContent: "center", width: "38px", height: "38px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#fff", cursor: "pointer", padding: 0 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              {mobileOpen ? (<><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></>) : (<><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></>)}
+            </svg>
+          </button>
         </div>
+
+        {mobileOpen ? (
+          <div className="lp-nav-mobile" style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: "calc(100vh - 68px)", overflowY: "auto", padding: "6px 20px 24px", background: "rgba(5,5,5,0.99)", borderBottom: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}>
+            {mobileNavSections.map((section) => (
+              <div key={section.title} style={{ padding: "14px 0", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <div style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.36)", marginBottom: "8px" }}>{section.title}</div>
+                <div style={{ display: "grid", gap: "2px" }}>
+                  {section.links.map(([label, href, hint]) => (
+                    <a key={label} href={href} onClick={() => setMobileOpen(false)} style={{ display: "flex", flexDirection: "column", padding: "9px 8px", borderRadius: "10px", textDecoration: "none" }}>
+                      <span style={{ fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{label}</span>
+                      <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>{hint}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ padding: "14px 0 0", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <a href="/pricing" onClick={() => setMobileOpen(false)} style={{ padding: "9px 8px", borderRadius: "10px", fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500, textDecoration: "none" }}>Pricing</a>
+              {!currentUser ? (
+                <a href="/login" onClick={() => setMobileOpen(false)} style={{ padding: "9px 8px", borderRadius: "10px", fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500, textDecoration: "none" }}>Log In</a>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </nav>
 
       {/* HERO */}

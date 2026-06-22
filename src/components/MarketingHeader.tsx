@@ -88,6 +88,30 @@ function PreviewCard({ href, title, body, cta, neutral = false }: { href: string
   );
 }
 
+function MobileSection({ title, links, onNavigate }: { title: string; links: ReadonlyArray<readonly [string, string, string]>; onNavigate: () => void }) {
+  return (
+    <div style={{ padding: "14px 0", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+      <div style={{ fontFamily: "var(--font-jetbrains), monospace", fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.36)", marginBottom: "8px" }}>{title}</div>
+      <div style={{ display: "grid", gap: "2px" }}>
+        {links.map(([label, href, hint]) => (
+          <a key={label} href={href} onClick={onNavigate} style={{ display: "flex", flexDirection: "column", padding: "9px 8px", borderRadius: "10px", textDecoration: "none" }}>
+            <span style={{ fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{label}</span>
+            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>{hint}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BurgerIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      {open ? (<><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></>) : (<><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></>)}
+    </svg>
+  );
+}
+
 function MenuPanel({ kind, align = "left" }: { kind: Exclude<Menu, null>; align?: "left" | "right" }) {
   const links = kind === "features" ? featureLinks : kind === "docs" ? docsLinks : helpLinks;
   const card = kind === "features"
@@ -112,15 +136,19 @@ function MenuPanel({ kind, align = "left" }: { kind: Exclude<Menu, null>; align?
 export function MarketingHeader() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [open, setOpen] = useState<Menu>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
-      if (!navRef.current?.contains(event.target as Node)) setOpen(null);
+      if (!navRef.current?.contains(event.target as Node)) {
+        setOpen(null);
+        setMobileOpen(false);
+      }
     }
-    if (open) document.addEventListener("pointerdown", onPointerDown);
+    if (open || mobileOpen) document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
+  }, [open, mobileOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,19 +188,43 @@ export function MarketingHeader() {
         <Link href="/pricing" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none", transition: "color .2s" }}>Pricing</Link>
         {menuButton("help", "Help", "right")}
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
         {currentUser ? (
           <>
-            <span title={currentUser.email} style={{ maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", color: "rgba(255,255,255,0.72)" }}>{currentUser.email}</span>
+            <span className="lp-nav-mid" title={currentUser.email} style={{ display: "inline-block", maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "14px", color: "rgba(255,255,255,0.72)" }}>{currentUser.email}</span>
             <Link href="/dashboard" className="v-btn-primary-sm" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: "#fff", padding: "9px 18px", borderRadius: "9px", textDecoration: "none", transition: "transform .2s, box-shadow .2s" }}>Dashboard</Link>
           </>
         ) : (
           <>
-            <Link href="/login" className="v-navlink" style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none", transition: "color .2s" }}>Log In</Link>
+            <Link href="/login" className="lp-nav-mid v-navlink" style={{ display: "inline-block", fontSize: "14px", color: "rgba(255,255,255,0.7)", textDecoration: "none", transition: "color .2s" }}>Log In</Link>
             <Link href="/register" className="v-btn-primary-sm" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: "#fff", padding: "9px 18px", borderRadius: "9px", textDecoration: "none", transition: "transform .2s, box-shadow .2s" }}>Start Free</Link>
           </>
         )}
+        <button
+          type="button"
+          className="lp-nav-burger"
+          aria-label="Menu"
+          aria-expanded={mobileOpen}
+          onClick={() => { setMobileOpen((value) => !value); setOpen(null); }}
+          style={{ alignItems: "center", justifyContent: "center", width: "38px", height: "38px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", color: "#fff", cursor: "pointer", padding: 0 }}
+        >
+          <BurgerIcon open={mobileOpen} />
+        </button>
       </div>
+
+      {mobileOpen ? (
+        <div className="lp-nav-mobile" style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: "calc(100vh - 68px)", overflowY: "auto", padding: "6px 20px 24px", background: "rgba(5,5,5,0.99)", borderBottom: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}>
+          <MobileSection title="Features" links={featureLinks} onNavigate={() => setMobileOpen(false)} />
+          <MobileSection title="Documentation" links={docsLinks} onNavigate={() => setMobileOpen(false)} />
+          <MobileSection title="Help" links={helpLinks} onNavigate={() => setMobileOpen(false)} />
+          <div style={{ padding: "14px 0 0", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", flexDirection: "column", gap: "4px" }}>
+            <a href="/pricing" onClick={() => setMobileOpen(false)} style={{ padding: "9px 8px", borderRadius: "10px", fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500, textDecoration: "none" }}>Pricing</a>
+            {!currentUser ? (
+              <a href="/login" onClick={() => setMobileOpen(false)} style={{ padding: "9px 8px", borderRadius: "10px", fontSize: "15px", color: "rgba(255,255,255,0.9)", fontWeight: 500, textDecoration: "none" }}>Log In</a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </nav>
   );
 }

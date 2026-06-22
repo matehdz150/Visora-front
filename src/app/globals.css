@@ -550,8 +550,13 @@ select option {
   .lp-root > section { padding-left: 20px !important; padding-right: 20px !important; }
   .lp-root > footer { padding-left: 20px !important; padding-right: 20px !important; }
   .lp-nav-mid { display: none !important; }
+  .lp-nav-burger { display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 0; }
+  .lp-nav-mobile { display: block !important; }
   .lp-hero { padding-top: 128px !important; }
 }
+.lp-nav-burger { display: none; }
+.lp-nav-mobile { display: none; }
+.lp-nav-burger > svg { display: block; }
 @media (max-width: 860px) {
   .lp-hero-title-desktop {
     display: none !important;

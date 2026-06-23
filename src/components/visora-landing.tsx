@@ -7,6 +7,7 @@ import { IntegrationSection } from "@/components/IntegrationSection";
 import { DeveloperExperienceSection } from "@/components/DeveloperExperienceSection";
 import { RedactionShowcaseSection } from "@/components/RedactionShowcaseSection";
 import { ModerationShowcaseSection } from "@/components/ModerationShowcaseSection";
+import { HeroTilt } from "@/components/HeroTilt";
 import {
   clearSession,
   getCurrentUser,
@@ -100,10 +101,17 @@ function buildHero(accent: string, motion: boolean): React.ReactNode {
       : "linear-gradient(165deg,#0f1015,#070809)";
     const topB = lit ? rgba(0.42) : "rgba(255,255,255,0.07)";
     const sideB = lit ? rgba(0.2) : "rgba(255,255,255,0.045)";
+    // shadowed faces — close the cube so it stays solid when rotated
+    const bottomBg = "linear-gradient(150deg,#0d0e12,#060708)";
+    const backBg = "linear-gradient(165deg,#121318,#08090c)";
+    const leftBg = "linear-gradient(165deg,#0e0f14,#060708)";
     const kids: React.ReactNode[] = [
       face("top", "rotateX(90deg) translateZ(" + h + "px)", topBg, topB),
       face("front", "translateZ(" + h + "px)", frontBg, sideB),
       face("right", "rotateY(90deg) translateZ(" + h + "px)", rightBg, sideB),
+      face("bottom", "rotateX(-90deg) translateZ(" + h + "px)", bottomBg, topB),
+      face("back", "rotateY(180deg) translateZ(" + h + "px)", backBg, sideB),
+      face("left", "rotateY(-90deg) translateZ(" + h + "px)", leftBg, sideB),
     ];
     if (lit) {
       kids.push(
@@ -1707,7 +1715,7 @@ export default function VisoraLanding({
           className="lp-hero-visual"
           style={{ position: "relative", minHeight: "560px" }}
         >
-          {buildHero(accent, motion)}
+          <HeroTilt>{buildHero(accent, motion)}</HeroTilt>
         </div>
       </section>
 

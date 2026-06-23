@@ -1,11 +1,88 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { ImageUp, X } from "lucide-react";
 import { FilterSelect } from "../shared";
 import { cap, card, fmtRisk, sectionLabel } from "../styles";
 import type { Project } from "../types";
 import type { DashboardNotify } from "../Toast";
 import { moderateDashboardImageUpload, redactDashboardImageUpload, verifyDashboardImageUpload, type ModerationResponse, type RedactionResponse, type VerifyResponse } from "@/lib/visora-api";
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const CHECKER =
+  "repeating-conic-gradient(rgba(255,255,255,0.045) 0% 25%, transparent 0% 50%) 50% / 16px 16px";
+
+/** A single image upload slot with drag & drop, an inline preview (uncropped),
+ *  file metadata, and a clear/change control. */
+function UploadField({
+  file,
+  previewUrl,
+  onSelect,
+  onClear,
+  hint,
+  height = 168,
+  disabled = false,
+}: {
+  file: File | null;
+  previewUrl: string | null;
+  onSelect: (file: File) => void;
+  onClear: () => void;
+  hint: string;
+  height?: number;
+  disabled?: boolean;
+}) {
+  const [dragging, setDragging] = useState(false);
+
+  if (file && previewUrl) {
+    return (
+      <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", background: "#000", minWidth: 0 }}>
+        <div style={{ width: "100%", minWidth: 0, height: `${height}px`, background: CHECKER + ", #060606", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt={file.name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" }} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.82)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</div>
+            <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>{formatBytes(file.size)}</div>
+          </div>
+          <label style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", background: "#000", border: "1px solid rgba(255,255,255,0.12)", padding: "6px 11px", borderRadius: "8px", cursor: "pointer", flexShrink: 0 }}>
+            Change
+            <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = ""; }} />
+          </label>
+          <button type="button" onClick={onClear} aria-label="Remove image" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", borderRadius: "8px", background: "#000", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)", cursor: "pointer", flexShrink: 0 }}>
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <label
+      onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        const f = e.dataTransfer.files?.[0];
+        if (f && f.type.startsWith("image/")) onSelect(f);
+      }}
+      style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", height: `${height}px`, borderRadius: "12px", border: `1.5px dashed ${dragging ? "rgba(174,191,255,0.6)" : "rgba(255,255,255,0.16)"}`, background: dragging ? "rgba(126,155,255,0.06)" : "rgba(255,255,255,0.015)", cursor: "pointer", textAlign: "center", padding: "16px", transition: "border-color .15s, background .15s" }}
+    >
+      <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = ""; }} />
+      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px", borderRadius: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }}>
+        <ImageUp size={19} />
+      </span>
+      <span style={{ fontSize: "13.5px", color: "rgba(255,255,255,0.78)", fontWeight: 500 }}>Click to upload or drag &amp; drop</span>
+      <span style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.4)" }}>{hint ? hint + " · " : ""}JPEG or PNG, up to 8 MB</span>
+    </label>
+  );
+}
 
 export function PlaygroundPage({
   projects,
@@ -88,14 +165,18 @@ export function PlaygroundPage({
     };
   }, [selfiePreviewUrl]);
 
-  const reset = () => {
-    setFile(null);
-    setSelfieFile(null);
+  const clearResults = () => {
     setModerationResult(null);
     setRedactionResult(null);
     setVerifyResult(null);
     setError(null);
     setStatus("idle");
+  };
+
+  const reset = () => {
+    setFile(null);
+    setSelfieFile(null);
+    clearResults();
   };
 
   const runProcessing = async () => {
@@ -162,7 +243,7 @@ export function PlaygroundPage({
       <h1 style={{ margin: 0, fontSize: "30px", fontWeight: 600, letterSpacing: "-0.03em" }}>Playground</h1>
       <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>Upload an image and run it through the selected project workflow.</p>
 
-      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "22px", marginTop: "30px", alignItems: "start" }}>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "22px", marginTop: "30px", alignItems: "start" }}>
         {/* LEFT: request */}
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <div style={{ ...card, padding: "24px" }}>
@@ -179,42 +260,18 @@ export function PlaygroundPage({
             <div style={sectionLabel}>{workflow === "verify" ? "DOCUMENT & SELFIE" : "IMAGE"}</div>
 
             {workflow === "verify" ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                {[
-                  { label: "Identity document", hint: "ID, passport or license", value: file, set: setFile, preview: originalPreviewUrl },
-                  { label: "Selfie", hint: "A clear photo of the person", value: selfieFile, set: setSelfieFile, preview: selfiePreviewUrl },
-                ].map((slot) => (
-                  <div key={slot.label}>
-                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginBottom: "7px" }}>{slot.label}</div>
-                    <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", height: "110px", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.16)", background: "#000", cursor: "pointer", textAlign: "center", overflow: "hidden", position: "relative" }}>
-                      <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { slot.set(e.target.files?.[0] ?? null); setVerifyResult(null); setError(null); setStatus("idle"); }} />
-                      {slot.preview ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={slot.preview} alt={slot.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
-                      ) : (
-                        <>
-                          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>Click to select</span>
-                          <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>{slot.hint}</span>
-                        </>
-                      )}
-                    </label>
-                  </div>
-                ))}
+              <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "14px" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.6)", marginBottom: "8px", fontWeight: 500 }}>Identity document</div>
+                  <UploadField file={file} previewUrl={originalPreviewUrl} hint="ID, passport or license" height={150} onSelect={(f) => { setFile(f); clearResults(); }} onClear={() => { setFile(null); clearResults(); }} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.6)", marginBottom: "8px", fontWeight: 500 }}>Selfie</div>
+                  <UploadField file={selfieFile} previewUrl={selfiePreviewUrl} hint="A clear photo of the person" height={150} onSelect={(f) => { setSelfieFile(f); clearResults(); }} onClear={() => { setSelfieFile(null); clearResults(); }} />
+                </div>
               </div>
             ) : (
-              <>
-                <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", height: "150px", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.16)", background: "#000", cursor: "pointer", textAlign: "center" }}>
-                  <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { setFile(e.target.files?.[0] ?? null); setModerationResult(null); setRedactionResult(null); setError(null); setStatus("idle"); }} />
-                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>{file ? file.name : "Click to select an image"}</span>
-                  <span style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.35)" }}>{file ? (workflow === "redaction" ? "Ready to upload and redact" : "Ready to upload and scan") : "JPEG or PNG · uploaded and processed automatically"}</span>
-                </label>
-
-                {originalPreviewUrl && (
-                  <div style={{ marginTop: "16px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#000" }}>
-                    <img src={originalPreviewUrl} alt="Selected upload" style={{ display: "block", width: "100%", maxHeight: "260px", objectFit: "contain", background: "#080808" }} />
-                  </div>
-                )}
-              </>
+              <UploadField file={file} previewUrl={originalPreviewUrl} hint="" height={220} onSelect={(f) => { setFile(f); clearResults(); }} onClear={() => { setFile(null); clearResults(); }} />
             )}
 
             <button disabled={!ready || !project || status === "loading"} onClick={runProcessing} style={{ width: "100%", marginTop: "16px", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: ready && project ? "#fff" : "rgba(255,255,255,0.32)", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: ready && project && status !== "loading" ? "pointer" : "not-allowed" }}>

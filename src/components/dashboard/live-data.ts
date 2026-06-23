@@ -92,14 +92,20 @@ export function mapApiKey(apiKey: DashboardApiKey, index: number): ApiKey {
 }
 
 function mapUsage(data: DashboardData): UsageSummary {
-  return data.usage ?? {
-    month: new Date().toISOString().slice(0, 7),
-    requestsUsed: data.stats.imagesModerated,
-    monthlyLimit: data.account.monthlyLimit,
-    overageEnabled: data.account.planId !== "free",
-    overageRequests: Math.max(0, data.stats.imagesModerated - data.account.monthlyLimit),
-    overagePriceCentsPerThousand: 0,
-    estimatedOverageCents: 0,
+  const u = data.usage;
+  return {
+    month: u?.month ?? new Date().toISOString().slice(0, 7),
+    requestsUsed: u?.requestsUsed ?? data.stats.imagesModerated,
+    monthlyLimit: u?.monthlyLimit ?? data.account.monthlyLimit,
+    overageEnabled: u?.overageEnabled ?? data.account.planId !== "free",
+    overageRequests: u?.overageRequests ?? Math.max(0, data.stats.imagesModerated - data.account.monthlyLimit),
+    overagePriceCentsPerThousand: u?.overagePriceCentsPerThousand ?? 0,
+    estimatedOverageCents: u?.estimatedOverageCents ?? 0,
+    verificationsUsed: u?.verificationsUsed ?? 0,
+    verifyIncluded: u?.verifyIncluded ?? 0,
+    verifyOverageCount: u?.verifyOverageCount ?? 0,
+    verifyOverageCents: u?.verifyOverageCents ?? 0,
+    estimatedVerifyOverageCents: u?.estimatedVerifyOverageCents ?? 0,
   };
 }
 

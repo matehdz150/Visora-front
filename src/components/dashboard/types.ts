@@ -216,4 +216,9 @@ export interface UsageSummary {
   overageRequests: number;
   overagePriceCentsPerThousand: number;
   estimatedOverageCents: number;
+  verificationsUsed: number;
+  verifyIncluded: number;
+  verifyOverageCount: number;
+  verifyOverageCents: number;
+  estimatedVerifyOverageCents: number;
 }

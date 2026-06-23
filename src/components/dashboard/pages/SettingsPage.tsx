@@ -335,6 +335,32 @@ export function SettingsPage({
             <div style={{ marginTop: "10px", fontSize: "12px", color: "#e8c98a" }}>{usage.overageRequests.toLocaleString()} overage requests estimated at ${(usage.estimatedOverageCents / 100).toFixed(2)}.</div>
           )}
         </div>
+
+        {(() => {
+          const vUsed = usage?.verificationsUsed ?? 0;
+          const vIncluded = usage?.verifyIncluded ?? 0;
+          const vPercent = vIncluded > 0 ? Math.min(100, Math.round((vUsed / vIncluded) * 100)) : 0;
+          const vOver = usage?.verifyOverageCount ?? 0;
+          const vOverDollars = ((usage?.estimatedVerifyOverageCents ?? 0) / 100).toFixed(2);
+          const vOverEach = ((usage?.verifyOverageCents ?? 0) / 100).toFixed(2);
+          return (
+            <div style={{ marginTop: "20px", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "18px", alignItems: "baseline" }}>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.82)" }}>Identity verifications</div>
+                  <div style={{ marginTop: "3px", fontSize: "12px", color: "rgba(255,255,255,0.42)", fontWeight: 300 }}>Billed separately · ${vOverEach} per verification over your plan.</div>
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: vPercent >= 100 ? "#7ee0a8" : "#aebfff" }}>{vUsed.toLocaleString()} / {vIncluded.toLocaleString()}</div>
+              </div>
+              <div style={{ height: "6px", marginTop: "13px", borderRadius: "999px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${vPercent}%`, background: "linear-gradient(90deg,#3fae74,#7ee0a8)", borderRadius: "999px" }} />
+              </div>
+              {vOver > 0 && (
+                <div style={{ marginTop: "10px", fontSize: "12px", color: "#7ee0a8" }}>{vOver.toLocaleString()} verification{vOver === 1 ? "" : "s"} over your plan · ${vOverDollars} added to your next invoice.</div>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       <div style={{ ...card, padding: "24px", marginTop: "18px" }}>

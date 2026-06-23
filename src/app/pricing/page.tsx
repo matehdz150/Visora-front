@@ -4,7 +4,7 @@ import { VisoraLogo } from "@/components/VisoraLogo";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Simple monthly pricing for Visora image moderation and redaction API plans.",
+  description: "Simple monthly pricing for Visora image moderation, redaction, and identity verification API plans.",
 };
 
 const MONO = "var(--font-jetbrains), monospace";
@@ -20,7 +20,8 @@ const plans = [
     projects: "1 project",
     apiKeys: "1 API key",
     retention: "7 days",
-    redaction: "Not included",
+    redaction: "50 / month",
+    verify: "25 / month",
     cta: "Start free",
     featured: false,
   },
@@ -35,6 +36,7 @@ const plans = [
     apiKeys: "3 API keys",
     retention: "30 days",
     redaction: "Included",
+    verify: "100 incl · $0.40 over",
     cta: "Choose Starter",
     featured: false,
   },
@@ -49,6 +51,7 @@ const plans = [
     apiKeys: "5 API keys",
     retention: "60 days",
     redaction: "Included",
+    verify: "300 incl · $0.40 over",
     cta: "Choose Plus",
     featured: false,
   },
@@ -63,6 +66,7 @@ const plans = [
     apiKeys: "10 API keys",
     retention: "90 days",
     redaction: "Included",
+    verify: "750 incl · $0.40 over",
     cta: "Choose Growth",
     featured: true,
   },
@@ -77,6 +81,7 @@ const plans = [
     apiKeys: "50 API keys",
     retention: "180 days",
     redaction: "Included",
+    verify: "2,500 incl · $0.40 over",
     cta: "Choose Scale",
     featured: false,
   },
@@ -84,8 +89,10 @@ const plans = [
 
 const featureRows = [
   ["Image moderation API", "Yes", "Yes", "Yes", "Yes", "Yes"],
-  ["Redaction API", "No", "Yes", "Yes", "Yes", "Yes"],
-  ["Face, text, and license plate blur", "No", "Yes", "Yes", "Yes", "Yes"],
+  ["Redaction API", "50/mo", "Yes", "Yes", "Yes", "Yes"],
+  ["Face, text, and license plate blur", "Yes", "Yes", "Yes", "Yes", "Yes"],
+  ["Identity verification (KYC)", "25/mo", "100/mo", "300/mo", "750/mo", "2,500/mo"],
+  ["Verify overage", "—", "$0.40 ea", "$0.40 ea", "$0.40 ea", "$0.40 ea"],
   ["Brand safety result", "Yes", "Yes", "Yes", "Yes", "Yes"],
   ["Project scoped uploads", "Yes", "Yes", "Yes", "Yes", "Yes"],
   ["Custom policies", "Basic", "Yes", "Yes", "Yes", "Yes"],
@@ -142,6 +149,7 @@ export default function PricingPage() {
                 {[
                   ["Included", `${plan.included} API requests / month`],
                   ["Redaction API", plan.redaction],
+                  ["Verify (KYC)", plan.verify],
                   ["Overage", plan.overage],
                   ["Projects", plan.projects],
                   ["API keys", plan.apiKeys],
@@ -162,7 +170,7 @@ export default function PricingPage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "24px", marginBottom: "18px" }}>
           <div>
             <h2 style={{ margin: 0, fontSize: "28px", fontWeight: 600, letterSpacing: "-0.035em" }}>Plan comparison</h2>
-            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Paid plans include moderation and redaction projects. Free is limited to image moderation while you test the API.</p>
+            <p style={{ margin: "8px 0 0", color: "rgba(255,255,255,0.48)", fontSize: "14px", fontWeight: 300 }}>Paid plans include moderation, redaction, and identity verification. Verifications are billed per use beyond each plan&apos;s monthly allotment. Free includes a small allotment of each to test the API.</p>
           </div>
         </div>
 
@@ -188,7 +196,7 @@ export default function PricingPage() {
             {[
               ["How does billing work?", "Paid plans use monthly Stripe subscriptions. Choose a plan, complete payment in Visora checkout, and your account updates after Stripe confirms the subscription."],
               ["What counts toward usage?", "A successful protected moderation or redaction request counts toward monthly usage. Validation or authentication failures are not counted."],
-              ["Is Redaction API included?", "Redaction API is available on paid plans. It supports face blur, selected text blur, custom words, ID-document sensitive fields, and license plate redaction."],
+              ["Is Redaction API included?", "Yes. Free includes 50 redactions per month to test, and paid plans include unlimited redaction. It supports face blur, selected text blur, custom words, ID-document sensitive fields, and license plate redaction."],
               ["What is the difference between Visora and Visora Cloud?", "Visora is the image moderation product and API. Visora Cloud is the hosted dashboard where accounts manage projects, plans, keys, policies, and logs."],
               ["Which SDK should I use?", "Use @visoracloud/client from Node.js or TypeScript server code. API keys should not be exposed in browser code."],
             ].map(([question, answer]) => (

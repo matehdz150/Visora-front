@@ -10,6 +10,7 @@ type Menu = "features" | "docs" | "help" | null;
 const featureLinks = [
   ["Moderation", "/docs#moderate", "Scan uploads and image keys."],
   ["Redaction", "/features/redaction", "Blur faces, text, and plates."],
+  ["Verify", "/features/verify", "Match an ID to a selfie."],
   ["Webhooks", "/features/webhooks", "Deliver signed events."],
   ["Review Queue", "/docs#review-queue", "Resolve manual decisions."],
   ["Policies", "/docs#policies", "Set project rules."],
@@ -18,6 +19,7 @@ const featureLinks = [
 const docsLinks = [
   ["Moderation", "/docs", "API reference"],
   ["Redaction", "/docs/redaction", "Blur workflows"],
+  ["Verify", "/docs/verify", "Identity verification"],
   ["Webhooks", "/docs/webhooks", "Signed event delivery"],
 ] as const;
 

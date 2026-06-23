@@ -684,8 +684,8 @@ export default function VisoraLanding({
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileNavSections: { title: string; links: [string, string, string][] }[] = [
-    { title: "Features", links: [["Moderation", "/docs#moderate", "Scan uploads and image keys."], ["Redaction", "/features/redaction", "Blur faces, text, and plates."], ["Webhooks", "/features/webhooks", "Deliver signed events."], ["Review Queue", "/docs#review-queue", "Resolve manual decisions."], ["Policies", "/docs#policies", "Set project rules."]] },
-    { title: "Documentation", links: [["Moderation", "/docs", "API reference"], ["Redaction", "/docs/redaction", "Blur workflows"], ["Webhooks", "/docs/webhooks", "Signed event delivery"]] },
+    { title: "Features", links: [["Moderation", "/docs#moderate", "Scan uploads and image keys."], ["Redaction", "/features/redaction", "Blur faces, text, and plates."], ["Verify", "/features/verify", "Match an ID to a selfie."], ["Webhooks", "/features/webhooks", "Deliver signed events."], ["Review Queue", "/docs#review-queue", "Resolve manual decisions."], ["Policies", "/docs#policies", "Set project rules."]] },
+    { title: "Documentation", links: [["Moderation", "/docs", "API reference"], ["Redaction", "/docs/redaction", "Blur workflows"], ["Verify", "/docs/verify", "Identity verification"], ["Webhooks", "/docs/webhooks", "Signed event delivery"]] },
     { title: "Help", links: [["Contact", "/contact", "Send us a message"], ["Support", "mailto:support@visoracloud.com", "support@visoracloud.com"], ["Docs", "/docs", "Integration guides"]] },
   ];
   const featuresRef = useRef<HTMLDivElement | null>(null);
@@ -897,6 +897,11 @@ export default function VisoraLanding({
                         "Redaction",
                         "/features/redaction",
                         "Blur faces, text, and plates.",
+                      ],
+                      [
+                        "Verify",
+                        "/features/verify",
+                        "Match an ID to a selfie.",
                       ],
                       [
                         "Webhooks",
@@ -1118,6 +1123,7 @@ export default function VisoraLanding({
                     {[
                       ["Moderation", "/docs", "API reference"],
                       ["Redaction", "/docs/redaction", "Blur workflows"],
+                      ["Verify", "/docs/verify", "Identity verification"],
                       ["Webhooks", "/docs/webhooks", "Signed event delivery"],
                     ].map(([label, href, hint]) => (
                       <a
@@ -1588,14 +1594,13 @@ export default function VisoraLanding({
             }}
           >
             <span className="lp-hero-title-desktop">
-              Image moderation infrastructure for modern applications.
+              The image trust layer for modern applications.
             </span>
             <span className="lp-hero-title-mobile">
-              <span>Image</span>
-              <span>moderation</span>
-              <span>infrastructure</span>
+              <span>The image</span>
+              <span>trust layer</span>
               <span>for modern</span>
-              <span>applications</span>
+              <span>applications.</span>
             </span>
           </h1>
           <p
@@ -1608,7 +1613,7 @@ export default function VisoraLanding({
               fontWeight: 300,
             }}
           >
-            Detect unsafe content and automatically blur faces, documents, text, and other sensitive information.
+            Moderate unsafe content, anonymize faces and PII, and verify real identities — all from a single API, built to drop into modern applications.
           </p>
 
           <div
@@ -1669,9 +1674,9 @@ export default function VisoraLanding({
             }}
           >
             {[
-              "API First",
-              "Project Isolation",
-              "Custom Policies",
+              "Content moderation",
+              "Face & PII redaction",
+              "Identity verification",
             ].map((label) => (
               <div
                 key={label}
@@ -2023,7 +2028,7 @@ export default function VisoraLanding({
         <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
           <VisoraLogo markSize={22} fontSize={14} tone="light" />
           <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)" }}>
-            — Image moderation API.
+            — Moderation, redaction & identity verification.
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "26px" }}>

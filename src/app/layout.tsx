@@ -28,7 +28,7 @@ const siteUrl =
   "https://visoracloud.com";
 
 const siteDescription =
-  "Detect unsafe image content and redact sensitive details like faces, text, and license plates using a single API.";
+  "Visora is the trust layer for every image — moderate unsafe content, anonymize faces and PII, and verify identities from a single API.";
 
 const organizationJsonLd = {
   "@context": "https://schema.org",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "Visora",
   title: {
-    default: "Visora — Image moderation API",
+    default: "Visora — Moderation, redaction & identity verification API",
     template: "%s — Visora",
   },
   description: siteDescription,
@@ -62,6 +62,10 @@ export const metadata: Metadata = {
   keywords: [
     "image moderation API",
     "content moderation API",
+    "image redaction API",
+    "identity verification API",
+    "KYC API",
+    "face match API",
     "AI moderation",
     "brand safety API",
     "moderation webhooks",
@@ -78,7 +82,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/visora-icon-180.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Visora — Image moderation API",
+    title: "Visora — Moderation, redaction & identity verification API",
     description: siteDescription,
     siteName: "Visora",
     url: siteUrl,
@@ -88,13 +92,13 @@ export const metadata: Metadata = {
         url: "/visora-og.png",
         width: 1200,
         height: 630,
-        alt: "Visora image moderation API",
+        alt: "Visora — image moderation, redaction & identity verification API",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Visora — Image moderation API",
+    title: "Visora — Moderation, redaction & identity verification API",
     description: siteDescription,
     images: ["/visora-og.png"],
   },

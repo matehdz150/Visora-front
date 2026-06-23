@@ -5,7 +5,7 @@ import { FilterSelect } from "../shared";
 import { cap, card, fmtRisk, sectionLabel } from "../styles";
 import type { Project } from "../types";
 import type { DashboardNotify } from "../Toast";
-import { moderateDashboardImageUpload, redactDashboardImageUpload, type ModerationResponse, type RedactionResponse } from "@/lib/visora-api";
+import { moderateDashboardImageUpload, redactDashboardImageUpload, verifyDashboardImageUpload, type ModerationResponse, type RedactionResponse, type VerifyResponse } from "@/lib/visora-api";
 
 export function PlaygroundPage({
   projects,
@@ -22,8 +22,10 @@ export function PlaygroundPage({
 }) {
   const [project, setProject] = useState(initialProjectId ?? projects[0]?.id ?? "");
   const [file, setFile] = useState<File | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [moderationResult, setModerationResult] = useState<ModerationResponse | null>(null);
   const [redactionResult, setRedactionResult] = useState<RedactionResponse | null>(null);
+  const [verifyResult, setVerifyResult] = useState<VerifyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
 
@@ -31,6 +33,8 @@ export function PlaygroundPage({
   const selectedProject = projects.find((item) => item.id === project) ?? null;
   const workflow = selectedProject?.projectType ?? "moderation";
   const originalPreviewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  const selfiePreviewUrl = useMemo(() => (selfieFile ? URL.createObjectURL(selfieFile) : null), [selfieFile]);
+  const ready = workflow === "verify" ? Boolean(file && selfieFile) : Boolean(file);
   const neutralPill = (label: string): React.CSSProperties => ({
     display: "inline-flex",
     alignItems: "center",
@@ -78,16 +82,24 @@ export function PlaygroundPage({
     };
   }, [originalPreviewUrl]);
 
+  useEffect(() => {
+    return () => {
+      if (selfiePreviewUrl) URL.revokeObjectURL(selfiePreviewUrl);
+    };
+  }, [selfiePreviewUrl]);
+
   const reset = () => {
     setFile(null);
+    setSelfieFile(null);
     setModerationResult(null);
     setRedactionResult(null);
+    setVerifyResult(null);
     setError(null);
     setStatus("idle");
   };
 
   const runProcessing = async () => {
-    if (!file) return;
+    if (workflow === "verify" ? !(file && selfieFile) : !file) return;
     if (!project) {
       const message = "Create or select a project before running the playground.";
       setError(message);
@@ -107,10 +119,11 @@ export function PlaygroundPage({
     setError(null);
     setModerationResult(null);
     setRedactionResult(null);
+    setVerifyResult(null);
 
     try {
       if (workflow === "redaction") {
-        const response = await redactDashboardImageUpload({ idToken, projectId: project, image: file });
+        const response = await redactDashboardImageUpload({ idToken, projectId: project, image: file! });
         setRedactionResult(response);
         setStatus("done");
         notify({ kind: "success", title: "Redaction complete", message: `${response.regions.length} region${response.regions.length === 1 ? "" : "s"} blurred.` });
@@ -118,19 +131,29 @@ export function PlaygroundPage({
         return;
       }
 
-      const response = await moderateDashboardImageUpload({ idToken, projectId: project, image: file });
+      if (workflow === "verify") {
+        const response = await verifyDashboardImageUpload({ idToken, projectId: project, document: file!, selfie: selfieFile! });
+        setVerifyResult(response);
+        setStatus("done");
+        notify({ kind: "success", title: "Verification complete", message: `${cap(response.decision)} · ${response.faceMatch.similarity}% face match` });
+        onModerated?.(project);
+        return;
+      }
+
+      const response = await moderateDashboardImageUpload({ idToken, projectId: project, image: file! });
       setModerationResult(response);
       setStatus("done");
       notify({ kind: "success", title: "Moderation complete", message: `${cap(response.action)} · risk ${fmtRisk(response.riskScore ?? 0)}` });
       onModerated?.(project);
     } catch (err) {
-      const rawMessage = err instanceof Error ? err.message : workflow === "redaction" ? "Redaction failed" : "Moderation failed";
+      const failTitle = workflow === "redaction" ? "Redaction failed" : workflow === "verify" ? "Verification failed" : "Moderation failed";
+      const rawMessage = err instanceof Error ? err.message : failTitle;
       const message = rawMessage.includes("limit")
           ? `${rawMessage}. Check your plan limits in Settings.`
           : rawMessage;
       setError(message);
       setStatus("error");
-      notify({ kind: "error", title: workflow === "redaction" ? "Redaction failed" : "Moderation failed", message });
+      notify({ kind: "error", title: failTitle, message });
     }
   };
 
@@ -144,30 +167,58 @@ export function PlaygroundPage({
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>PROJECT</div>
-            <FilterSelect block value={project} onChange={(v) => { setProject(v); reset(); }} options={projects.map((p) => p.id)} render={(o) => `${projectName[o]} · ${projects.find((item) => item.id === o)?.projectType === "redaction" ? "Redaction" : "Moderation"} · ${o}`} />
+            <FilterSelect block value={project} onChange={(v) => { setProject(v); reset(); }} options={projects.map((p) => p.id)} render={(o) => { const t = projects.find((item) => item.id === o)?.projectType; return `${projectName[o]} · ${t === "redaction" ? "Redaction" : t === "verify" ? "Verify" : "Moderation"} · ${o}`; }} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginTop: "14px", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
               <span style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.45)" }}>Workflow</span>
-              <span style={{ fontSize: "12.5px", color: workflow === "redaction" ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{workflow === "redaction" ? "Image redaction" : "Image moderation"}</span>
+              <span style={{ fontSize: "12.5px", color: workflow === "verify" ? "#7ee0a8" : workflow === "redaction" ? "#7ee0a8" : "#aebfff", fontWeight: 600 }}>{workflow === "redaction" ? "Image redaction" : workflow === "verify" ? "Identity verification" : "Image moderation"}</span>
             </div>
             <p style={{ margin: "12px 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>The playground uses your dashboard session. No API key is needed here.</p>
           </div>
 
           <div style={{ ...card, padding: "24px" }}>
-            <div style={sectionLabel}>IMAGE</div>
-            <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", height: "150px", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.16)", background: "#000", cursor: "pointer", textAlign: "center" }}>
-              <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { setFile(e.target.files?.[0] ?? null); setModerationResult(null); setRedactionResult(null); setError(null); setStatus("idle"); }} />
-              <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>{file ? file.name : "Click to select an image"}</span>
-              <span style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.35)" }}>{file ? (workflow === "redaction" ? "Ready to upload and redact" : "Ready to upload and scan") : "JPEG or PNG · uploaded and processed automatically"}</span>
-            </label>
+            <div style={sectionLabel}>{workflow === "verify" ? "DOCUMENT & SELFIE" : "IMAGE"}</div>
 
-            {originalPreviewUrl && (
-              <div style={{ marginTop: "16px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#000" }}>
-                <img src={originalPreviewUrl} alt="Selected upload" style={{ display: "block", width: "100%", maxHeight: "260px", objectFit: "contain", background: "#080808" }} />
+            {workflow === "verify" ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {[
+                  { label: "Identity document", hint: "ID, passport or license", value: file, set: setFile, preview: originalPreviewUrl },
+                  { label: "Selfie", hint: "A clear photo of the person", value: selfieFile, set: setSelfieFile, preview: selfiePreviewUrl },
+                ].map((slot) => (
+                  <div key={slot.label}>
+                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginBottom: "7px" }}>{slot.label}</div>
+                    <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", height: "110px", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.16)", background: "#000", cursor: "pointer", textAlign: "center", overflow: "hidden", position: "relative" }}>
+                      <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { slot.set(e.target.files?.[0] ?? null); setVerifyResult(null); setError(null); setStatus("idle"); }} />
+                      {slot.preview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={slot.preview} alt={slot.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.9 }} />
+                      ) : (
+                        <>
+                          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>Click to select</span>
+                          <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>{slot.hint}</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <>
+                <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", height: "150px", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.16)", background: "#000", cursor: "pointer", textAlign: "center" }}>
+                  <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }} onChange={(e) => { setFile(e.target.files?.[0] ?? null); setModerationResult(null); setRedactionResult(null); setError(null); setStatus("idle"); }} />
+                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>{file ? file.name : "Click to select an image"}</span>
+                  <span style={{ fontSize: "11.5px", color: "rgba(255,255,255,0.35)" }}>{file ? (workflow === "redaction" ? "Ready to upload and redact" : "Ready to upload and scan") : "JPEG or PNG · uploaded and processed automatically"}</span>
+                </label>
+
+                {originalPreviewUrl && (
+                  <div style={{ marginTop: "16px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#000" }}>
+                    <img src={originalPreviewUrl} alt="Selected upload" style={{ display: "block", width: "100%", maxHeight: "260px", objectFit: "contain", background: "#080808" }} />
+                  </div>
+                )}
+              </>
             )}
 
-            <button disabled={!file || !project || status === "loading"} onClick={runProcessing} style={{ width: "100%", marginTop: "16px", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: file && project ? "#fff" : "rgba(255,255,255,0.32)", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: file && project && status !== "loading" ? "pointer" : "not-allowed" }}>
-              {status === "loading" ? (workflow === "redaction" ? "Uploading and redacting..." : "Uploading and moderating...") : workflow === "redaction" ? "Upload and redact" : "Upload and moderate"}
+            <button disabled={!ready || !project || status === "loading"} onClick={runProcessing} style={{ width: "100%", marginTop: "16px", padding: "12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.12)", background: ready && project ? "#fff" : "rgba(255,255,255,0.32)", color: "#050505", fontFamily: "inherit", fontSize: "13px", fontWeight: 600, cursor: ready && project && status !== "loading" ? "pointer" : "not-allowed" }}>
+              {status === "loading" ? (workflow === "redaction" ? "Uploading and redacting..." : workflow === "verify" ? "Verifying identity..." : "Uploading and moderating...") : workflow === "redaction" ? "Upload and redact" : workflow === "verify" ? "Run verification" : "Upload and moderate"}
             </button>
 
             {error && (
@@ -183,13 +234,55 @@ export function PlaygroundPage({
         <div style={{ position: "sticky", top: "30px", ...card, borderRadius: "16px", overflow: "hidden" }}>
           <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: status === "done" ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.25)" }} />
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{workflow === "redaction" ? "REDACTION RESULT" : "MODERATION RESULT"}</span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>{workflow === "redaction" ? "REDACTION RESULT" : workflow === "verify" ? "VERIFICATION RESULT" : "MODERATION RESULT"}</span>
           </div>
           <div style={{ padding: "22px" }}>
             {status !== "done" ? (
               <div style={{ height: "260px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", color: "rgba(255,255,255,0.35)" }}>
-                {status === "loading" ? `Uploading image and running ${workflow === "redaction" ? "/redact" : "/moderate"}...` : status === "error" ? "Fix the request and try again." : workflow === "redaction" ? "Upload an image to see the redacted output." : "Upload an image to see the verdict."}
+                {status === "loading" ? `Uploading and running ${workflow === "redaction" ? "/redact" : workflow === "verify" ? "/verify" : "/moderate"}...` : status === "error" ? "Fix the request and try again." : workflow === "redaction" ? "Upload an image to see the redacted output." : workflow === "verify" ? "Upload a document and a selfie to see the decision." : "Upload an image to see the verdict."}
               </div>
+            ) : workflow === "verify" && verifyResult ? (
+              <>
+                <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+                  <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" }}>Decision</div>
+                    <span style={softPill(verifyResult.decision === "verified" ? "allow" : verifyResult.decision === "rejected" ? "reject" : "review")}>{cap(verifyResult.decision)}</span>
+                  </div>
+                  <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "6px" }}>Face match</div>
+                    <div style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.03em", color: softRiskColor(100 - verifyResult.faceMatch.similarity) }}>{verifyResult.faceMatch.similarity}%</div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: "12px", marginBottom: "22px" }}>
+                  <div style={{ flex: 1, padding: "14px 16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>Document</span>
+                    <span style={softPill(verifyResult.document.detected && !verifyResult.document.expired ? "pass" : "fail")}>{!verifyResult.document.detected ? "None" : verifyResult.document.expired ? "Expired" : verifyResult.document.type ?? "Valid"}</span>
+                  </div>
+                  <div style={{ flex: 1, padding: "14px 16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>Selfie quality</span>
+                    <span style={softPill(verifyResult.selfie.quality === "pass" ? "pass" : "fail")}>{verifyResult.selfie.quality === "pass" ? "Pass" : "Fail"}</span>
+                  </div>
+                </div>
+
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)", marginBottom: "12px" }}>REASONS</div>
+                <div style={{ padding: "14px 16px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
+                  {verifyResult.reasons.length === 0 ? (
+                    <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)" }}>No flags — all checks passed.</span>
+                  ) : (
+                    <ul style={{ margin: 0, paddingLeft: "18px", display: "flex", flexDirection: "column", gap: "7px" }}>
+                      {verifyResult.reasons.map((reason, i) => (
+                        <li key={i} style={{ fontSize: "12.5px", lineHeight: 1.5, color: "rgba(255,255,255,0.72)" }}>{reason}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "16px", padding: "11px 12px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000", fontSize: "12.5px" }}>
+                  <span style={{ color: "rgba(255,255,255,0.45)" }}>Verification ID</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.72)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{verifyResult.verificationId}</span>
+                </div>
+              </>
             ) : workflow === "redaction" && redactionResult ? (
               <>
                 <div style={{ borderRadius: "14px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "#080808", marginBottom: "18px" }}>

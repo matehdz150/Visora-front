@@ -7,7 +7,21 @@ import type {
   DashboardReviewItem,
 } from "@/lib/visora-api";
 import { makePolicy } from "./engine";
-import type { ApiKey, Category, CompliancePack, ModLog, Policy, Project, ProjectType, RedactionSettings, ReviewItem, UsageSummary } from "./types";
+import type { ApiKey, Category, CompliancePack, ModLog, Policy, Project, ProjectType, RedactionSettings, ReviewItem, UsageSummary, VerifySettings } from "./types";
+
+export const DEFAULT_VERIFY_SETTINGS: VerifySettings = {
+  faceMatchThreshold: 90,
+  faceMatchRejectBelow: 60,
+  requireUnexpiredDocument: true,
+};
+
+export function normalizeVerifySettings(settings?: Partial<VerifySettings>): VerifySettings {
+  return {
+    faceMatchThreshold: Math.max(0, Math.min(100, settings?.faceMatchThreshold ?? DEFAULT_VERIFY_SETTINGS.faceMatchThreshold)),
+    faceMatchRejectBelow: Math.max(0, Math.min(100, settings?.faceMatchRejectBelow ?? DEFAULT_VERIFY_SETTINGS.faceMatchRejectBelow)),
+    requireUnexpiredDocument: settings?.requireUnexpiredDocument ?? DEFAULT_VERIFY_SETTINGS.requireUnexpiredDocument,
+  };
+}
 
 export const DEFAULT_REDACTION_SETTINGS: RedactionSettings = {
   faceBlur: true,
@@ -52,6 +66,7 @@ export function mapProject(project: DashboardProject, policy?: DashboardPolicy):
     name: project.name,
     projectType: (project.projectType ?? "moderation") as ProjectType,
     redactionSettings: normalizeRedactionSettings(project.redactionSettings),
+    verifySettings: normalizeVerifySettings(project.verifySettings),
     planId: project.planId,
     mode: policy?.mode ?? "balanced",
     monthMods: formatNumber(project.monthModerations ?? 0),

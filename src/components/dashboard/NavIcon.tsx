@@ -32,6 +32,15 @@ export function NavIcon({ name, on }: { name: string; on: boolean }) {
         <span style={{ position: "absolute", left: "7px", top: 0, width: "1.5px", height: "14px", borderRadius: "2px", background: col, transform: "rotate(28deg)" }} />
       </span>,
     );
+  if (name === "verifications")
+    return wrap(
+      <span style={{ position: "relative", width: "16px", height: "14px" }}>
+        <span style={{ position: "absolute", left: 0, top: "1px", width: "13px", height: "12px", borderRadius: "3px", border: "1.5px solid " + col }} />
+        <span style={{ position: "absolute", left: "2.5px", top: "3.5px", width: "4px", height: "4px", borderRadius: "50%", border: "1.3px solid " + col }} />
+        <span style={{ position: "absolute", left: "2.5px", top: "8.5px", width: "5px", height: "1.5px", borderRadius: "1px", background: col }} />
+        <span style={{ position: "absolute", right: "-1px", bottom: "-1px", width: "4px", height: "2px", borderLeft: "1.5px solid " + acc, borderBottom: "1.5px solid " + acc, transform: "rotate(-45deg)" }} />
+      </span>,
+    );
   if (name === "webhooks")
     return wrap(
       <span style={{ position: "relative", width: "15px", height: "14px" }}>

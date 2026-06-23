@@ -9,6 +9,7 @@ import { DashboardSkeleton } from "./DashboardSkeleton";
 import { OverviewPage } from "./pages/OverviewPage";
 import { ModerationsPage } from "./pages/ModerationsPage";
 import { RedactionsPage } from "./pages/RedactionsPage";
+import { VerificationsPage } from "./pages/VerificationsPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { WebhooksPage } from "./pages/WebhooksPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -19,7 +20,7 @@ import { CreateProjectPage, type CreateProjectInput } from "./pages/CreateProjec
 import { ApiKeysPage } from "./pages/ApiKeysPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ToastViewport, type DashboardNotify, type DashboardToast } from "./Toast";
-import type { ApiKey, ModLog, Page, Project, RedactionSettings, ReviewItem, UsageSummary, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "./types";
+import type { ApiKey, ModLog, Page, Project, RedactionSettings, ReviewItem, UsageSummary, VerifySettings, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "./types";
 import type { PolicyMap, PolicyPatch } from "./usePolicyStore";
 import {
   changeBillingPlan,
@@ -46,6 +47,7 @@ import {
   rotateProjectWebhookSecret,
   saveDashboardPolicy,
   saveDashboardRedactionSettings,
+  saveDashboardVerifySettings,
   syncBillingAccount,
   updateAccountPlan,
   type AdminOverviewData,
@@ -114,6 +116,7 @@ export default function Dashboard() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [savingPolicyId, setSavingPolicyId] = useState<string | null>(null);
   const [savingRedactionSettingsId, setSavingRedactionSettingsId] = useState<string | null>(null);
+  const [savingVerifySettingsId, setSavingVerifySettingsId] = useState<string | null>(null);
   const [resolvingReviewId, setResolvingReviewId] = useState<string | null>(null);
   const toastIdRef = useRef(0);
 
@@ -618,6 +621,29 @@ export default function Dashboard() {
     }
   };
 
+  const saveVerifySettings = async (projectId: string, verifySettings: VerifySettings) => {
+    if (!session?.idToken) return;
+
+    setSavingVerifySettingsId(projectId);
+    try {
+      const project = await saveDashboardVerifySettings({
+        idToken: session.idToken,
+        projectId,
+        verifySettings,
+      });
+      const policy = policyByProject[project.projectId];
+      const dashboardPolicy = policy ? toDashboardPolicy(project.projectId, policy) : undefined;
+      const mapped = mapProject(project, dashboardPolicy);
+
+      setProjects((prev) => prev.map((item) => (item.id === projectId ? mapped : item)));
+      notify({ kind: "success", title: "Verify settings saved", message: "New /verify requests will use the updated thresholds." });
+    } catch (err) {
+      notify({ kind: "error", title: "Could not save verify settings", message: err instanceof Error ? err.message : "Please try again." });
+    } finally {
+      setSavingVerifySettingsId(null);
+    }
+  };
+
   const changePlan = async (planId: PlanId) => {
     if (!session?.idToken) throw new Error("Missing dashboard session");
 
@@ -686,11 +712,15 @@ export default function Dashboard() {
   const redactionCount = projects
     .filter((project) => project.projectType === "redaction")
     .reduce((sum, project) => sum + (Number(project.monthMods.replace(/,/g, "")) || 0), 0);
+  const verifyCount = projects
+    .filter((project) => project.projectType === "verify")
+    .reduce((sum, project) => sum + (Number(project.monthMods.replace(/,/g, "")) || 0), 0);
 
   const renderPage = () => {
     if (page === "overview") return <OverviewPage projects={projects} logs={moderationLogs} stats={stats} usage={usage} onCreateProject={goToCreateProject} onSelectMod={setSelectedMod} onViewAll={() => setPage("moderations")} />;
     if (page === "moderations") return <ModerationsPage projects={projects} logs={moderationLogs} onSelectMod={setSelectedMod} />;
     if (page === "redactions") return <RedactionsPage projects={projects} idToken={session?.idToken} onCreateProject={goToCreateProject} onSelectProject={openProject} onOpenPlayground={openPlaygroundProject} />;
+    if (page === "verifications") return <VerificationsPage projects={projects} idToken={session?.idToken} onCreateProject={goToCreateProject} onSelectProject={openProject} />;
     if (page === "reviews") return <ReviewsPage projects={projects} reviews={reviewQueue} resolvingReviewId={resolvingReviewId} onOpenModeration={openReviewModeration} onDecideReview={decideReview} />;
     if (page === "webhooks") return <WebhooksPage projects={projects} webhooks={accountWebhooks} events={webhookEvents} loading={loadingWebhookEvents} loadingWebhooks={loadingAccountWebhooks} newSecret={webhookSecret ?? null} onCreateWebhook={createWebhook} onDisableWebhook={disableWebhook} onRotateSecret={rotateWebhookSecret} onDismissSecret={() => setWebhookSecret(null)} onRefresh={loadWebhookEvents} onRetryWebhook={retryWebhook} />;
     if (page === "admin") return <AdminPage data={adminOverview} loading={loadingAdmin} error={adminError} onRefresh={() => loadAdminOverview(session?.idToken ?? "")} />;
@@ -711,6 +741,8 @@ export default function Dashboard() {
           savingPolicy={savingPolicyId === selectedProject.id}
           onSaveRedactionSettings={(settings) => saveRedactionSettings(selectedProject.id, settings)}
           savingRedactionSettings={savingRedactionSettingsId === selectedProject.id}
+          onSaveVerifySettings={(settings) => saveVerifySettings(selectedProject.id, settings)}
+          savingVerifySettings={savingVerifySettingsId === selectedProject.id}
           onCreateApiKey={() => createApiKey(selectedProject.id)}
           onRenameProject={(name) => renameProject(selectedProject.id, name)}
           onDeleteProject={() => deleteProject(selectedProject.id)}
@@ -766,7 +798,7 @@ export default function Dashboard() {
         <div className="dash-overlay" onClick={() => setMobileNavOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 55, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(2px)" }} />
       )}
 
-      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} redactionCount={redactionCount} showAdmin={Boolean(adminOverview)} mobileOpen={mobileNavOpen} onSignOut={() => { clearSession(); router.replace("/login"); }} />
+      <Sidebar page={page} onNavigate={navigate} workspace={workspace} currentUser={currentUser} reviewCount={reviewQueue.length} redactionCount={redactionCount} verifyCount={verifyCount} showAdmin={Boolean(adminOverview)} mobileOpen={mobileNavOpen} onSignOut={() => { clearSession(); router.replace("/login"); }} />
 
       <main className="dash-main" style={{ marginLeft: "250px", flex: 1, minHeight: "100vh", overflow: "hidden" }}>
         <div className="dash-topbar" style={{ height: "82px", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "22px", padding: "0 34px", background: "#000", borderBottom: "1px solid rgba(255,255,255,0.08)", position: "sticky", top: 0, zIndex: 18 }}>

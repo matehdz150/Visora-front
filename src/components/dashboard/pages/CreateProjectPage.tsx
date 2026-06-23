@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { MODE_PRESET } from "../constants";
 import { cap, card } from "../styles";
+import { Breadcrumbs } from "../shared";
 import type { Mode, ProjectType, RedactionSettings, RedactionTextCategory } from "../types";
 import type { DashboardNotify } from "../Toast";
 
@@ -25,6 +26,7 @@ export interface CreateProjectResult {
 const projectTypeOptions: Array<{ projectType: ProjectType; title: string; description: string }> = [
   { projectType: "moderation", title: "Moderation", description: "Score images against your policy and automatically allow, flag, or reject unsafe content." },
   { projectType: "redaction", title: "Redaction", description: "Detect and blur sensitive regions, including faces, license plates, and text, before delivery." },
+  { projectType: "verify", title: "Verify", description: "Check an identity document against a selfie — document authenticity, face match, and liveness signals." },
 ];
 
 const modeOptions: Array<{ mode: Mode; description: string }> = [
@@ -95,6 +97,18 @@ function ProjectTypeIcon({ projectType, selected }: { projectType: ProjectType; 
     );
   }
 
+  if (projectType === "verify") {
+    return (
+      <span style={{ width: "22px", height: "22px", position: "relative", display: "inline-block" }}>
+        <span style={{ position: "absolute", top: "2px", left: "1px", width: "20px", height: "15px", borderRadius: "3px", border: `1.6px solid ${color}` }} />
+        <span style={{ position: "absolute", top: "5px", left: "4px", width: "5px", height: "5px", borderRadius: "50%", border: `1.5px solid ${color}` }} />
+        <span style={{ position: "absolute", top: "11px", left: "3.5px", width: "6px", height: "2px", borderRadius: "1px", background: color }} />
+        <span style={{ position: "absolute", top: "6px", left: "12px", width: "6px", height: "1.6px", borderRadius: "1px", background: color }} />
+        <span style={{ position: "absolute", top: "9px", left: "12px", width: "6px", height: "1.6px", borderRadius: "1px", background: "rgba(255,255,255,0.4)" }} />
+      </span>
+    );
+  }
+
   return (
     <span style={{ width: "22px", height: "22px", display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: "3px" }}>
       <span style={{ borderRadius: "2px", background: color }} />
@@ -150,8 +164,8 @@ export function CreateProjectPage({
   const previewProjectId = useMemo(() => slugify(name), [name]);
   const selectedRegion = regionOptions.find((item) => item.region === region) ?? regionOptions[0];
   const selectedTone = modeTone(mode);
-  const redactionAllowed = accountPlanId !== "free";
-  const canContinue = Boolean(selectedProjectType) && (selectedProjectType !== "redaction" || redactionAllowed);
+  const isFree = accountPlanId === "free";
+  const canContinue = Boolean(selectedProjectType);
   const canCreate = trimmedName.length > 0 && !creating && canContinue;
 
   const updateRedactionSettings = (patch: Partial<RedactionSettings>) => {
@@ -244,14 +258,7 @@ export function CreateProjectPage({
   if (step === "type") {
     return (
       <div style={{ maxWidth: "1100px", minHeight: "calc(100vh - 80px)", margin: "0 auto", padding: "32px 44px 80px", display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "26px" }}>
-          <button onClick={onCancel} style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.45)", fontFamily: "inherit", fontSize: "13px", padding: 0 }}>
-            <span style={{ fontSize: "15px", lineHeight: 1 }}>←</span>
-            <span>Projects</span>
-          </button>
-          <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "13px" }}>/</span>
-          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.8)" }}>New project</span>
-        </div>
+        <Breadcrumbs items={[{ label: "Projects", onClick: onCancel }, { label: "New project" }]} />
 
         <div style={{ maxWidth: "620px", margin: "0 auto", width: "100%", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: "60px" }}>
           <div style={{ marginBottom: "36px" }}>
@@ -263,15 +270,17 @@ export function CreateProjectPage({
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {projectTypeOptions.map((option) => {
               const selected = selectedProjectType === option.projectType;
-              const disabled = option.projectType === "redaction" && !redactionAllowed;
+              const freeLimitNote =
+                isFree && option.projectType === "redaction" ? "Free plan: up to 50 redactions / month."
+                : isFree && option.projectType === "verify" ? "Free plan: up to 25 verifications / month."
+                : null;
 
               return (
                 <button
                   key={option.projectType}
                   type="button"
-                  disabled={disabled}
                   onClick={() => setSelectedProjectType(option.projectType)}
-                  style={{ display: "flex", alignItems: "center", gap: "16px", width: "100%", textAlign: "left", padding: "20px 22px", borderRadius: "14px", cursor: disabled ? "not-allowed" : "pointer", fontFamily: "inherit", background: selected ? "rgba(126,155,255,0.05)" : "transparent", border: `1px solid ${selected ? "rgba(126,155,255,0.45)" : "rgba(255,255,255,0.1)"}`, opacity: disabled ? 0.48 : 1, transition: "background .15s, border-color .15s" }}
+                  style={{ display: "flex", alignItems: "center", gap: "16px", width: "100%", textAlign: "left", padding: "20px 22px", borderRadius: "14px", cursor: "pointer", fontFamily: "inherit", background: selected ? "rgba(126,155,255,0.05)" : "transparent", border: `1px solid ${selected ? "rgba(126,155,255,0.45)" : "rgba(255,255,255,0.1)"}`, transition: "background .15s, border-color .15s" }}
                 >
                   <span style={{ width: "44px", height: "44px", borderRadius: "11px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: selected ? "rgba(126,155,255,0.1)" : "rgba(255,255,255,0.03)", border: `1px solid ${selected ? "rgba(126,155,255,0.3)" : "rgba(255,255,255,0.08)"}` }}>
                     <ProjectTypeIcon projectType={option.projectType} selected={selected} />
@@ -279,7 +288,7 @@ export function CreateProjectPage({
                   <span style={{ flex: 1, textAlign: "left" }}>
                     <span style={{ display: "block", fontSize: "16px", fontWeight: 600, letterSpacing: 0, color: "#fff" }}>{option.title}</span>
                     <span style={{ display: "block", fontSize: "13.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.5)", fontWeight: 300, marginTop: "3px" }}>{option.description}</span>
-                    {disabled && <span style={{ display: "block", marginTop: "7px", fontSize: "11.5px", color: "#e8c98a" }}>Available on paid plans — upgrade in Settings to enable Redaction.</span>}
+                    {freeLimitNote && <span style={{ display: "block", marginTop: "7px", fontSize: "11.5px", color: "#e8c98a" }}>{freeLimitNote}</span>}
                   </span>
                   <span style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", border: `1.6px solid ${selected ? "#aebfff" : "rgba(255,255,255,0.22)"}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color .15s" }}>
                     {selected && <span style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#aebfff" }} />}
@@ -300,11 +309,11 @@ export function CreateProjectPage({
 
   return (
     <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 44px 80px" }}>
-      <button onClick={() => setStep("type")} style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "26px", background: "none", border: "none", color: "rgba(255,255,255,0.45)", fontFamily: "inherit", fontSize: "14px", cursor: "pointer" }}>← Project type</button>
+      <Breadcrumbs items={[{ label: "Projects", onClick: onCancel }, { label: "Project type", onClick: () => setStep("type") }, { label: "Configure" }]} />
 
       <div style={{ marginBottom: "30px" }}>
         <h1 style={{ margin: 0, fontSize: "32px", fontWeight: 600, letterSpacing: "-0.03em" }}>Create project</h1>
-        <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{projectType === "redaction" ? "Configure a redaction project for processed image delivery." : "Configure a moderation project with its own policy and API key."}</p>
+        <p style={{ margin: "8px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{projectType === "redaction" ? "Configure a redaction project for processed image delivery." : projectType === "verify" ? "Configure a verify project for identity checks." : "Configure a moderation project with its own policy and API key."}</p>
       </div>
 
       <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", gap: "28px", alignItems: "start" }}>
@@ -444,6 +453,26 @@ export function CreateProjectPage({
             </div>
           )}
 
+          {projectType === "verify" && (
+            <div style={{ ...card, padding: "24px" }}>
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: "4px" }}>Identity verification</label>
+              <p style={{ margin: "0 0 16px", fontSize: "13px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Each call to <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>/verify</span> takes a document and a selfie, and runs three checks to return a single decision.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  ["Document authenticity", "Reads the ID with OCR and checks it is a real, unexpired document."],
+                  ["Face match", "Compares the selfie against the document portrait."],
+                  ["Selfie quality", "Anti-spoof checks: a single, clear, well-lit face."],
+                ].map(([title, desc]) => (
+                  <div key={title} style={{ padding: "13px 15px", borderRadius: "11px", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.015)" }}>
+                    <div style={{ fontSize: "13.5px", fontWeight: 600 }}>{title}</div>
+                    <div style={{ marginTop: "3px", fontSize: "12.5px", lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: "16px 0 0", fontSize: "12px", lineHeight: 1.5, color: "rgba(255,255,255,0.38)", fontWeight: 300 }}>Verification thresholds use Visora&apos;s defaults (auto-approve at 90% face match). You can tune them per project later.</p>
+            </div>
+          )}
+
           <div style={{ ...card, padding: "24px" }}>
             <label style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: "4px" }}>Storage region</label>
             <p style={{ margin: "0 0 14px", fontSize: "13px", color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Uploads are stored in the configured Visora project storage.</p>
@@ -516,7 +545,7 @@ export function CreateProjectPage({
 
           {error && <div style={{ border: "1px solid rgba(255,90,90,0.22)", background: "rgba(255,90,90,0.08)", color: "#ffb7b7", borderRadius: "11px", padding: "11px 13px", fontSize: "13px" }}>{error}</div>}
 
-          <button onClick={submit} disabled={!canCreate} style={{ width: "100%", padding: "13px", borderRadius: "11px", border: "none", fontFamily: "inherit", fontSize: "14px", fontWeight: 600, cursor: canCreate ? "pointer" : "not-allowed", background: canCreate ? "#fff" : "rgba(255,255,255,0.1)", color: canCreate ? "#050505" : "rgba(255,255,255,0.4)", transition: "background .2s, transform .15s" }}>{creating ? "Creating..." : projectType === "redaction" && !redactionAllowed ? "Upgrade to create redaction projects" : trimmedName ? "Create project" : "Enter a project name"}</button>
+          <button onClick={submit} disabled={!canCreate} style={{ width: "100%", padding: "13px", borderRadius: "11px", border: "none", fontFamily: "inherit", fontSize: "14px", fontWeight: 600, cursor: canCreate ? "pointer" : "not-allowed", background: canCreate ? "#fff" : "rgba(255,255,255,0.1)", color: canCreate ? "#050505" : "rgba(255,255,255,0.4)", transition: "background .2s, transform .15s" }}>{creating ? "Creating..." : trimmedName ? "Create project" : "Enter a project name"}</button>
           <button onClick={onCancel} disabled={creating} style={{ width: "100%", padding: "12px", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "11px", color: "rgba(255,255,255,0.7)", fontFamily: "inherit", fontSize: "14px", fontWeight: 500, cursor: creating ? "not-allowed" : "pointer" }}>Cancel</button>
 
           <p style={{ margin: "4px 4px 0", fontSize: "11.5px", lineHeight: 1.6, color: "rgba(255,255,255,0.3)", fontWeight: 300, textAlign: "center" }}>{projectType === "redaction" ? "Redaction projects use /redact and return a processed image URL." : generateApiKey ? "The generated API key is shown once after creation." : "You can create an API key later from the API Keys page."}</p>

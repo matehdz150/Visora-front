@@ -13,6 +13,16 @@ function redactionSummary(project: Project) {
 }
 
 function ProjectGlyph({ type }: { type: Project["projectType"] }) {
+  if (type === "verify") {
+    return (
+      <span style={{ position: "relative", width: "22px", height: "18px", display: "block" }}>
+        <span style={{ position: "absolute", left: 0, top: "1px", width: "16px", height: "15px", border: "1.5px solid rgba(255,255,255,0.82)", borderRadius: "4px" }} />
+        <span style={{ position: "absolute", left: "3px", top: "4px", width: "5px", height: "5px", borderRadius: "50%", border: "1.4px solid rgba(255,255,255,0.82)" }} />
+        <span style={{ position: "absolute", left: "3px", top: "10px", width: "6px", height: "1.6px", borderRadius: "1px", background: "rgba(255,255,255,0.6)" }} />
+        <span style={{ position: "absolute", right: "-1px", bottom: "0px", width: "6px", height: "3px", borderLeft: "2px solid #7ee0a8", borderBottom: "2px solid #7ee0a8", transform: "rotate(-45deg)" }} />
+      </span>
+    );
+  }
   if (type === "redaction") {
     return (
       <span style={{ position: "relative", width: "22px", height: "18px", display: "block" }}>
@@ -64,12 +74,12 @@ export function ProjectsPage({
                   <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>{p.id}</div>
                 </div>
               </div>
-              <span style={modeBadge(p.projectType === "redaction" ? "relaxed" : p.mode)}>{p.projectType === "redaction" ? "Redaction" : cap(p.mode)}</span>
+              <span style={modeBadge(p.projectType === "moderation" ? p.mode : "relaxed")}>{p.projectType === "verify" ? "Verify" : p.projectType === "redaction" ? "Redaction" : cap(p.mode)}</span>
             </div>
-            <Row k="Type" v={p.projectType === "redaction" ? "Redaction" : "Moderation"} top />
+            <Row k="Type" v={p.projectType === "verify" ? "Verify" : p.projectType === "redaction" ? "Redaction" : "Moderation"} top />
             <Row k="Plan" v={<span style={planBadge()}>{cap(p.planId)}</span>} />
-            <Row k={p.projectType === "redaction" ? "Project redactions" : "Project moderations"} v={p.monthMods} />
-            {p.projectType === "moderation" ? <Row k="Compliance pack" v={p.compliancePack ? PACK_LABEL[p.compliancePack] : "None"} /> : <Row k="Redaction" v={redactionSummary(p)} />}
+            <Row k={p.projectType === "verify" ? "Project verifications" : p.projectType === "redaction" ? "Project redactions" : "Project moderations"} v={p.monthMods} />
+            {p.projectType === "moderation" ? <Row k="Compliance pack" v={p.compliancePack ? PACK_LABEL[p.compliancePack] : "None"} /> : p.projectType === "verify" ? <Row k="Checks" v="Document, face, selfie" /> : <Row k="Redaction" v={redactionSummary(p)} />}
             <Row k="Created" v={p.created} />
           </button>
         ))}

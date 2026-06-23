@@ -1,20 +1,14 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { CATEGORIES, CATEGORY_LABEL, COMPLIANCE_PACKS, MODE_ACTIONS, MODE_PRESET, PACK_LABEL } from "../constants";
-import { SAMPLE } from "../data";
-import { moderate } from "../engine";
 import { ConfirmDialog } from "../ConfirmDialog";
 import { ProjectWebhooksSection } from "./ProjectWebhooksSection";
-import { LabelBars, Row } from "../shared";
-import { cap, card, fmtRisk, modeBadge, pill, planBadge, riskCell, riskColor, sectionLabel } from "../styles";
-import type { Action, CompliancePack, ModLog, Mode, Policy, Project, RedactionSettings, RedactionTextCategory, WebhookEndpoint, WebhookEventType } from "../types";
+import { Breadcrumbs, Row } from "../shared";
+import { cap, card, sectionLabel } from "../styles";
+import type { Action, CompliancePack, ModLog, Mode, Policy, Project, RedactionSettings, RedactionTextCategory, VerifySettings, WebhookEndpoint, WebhookEventType } from "../types";
 import type { PolicyPatch } from "../usePolicyStore";
-
-function catText(category: ModLog["category"]) {
-  return category ? CATEGORY_LABEL[category] : "Safe";
-}
 
 const redactionStyleOptions = [
   { value: "blur", label: "Blur", description: "Softly obscure detected regions." },
@@ -32,6 +26,34 @@ const textCategoryOptions: Array<{ value: RedactionTextCategory; label: string; 
   { value: "profanity", label: "Profanity", description: "Offensive or vulgar words." },
 ];
 
+const MODE_DESC: Record<Mode, { tag: string; description: string }> = {
+  strict: {
+    tag: "Toughest",
+    description: "Rejects most unsafe content outright and reviews the rest. Uses the lowest confidence bar, so even borderline images get caught.",
+  },
+  balanced: {
+    tag: "Recommended",
+    description: "Rejects clear violations, sends ambiguous content to human review, and allows low-risk categories. A safe default for most apps.",
+  },
+  relaxed: {
+    tag: "Permissive",
+    description: "Only the worst content (nudity, hate symbols) is rejected. Most categories are allowed, and a few are sent to review.",
+  },
+};
+
+const ACTION_LABEL: Record<Action, string> = { allow: "Allow", review: "Review", reject: "Reject" };
+const ACTION_COLOR: Record<Action, string> = { allow: "#7ee0a8", review: "#e8c98a", reject: "#ff9b9b" };
+
+const PACK_DESC: Record<CompliancePack | "none", string> = {
+  none: "No extra rules. Only your moderation mode and category actions apply.",
+  marketplace: "For buy/sell listings and product photos. Tightens weapons, drugs, and counterfeit or adult items so unsafe listings never go live.",
+  kids: "Child-directed apps (under-13 audiences). Zero tolerance — rejects any nudity, suggestive, violence, or substance content.",
+  education: "Classrooms and e-learning. Allows educational context (art, history, biology) while blocking explicit or graphic material.",
+  social: "Social feeds and profiles. Balances free expression with safety — borderline posts go to review instead of an instant block.",
+  dating: "Dating profiles. Permits mild suggestive content within limits but rejects explicit nudity and harassment.",
+  ads: "Ad creatives and sponsored content. Brand-safety first — rejects anything advertisers commonly block (nudity, violence, drugs, weapons).",
+};
+
 export function ProjectDetailPage({
   project,
   policy,
@@ -45,6 +67,8 @@ export function ProjectDetailPage({
   savingPolicy,
   onSaveRedactionSettings,
   savingRedactionSettings,
+  onSaveVerifySettings,
+  savingVerifySettings,
   onCreateApiKey,
   onRenameProject,
   onDeleteProject,
@@ -66,6 +90,8 @@ export function ProjectDetailPage({
   savingPolicy?: boolean;
   onSaveRedactionSettings: (settings: RedactionSettings) => void;
   savingRedactionSettings?: boolean;
+  onSaveVerifySettings: (settings: VerifySettings) => void;
+  savingVerifySettings?: boolean;
   onCreateApiKey: () => void;
   onRenameProject: (name: string) => Promise<void>;
   onDeleteProject: () => Promise<void>;
@@ -75,14 +101,15 @@ export function ProjectDetailPage({
   onDismissWebhookSecret: () => void;
   onSelectMod: (mod: ModLog) => void;
 }) {
-  const preview = useMemo(() => moderate(policy, SAMPLE), [policy]);
   const [projectName, setProjectName] = useState(project.name);
   const [redactionSettings, setRedactionSettings] = useState<RedactionSettings>(project.redactionSettings);
+  const [verifySettings, setVerifySettings] = useState<VerifySettings>(project.verifySettings);
   const [customWordInput, setCustomWordInput] = useState("");
   const [ignoredWordInput, setIgnoredWordInput] = useState("");
   const [savingName, setSavingName] = useState(false);
   const [deletingProject, setDeletingProject] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [activeSection, setActiveSection] = useState("settings");
   const update = (patch: PolicyPatch) => setPolicy(patch);
   const nameChanged = projectName.trim() !== project.name;
   const redactionChanged =
@@ -94,10 +121,25 @@ export function ProjectDetailPage({
     JSON.stringify(redactionSettings.customWords) !== JSON.stringify(project.redactionSettings.customWords) ||
     JSON.stringify(redactionSettings.ignoredWords) !== JSON.stringify(project.redactionSettings.ignoredWords) ||
     redactionSettings.minConfidence !== project.redactionSettings.minConfidence;
+  const verifyChanged =
+    verifySettings.faceMatchThreshold !== project.verifySettings.faceMatchThreshold ||
+    verifySettings.faceMatchRejectBelow !== project.verifySettings.faceMatchRejectBelow ||
+    verifySettings.requireUnexpiredDocument !== project.verifySettings.requireUnexpiredDocument;
+  const updateVerify = (patch: Partial<VerifySettings>) =>
+    setVerifySettings((prev) => {
+      const next = { ...prev, ...patch };
+      // Keep the reject cutoff at or below the auto-approve threshold.
+      if (next.faceMatchRejectBelow > next.faceMatchThreshold) {
+        if ("faceMatchThreshold" in patch) next.faceMatchRejectBelow = next.faceMatchThreshold;
+        else next.faceMatchThreshold = next.faceMatchRejectBelow;
+      }
+      return next;
+    });
 
   useEffect(() => {
     setProjectName(project.name);
     setRedactionSettings(project.redactionSettings);
+    setVerifySettings(project.verifySettings);
     setCustomWordInput("");
     setIgnoredWordInput("");
   }, [project]);
@@ -164,6 +206,30 @@ export function ProjectDetailPage({
     redactionSettings.textBlur && redactionSettings.ignoredWords.length > 0 ? "Ignored words" : null,
   ].filter(Boolean).join(", ") || "No blur targets enabled";
 
+  const sectionNav: { key: string; label: string }[] =
+    project.projectType === "verify"
+      ? [
+          { key: "settings", label: "Project settings" },
+          { key: "verify", label: "Verify settings" },
+          { key: "webhooks", label: "Webhooks" },
+        ]
+      : project.projectType === "redaction"
+      ? [
+          { key: "settings", label: "Project settings" },
+          { key: "redaction", label: "Redaction settings" },
+          { key: "webhooks", label: "Webhooks" },
+        ]
+      : [
+          { key: "settings", label: "Project settings" },
+          { key: "webhooks", label: "Webhooks" },
+          { key: "mode", label: "Moderation mode" },
+          { key: "compliance", label: "Compliance pack" },
+          { key: "review", label: "Human review" },
+          { key: "confidence", label: "Minimum confidence" },
+          { key: "blocked", label: "Blocked categories" },
+          { key: "risk", label: "Risk thresholds" },
+        ];
+
   const saveProjectName = async () => {
     const nextName = projectName.trim();
     if (!nextName || !nameChanged) return;
@@ -188,7 +254,7 @@ export function ProjectDetailPage({
 
   return (
     <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "40px 44px 80px" }}>
-      <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: "8px", marginBottom: "24px", background: "none", border: "none", color: "rgba(255,255,255,0.45)", fontFamily: "inherit", fontSize: "14px", cursor: "pointer" }}>← Projects</button>
+      <Breadcrumbs items={[{ label: "Projects", onClick: onBack }, { label: project.name }]} />
 
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "20px" }}>
         <div>
@@ -204,28 +270,53 @@ export function ProjectDetailPage({
               <div style={{ marginTop: "4px", fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.42)" }}>{project.id}</div>
             </div>
           </div>
-          <p style={{ margin: "10px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{project.projectType === "redaction" ? "Configure blur targets, credentials, webhooks, and activity." : "Configure project settings, moderation policy, credentials, and activity."}</p>
+          <p style={{ margin: "10px 0 0", fontSize: "15px", color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{project.projectType === "redaction" ? "Configure blur targets, credentials, webhooks, and activity." : project.projectType === "verify" ? "Manage identity checks, credentials, webhooks, and activity." : "Configure project settings, moderation policy, credentials, and activity."}</p>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <button onClick={onCreateApiKey} style={{ fontSize: "14px", fontWeight: 500, color: "rgba(255,255,255,0.75)", background: "#000", padding: "10px 16px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", fontFamily: "inherit" }}>Create API Key</button>
           {project.projectType === "redaction" ? (
             <button onClick={() => onSaveRedactionSettings(redactionSettings)} disabled={savingRedactionSettings || !redactionChanged} className="v-cta" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: savingRedactionSettings || !redactionChanged ? "rgba(255,255,255,0.65)" : "#fff", padding: "10px 18px", borderRadius: "10px", border: "none", cursor: savingRedactionSettings ? "wait" : redactionChanged ? "pointer" : "not-allowed", fontFamily: "inherit" }}>{savingRedactionSettings ? "Saving..." : "Save settings"}</button>
+          ) : project.projectType === "verify" ? (
+            <button onClick={() => onSaveVerifySettings(verifySettings)} disabled={savingVerifySettings || !verifyChanged} className="v-cta" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: savingVerifySettings || !verifyChanged ? "rgba(255,255,255,0.65)" : "#fff", padding: "10px 18px", borderRadius: "10px", border: "none", cursor: savingVerifySettings ? "wait" : verifyChanged ? "pointer" : "not-allowed", fontFamily: "inherit" }}>{savingVerifySettings ? "Saving..." : "Save settings"}</button>
           ) : (
             <button onClick={onSavePolicy} disabled={savingPolicy} className="v-cta" style={{ fontSize: "14px", fontWeight: 500, color: "#050505", background: savingPolicy ? "rgba(255,255,255,0.65)" : "#fff", padding: "10px 18px", borderRadius: "10px", border: "none", cursor: savingPolicy ? "wait" : "pointer", fontFamily: "inherit" }}>{savingPolicy ? "Saving..." : "Save policy"}</button>
           )}
         </div>
       </div>
 
-      <div className="r-cols-2" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginTop: "28px" }}>
-        <div style={{ ...card, padding: "18px" }}><Row k="Plan" v={<span style={planBadge()}>{cap(project.planId)}</span>} top /></div>
-        <div style={{ ...card, padding: "18px" }}><Row k="Type" v={<span style={modeBadge(project.projectType === "redaction" ? "relaxed" : policy.mode)}>{project.projectType === "redaction" ? "Redaction" : cap(policy.mode)}</span>} top /></div>
-        <div style={{ ...card, padding: "18px" }}><Row k={project.projectType === "redaction" ? "Project redactions" : "Project moderations"} v={project.monthMods} top /></div>
-        <div style={{ ...card, padding: "18px" }}><Row k="Last updated" v={project.updated} top /></div>
-      </div>
+      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "232px 1fr", gap: "28px", marginTop: "32px", alignItems: "start" }}>
+        <nav style={{ position: "sticky", top: "30px", display: "flex", flexDirection: "column", gap: "1px" }}>
+          {sectionNav.map((item) => {
+            const on = activeSection === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setActiveSection(item.key)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "10px 13px",
+                  borderRadius: "9px",
+                  border: "none",
+                  background: on ? "rgba(255,255,255,0.06)" : "transparent",
+                  color: on ? "#fff" : "rgba(255,255,255,0.5)",
+                  fontFamily: "inherit",
+                  fontSize: "13.5px",
+                  fontWeight: on ? 600 : 400,
+                  cursor: "pointer",
+                  transition: "background .15s, color .15s",
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
 
-      <div className="r-stack" style={{ display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: "22px", marginTop: "22px", alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {activeSection === "settings" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>PROJECT SETTINGS</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
@@ -241,7 +332,7 @@ export function ProjectDetailPage({
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginTop: "16px" }}>
               <div style={{ padding: "13px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}><Row k="Created" v={project.created} top /></div>
               <div style={{ padding: "13px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}><Row k="Updated" v={project.updated} top /></div>
-              <div style={{ padding: "13px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}><Row k={project.projectType === "redaction" ? "Blur targets" : "Compliance"} v={project.projectType === "redaction" ? redactionSummary : project.compliancePack ? PACK_LABEL[project.compliancePack] : "None"} top /></div>
+              <div style={{ padding: "13px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}><Row k={project.projectType === "redaction" ? "Blur targets" : project.projectType === "verify" ? "Type" : "Compliance"} v={project.projectType === "redaction" ? redactionSummary : project.projectType === "verify" ? "Verify" : project.compliancePack ? PACK_LABEL[project.compliancePack] : "None"} top /></div>
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginTop: "18px" }}>
               <p style={{ margin: 0, fontSize: "12.5px", color: "rgba(255,255,255,0.42)", lineHeight: 1.55 }}>Deleting a project revokes its API keys and removes policy configuration. Moderation logs are kept for audit history until retention expires.</p>
@@ -251,8 +342,55 @@ export function ProjectDetailPage({
               </div>
             </div>
           </div>
+          )}
 
-          {project.projectType === "redaction" && (
+          {project.projectType === "verify" && activeSection === "verify" && (
+            <div style={{ ...card, padding: "24px" }}>
+              <div style={sectionLabel}>VERIFY SETTINGS</div>
+              <p style={{ margin: "0 0 18px", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Every call to <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>/verify</span> runs these three checks and returns a single decision: <span style={{ color: "#7ee0a8" }}>verified</span>, <span style={{ color: "#e8c98a" }}>review</span> or <span style={{ color: "#ff9b9b" }}>rejected</span>.</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  ["Document authenticity", "Reads the ID with OCR (Textract) and verifies it is a real, unexpired document."],
+                  ["Face match", "Compares the selfie against the document portrait."],
+                  ["Selfie quality", "Anti-spoof checks: a single, clear, well-lit face."],
+                ].map(([title, desc]) => (
+                  <div key={title} style={{ padding: "14px 15px", borderRadius: "11px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
+                    <div style={{ fontSize: "13.5px", fontWeight: 600 }}>{title}</div>
+                    <div style={{ marginTop: "3px", fontSize: "12.5px", lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>{desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "22px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Auto-approve at</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#7ee0a8" }}>{verifySettings.faceMatchThreshold}%</span>
+                </div>
+                <input type="range" min={50} max={99} value={verifySettings.faceMatchThreshold} onChange={(e) => updateVerify({ faceMatchThreshold: +e.target.value })} style={{ width: "100%" }} />
+                <p style={{ margin: "8px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Face match at or above this is <span style={{ color: "#7ee0a8" }}>verified</span> automatically (if the document and selfie checks pass).</p>
+              </div>
+
+              <div style={{ marginTop: "22px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Reject below</span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#ff9b9b" }}>{verifySettings.faceMatchRejectBelow}%</span>
+                </div>
+                <input type="range" min={0} max={99} value={verifySettings.faceMatchRejectBelow} onChange={(e) => updateVerify({ faceMatchRejectBelow: +e.target.value })} style={{ width: "100%" }} />
+                <p style={{ margin: "8px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Face match below this is <span style={{ color: "#ff9b9b" }}>rejected</span>. Between the two cutoffs, the result is sent to <span style={{ color: "#e8c98a" }}>review</span>.</p>
+              </div>
+
+              <button onClick={() => updateVerify({ requireUnexpiredDocument: !verifySettings.requireUnexpiredDocument })} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", width: "100%", marginTop: "22px", padding: "15px", borderRadius: "12px", border: "1px solid " + (verifySettings.requireUnexpiredDocument ? "rgba(126,224,168,0.38)" : "rgba(255,255,255,0.08)"), background: verifySettings.requireUnexpiredDocument ? "rgba(126,224,168,0.08)" : "rgba(255,255,255,0.015)", color: "inherit", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}>
+                <span>
+                  <span style={{ display: "block", fontSize: "14px", fontWeight: 650 }}>Require an unexpired document</span>
+                  <span style={{ display: "block", marginTop: "3px", fontSize: "12.5px", lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>Reject the verification if the document&apos;s expiration date has passed.</span>
+                </span>
+                <span style={{ position: "relative", width: "42px", height: "24px", borderRadius: "20px", flexShrink: 0, background: verifySettings.requireUnexpiredDocument ? "#7ee0a8" : "rgba(255,255,255,0.14)", transition: "background .2s" }}>
+                  <span style={{ position: "absolute", top: "3px", left: verifySettings.requireUnexpiredDocument ? "21px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: verifySettings.requireUnexpiredDocument ? "#050505" : "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,0.4)" }} />
+                </span>
+              </button>
+            </div>
+          )}
+
+          {project.projectType === "redaction" && activeSection === "redaction" && (
             <div style={{ ...card, padding: "24px" }}>
               <div style={sectionLabel}>REDACTION SETTINGS</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -346,6 +484,7 @@ export function ProjectDetailPage({
             </div>
           )}
 
+          {activeSection === "webhooks" && (
           <ProjectWebhooksSection
             webhooks={webhooks}
             webhookSecret={webhookSecret}
@@ -356,27 +495,44 @@ export function ProjectDetailPage({
             onRotateWebhookSecret={onRotateWebhookSecret}
             onDismissWebhookSecret={onDismissWebhookSecret}
           />
+          )}
 
-          {project.projectType === "moderation" && (
-          <>
+          {project.projectType === "moderation" && activeSection === "mode" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>MODERATION MODE</div>
+            <p style={{ margin: "0 0 16px", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>A preset that sets a default action for every category. Pick one as your starting point — you can still fine-tune each category below.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "10px" }}>
               {(["strict", "balanced", "relaxed"] as Mode[]).map((m) => {
                 const on = policy.mode === m;
-                const desc = m === "strict" ? "Maximum caution" : m === "balanced" ? "Recommended" : "Permissive";
                 return (
                   <button key={m} onClick={() => update(() => ({ mode: m, ...MODE_PRESET[m], categoryActions: { ...MODE_ACTIONS[m] } }))} style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start", padding: "14px", borderRadius: "11px", cursor: "pointer", fontFamily: "inherit", textAlign: "left", background: on ? "rgba(126,155,255,0.1)" : "rgba(255,255,255,0.02)", border: "1px solid " + (on ? "rgba(126,155,255,0.4)" : "rgba(255,255,255,0.08)"), color: on ? "#fff" : "rgba(255,255,255,0.7)" }}>
                     <span style={{ fontSize: "14px", fontWeight: 600 }}>{cap(m)}</span>
-                    <span style={{ fontSize: "11.5px", opacity: 0.7, fontWeight: 300 }}>{desc}</span>
+                    <span style={{ fontSize: "11.5px", opacity: 0.7, fontWeight: 300 }}>{MODE_DESC[m].tag}</span>
                   </button>
                 );
               })}
             </div>
-          </div>
 
+            <div style={{ marginTop: "16px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
+              <p style={{ margin: "0 0 14px", fontSize: "13px", lineHeight: 1.55, color: "rgba(255,255,255,0.7)", fontWeight: 300 }}>{MODE_DESC[policy.mode].description}</p>
+              {(["reject", "review", "allow"] as Action[]).map((act) => {
+                const cats = CATEGORIES.filter((c) => MODE_ACTIONS[policy.mode][c] === act);
+                if (cats.length === 0) return null;
+                return (
+                  <div key={act} style={{ display: "flex", alignItems: "baseline", gap: "10px", marginTop: "8px" }}>
+                    <span style={{ flexShrink: 0, width: "52px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase", color: ACTION_COLOR[act] }}>{ACTION_LABEL[act]}</span>
+                    <span style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.62)" }}>{cats.map((c) => CATEGORY_LABEL[c]).join(", ")}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          )}
+
+          {project.projectType === "moderation" && activeSection === "compliance" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>COMPLIANCE PACK</div>
+            <p style={{ margin: "0 0 16px", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>A curated, industry-specific rule set layered on top of your mode. Pick the one that matches your audience.</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
               {(["none", ...COMPLIANCE_PACKS] as (CompliancePack | "none")[]).map((pk) => {
                 const on = (policy.compliancePack ?? "none") === pk;
@@ -385,18 +541,25 @@ export function ProjectDetailPage({
                 );
               })}
             </div>
-            <p style={{ margin: "14px 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Adds a curated rule set to <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>compliance</span> in the /moderate response.</p>
+            <div style={{ marginTop: "16px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
+              <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{(policy.compliancePack ?? "none") === "none" ? "No pack" : PACK_LABEL[policy.compliancePack as CompliancePack]}</div>
+              <p style={{ margin: 0, fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.62)", fontWeight: 300 }}>{PACK_DESC[policy.compliancePack ?? "none"]}</p>
+            </div>
+            <p style={{ margin: "12px 0 0", fontSize: "11.5px", color: "rgba(255,255,255,0.36)", fontWeight: 300 }}>The applied pack is returned as <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>compliance</span> in the /moderate response.</p>
           </div>
+          )}
 
+          {project.projectType === "moderation" && activeSection === "review" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>HUMAN REVIEW</div>
+            <p style={{ margin: "0 0 16px", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Decides what happens when a rule lands on the <span style={{ color: "#e8c98a" }}>review</span> action — keep it for a human to decide, or resolve it automatically.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
               {(["enabled", "disabled"] as const).map((mode) => {
                 const on = policy.reviewMode === mode;
                 return (
-                  <button key={mode} onClick={() => update(() => ({ reviewMode: mode }))} style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-start", padding: "14px", borderRadius: "11px", cursor: "pointer", fontFamily: "inherit", textAlign: "left", background: on ? "rgba(126,155,255,0.1)" : "rgba(255,255,255,0.02)", border: "1px solid " + (on ? "rgba(126,155,255,0.4)" : "rgba(255,255,255,0.08)"), color: on ? "#fff" : "rgba(255,255,255,0.7)" }}>
+                  <button key={mode} onClick={() => update(() => ({ reviewMode: mode }))} style={{ display: "flex", flexDirection: "column", gap: "5px", alignItems: "flex-start", padding: "15px", borderRadius: "11px", cursor: "pointer", fontFamily: "inherit", textAlign: "left", background: on ? "rgba(126,155,255,0.1)" : "rgba(255,255,255,0.02)", border: "1px solid " + (on ? "rgba(126,155,255,0.4)" : "rgba(255,255,255,0.08)"), color: on ? "#fff" : "rgba(255,255,255,0.7)" }}>
                     <span style={{ fontSize: "14px", fontWeight: 600 }}>{mode === "enabled" ? "Review queue" : "Binary decisions"}</span>
-                    <span style={{ fontSize: "11.5px", opacity: 0.7, fontWeight: 300 }}>{mode === "enabled" ? "Return review when policy asks for it." : "Convert review to allow or reject."}</span>
+                    <span style={{ fontSize: "12px", lineHeight: 1.5, opacity: 0.75, fontWeight: 300 }}>{mode === "enabled" ? "The API returns action: \"review\" and the image lands in your Reviews dashboard for a person to decide." : "The API never returns review — each one is auto-resolved to the fallback below, so your app only sees allow or reject."}</span>
                   </button>
                 );
               })}
@@ -404,7 +567,7 @@ export function ProjectDetailPage({
 
             {policy.reviewMode === "disabled" && (
               <div style={{ marginTop: "16px" }}>
-                <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" }}>When a rule would return review</div>
+                <div style={{ fontSize: "12.5px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" }}>Resolve every review to</div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   {(["allow", "reject"] as const).map((fallback) => {
                     const on = policy.reviewFallbackAction === fallback;
@@ -417,9 +580,11 @@ export function ProjectDetailPage({
               </div>
             )}
 
-            <p style={{ margin: "14px 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>{policy.reviewMode === "enabled" ? "Review decisions can be handled by a human moderation queue." : `Review decisions are automatically converted to ${policy.reviewFallbackAction}.`}</p>
+            <p style={{ margin: "14px 0 0", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>{policy.reviewMode === "enabled" ? "Pick this if you have moderators. Flagged images wait in the queue until someone approves or rejects them." : `Pick this for a fully automated pipeline. Anything uncertain is treated as ${policy.reviewFallbackAction}.`}</p>
           </div>
+          )}
 
+          {project.projectType === "moderation" && activeSection === "confidence" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ ...sectionLabel, marginBottom: 0 }}>MINIMUM CONFIDENCE</div>
@@ -428,7 +593,9 @@ export function ProjectDetailPage({
             <input type="range" min={0} max={100} value={policy.minConfidence} onChange={(e) => update(() => ({ minConfidence: +e.target.value }))} style={{ width: "100%" }} />
             <p style={{ margin: "12px 0 0", fontSize: "12.5px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Labels below this confidence are ignored when scoring.</p>
           </div>
+          )}
 
+          {project.projectType === "moderation" && activeSection === "blocked" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>BLOCKED CATEGORIES &amp; ACTIONS</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -453,15 +620,20 @@ export function ProjectDetailPage({
               })}
             </div>
           </div>
+          )}
 
+          {project.projectType === "moderation" && activeSection === "risk" && (
           <div style={{ ...card, padding: "24px" }}>
             <div style={sectionLabel}>RISK THRESHOLDS</div>
+            <p style={{ margin: "0 0 20px", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.45)", fontWeight: 300 }}>Every image gets a <span style={{ color: "#fff" }}>risk score from 0 to 100</span> based on what was detected. These two cutoffs turn that score into a decision.</p>
+
             <div style={{ marginBottom: "22px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                 <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Review threshold</span>
                 <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#e8c98a" }}>{policy.reviewThreshold}</span>
               </div>
               <input type="range" min={0} max={100} value={policy.reviewThreshold} onChange={(e) => update(() => ({ reviewThreshold: +e.target.value }))} style={{ width: "100%" }} />
+              <p style={{ margin: "8px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Risk at or above <span style={{ color: "#e8c98a" }}>{policy.reviewThreshold}</span> is flagged for review.</p>
             </div>
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
@@ -469,95 +641,38 @@ export function ProjectDetailPage({
                 <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#ff9b9b" }}>{policy.rejectThreshold}</span>
               </div>
               <input type="range" min={0} max={100} value={policy.rejectThreshold} onChange={(e) => update(() => ({ rejectThreshold: +e.target.value }))} style={{ width: "100%" }} />
+              <p style={{ margin: "8px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Risk at or above <span style={{ color: "#ff9b9b" }}>{policy.rejectThreshold}</span> is rejected.</p>
             </div>
-          </div>
-          </>
-          )}
-        </div>
 
-        <div style={{ position: "sticky", top: "30px", display: "flex", flexDirection: "column", gap: "18px" }}>
-          {project.projectType === "redaction" ? (
-          <div style={{ ...card, borderRadius: "16px", overflow: "hidden" }}>
-            <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#7ee0a8", boxShadow: "0 0 8px 1px rgba(126,224,168,0.8)" }} />
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>REDACTION OUTPUT</span>
-            </div>
-            <div style={{ padding: "22px" }}>
-              <div style={{ position: "relative", height: "150px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "linear-gradient(135deg, rgba(126,224,168,0.08), rgba(255,255,255,0.02))", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-                <span style={{ position: "absolute", width: "62px", height: "30px", left: "32%", top: "32%", borderRadius: redactionSettings.redactionStyle === "black_box" ? "2px" : "999px", background: redactionSettings.redactionStyle === "black_box" ? "#000" : "rgba(126,224,168,0.28)", filter: redactionSettings.faceBlur && redactionSettings.redactionStyle === "blur" ? "blur(9px)" : "none", border: "1px solid rgba(126,224,168,0.35)" }} />
-                <span style={{ position: "absolute", width: "86px", height: "18px", right: "16%", bottom: "28%", borderRadius: redactionSettings.redactionStyle === "black_box" ? "2px" : "5px", background: redactionSettings.redactionStyle === "black_box" ? "#000" : "rgba(255,255,255,0.2)", filter: (redactionSettings.textBlur || redactionSettings.licensePlateBlur || redactionSettings.textCategories.length > 0 || redactionSettings.customWords.length > 0) && redactionSettings.redactionStyle === "blur" ? "blur(7px)" : "none" }} />
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>processed-image.jpg</span>
-              </div>
-              {[
-                ["Endpoint", "POST /redact"],
-                ["Blur targets", redactionSummary],
-                ["Style", redactionSettings.redactionStyle === "black_box" ? "Black box" : "Blur"],
-                ["Min confidence", `${redactionSettings.minConfidence}%`],
-                ["Response", "redactedImageUrl"],
-              ].map(([label, value]) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "14px", padding: "11px 0", borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: "13px" }}>
-                  <span style={{ color: "rgba(255,255,255,0.45)" }}>{label}</span>
-                  <span style={{ color: label === "Endpoint" ? "#7ee0a8" : "rgba(255,255,255,0.78)", fontFamily: label === "Endpoint" || label === "Response" ? "'JetBrains Mono', monospace" : "inherit", textAlign: "right" }}>{value}</span>
+            {(() => {
+              const rev = Math.min(policy.reviewThreshold, policy.rejectThreshold);
+              const rej = Math.max(policy.reviewThreshold, policy.rejectThreshold);
+              const zones = [
+                { label: "Allow", color: "#7ee0a8", width: rev },
+                { label: "Review", color: "#e8c98a", width: rej - rev },
+                { label: "Reject", color: "#ff9b9b", width: 100 - rej },
+              ];
+              return (
+                <div style={{ marginTop: "22px", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.07)", background: "#000" }}>
+                  <div style={{ display: "flex", height: "10px", borderRadius: "999px", overflow: "hidden" }}>
+                    {zones.map((z) => (
+                      <div key={z.label} style={{ width: `${z.width}%`, background: z.color, opacity: 0.55 }} />
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
+                    {zones.map((z) => (
+                      <span key={z.label} style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "rgba(255,255,255,0.62)" }}>
+                        <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: z.color }} />
+                        {z.label}
+                      </span>
+                    ))}
+                  </div>
+                  <p style={{ margin: "14px 0 0", fontSize: "12px", lineHeight: 1.55, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Score 0–{rev} → allow · {rev}–{rej} → review · {rej}–100 → reject.</p>
                 </div>
-              ))}
-            </div>
-          </div>
-          ) : (
-          <div style={{ ...card, borderRadius: "16px", overflow: "hidden" }}>
-            <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#aebfff", boxShadow: "0 0 8px 1px rgba(126,155,255,0.8)" }} />
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>LIVE DECISION PREVIEW</span>
-            </div>
-            <div style={{ padding: "22px" }}>
-              <div style={{ position: "relative", height: "150px", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 10px, rgba(255,255,255,0.015) 10px 20px)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>sample-upload.jpg</span>
-              </div>
-              <div style={{ display: "flex", gap: "12px", marginBottom: "22px" }}>
-                <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "10px" }}>Decision</div>
-                  <span style={{ ...pill(preview.action), fontSize: "14px", padding: "5px 14px" }}>{cap(preview.action)}</span>
-                </div>
-                <div style={{ flex: 1, padding: "16px", borderRadius: "12px", background: "#000", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginBottom: "6px" }}>Risk score</div>
-                  <div style={{ fontSize: "28px", fontWeight: 600, letterSpacing: "-0.03em", color: riskColor(preview.risk) }}>{fmtRisk(preview.risk)}</div>
-                </div>
-              </div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "0.06em", color: "rgba(255,255,255,0.4)", marginBottom: "12px" }}>DETECTED LABELS</div>
-              <LabelBars scored={preview.scored} />
-            </div>
+              );
+            })()}
           </div>
           )}
-
-          <div style={{ ...card, overflow: "hidden" }}>
-            <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)" }}>ACTIVITY TIMELINE</span>
-              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.34)" }}>{projectLogs.length} recent</span>
-            </div>
-            {projectLogs.length === 0 ? (
-              <div style={{ padding: "26px 22px" }}>
-                <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>No {project.projectType === "redaction" ? "redaction" : "moderation"} activity yet</div>
-                <p style={{ margin: "8px 0 0", fontSize: "12.5px", lineHeight: 1.55, color: "rgba(255,255,255,0.42)", fontWeight: 300 }}>Run an image through the {project.projectType === "redaction" ? "redaction API" : "playground or API"} and this project timeline will update automatically.</p>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {projectLogs.slice(0, 8).map((log) => (
-                  <button key={log.moderationId} onClick={() => onSelectMod(log)} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "12px", width: "100%", padding: "14px 18px", border: "none", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "transparent", color: "inherit", fontFamily: "inherit", cursor: "pointer", textAlign: "left" }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                        <span style={pill(log.action)}>{cap(log.action)}</span>
-                        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.52)" }}>{catText(log.category)}</span>
-                      </div>
-                      <div style={{ marginTop: "7px", fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", color: "rgba(255,255,255,0.36)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.moderationId}</div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={riskCell(log.riskScore)}>{fmtRisk(log.riskScore)}</div>
-                      <div style={{ marginTop: "7px", fontSize: "11px", color: "rgba(255,255,255,0.36)" }}>{log.date}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 

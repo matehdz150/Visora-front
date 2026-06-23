@@ -20,7 +20,7 @@ export type BrandLevel = "safe" | "caution" | "unsafe";
 export type Mode = "strict" | "balanced" | "relaxed";
 export type ReviewMode = "enabled" | "disabled";
 export type ReviewFallbackAction = "allow" | "reject";
-export type ProjectType = "moderation" | "redaction";
+export type ProjectType = "moderation" | "redaction" | "verify";
 export type RedactionStyle = "blur" | "black_box";
 export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document" | "pii" | "financial" | "medical" | "dates";
 
@@ -35,6 +35,14 @@ export interface RedactionSettings {
   minConfidence: number;
 }
 
+export type VerifyDecision = "verified" | "review" | "rejected";
+
+export interface VerifySettings {
+  faceMatchThreshold: number;
+  faceMatchRejectBelow: number;
+  requireUnexpiredDocument: boolean;
+}
+
 export type CompliancePack =
   | "marketplace"
   | "kids"
@@ -47,6 +55,7 @@ export type Page =
   | "overview"
   | "moderations"
   | "redactions"
+  | "verifications"
   | "reviews"
   | "webhooks"
   | "admin"
@@ -141,6 +150,7 @@ export interface Project {
   name: string;
   projectType: ProjectType;
   redactionSettings: RedactionSettings;
+  verifySettings: VerifySettings;
   planId: string;
   mode: Mode;
   monthMods: string;
@@ -165,7 +175,8 @@ export type WebhookEventType =
   | "moderation.review_required"
   | "review.approved"
   | "review.rejected"
-  | "redaction.completed";
+  | "redaction.completed"
+  | "verification.completed";
 
 export type WebhookEventStatus = "pending" | "delivered" | "failed" | "skipped";
 

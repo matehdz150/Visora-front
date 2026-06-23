@@ -110,6 +110,7 @@ export const NAV: [Page, string][] = [
   ["overview", "Overview"],
   ["moderations", "Moderations"],
   ["redactions", "Redactions"],
+  ["verifications", "Verifications"],
   ["reviews", "Reviews"],
   ["webhooks", "Webhooks"],
   ["admin", "Admin"],

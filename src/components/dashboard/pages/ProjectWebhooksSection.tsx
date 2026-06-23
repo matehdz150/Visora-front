@@ -12,9 +12,12 @@ const MODERATION_EVENTS: WebhookEventType[] = [
 ];
 
 const REDACTION_EVENTS: WebhookEventType[] = ["redaction.completed"];
+const VERIFY_EVENTS: WebhookEventType[] = ["verification.completed"];
 
 function eventsForProjectType(projectType?: ProjectType): WebhookEventType[] {
-  return projectType === "redaction" ? REDACTION_EVENTS : MODERATION_EVENTS;
+  if (projectType === "redaction") return REDACTION_EVENTS;
+  if (projectType === "verify") return VERIFY_EVENTS;
+  return MODERATION_EVENTS;
 }
 
 const EVENT_LABEL: Record<WebhookEventType, string> = {
@@ -23,6 +26,7 @@ const EVENT_LABEL: Record<WebhookEventType, string> = {
   "review.approved": "Review approved",
   "review.rejected": "Review rejected",
   "redaction.completed": "Redaction completed",
+  "verification.completed": "Verification completed",
 };
 
 const inputStyle: React.CSSProperties = {

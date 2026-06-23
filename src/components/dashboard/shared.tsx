@@ -1,8 +1,40 @@
 import React from "react";
+import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORY_LABEL } from "./constants";
 import { decColors } from "./styles";
 import type { Policy, ScoredLabel } from "./types";
+
+export type Crumb = { label: string; onClick?: () => void };
+
+/** Route breadcrumb trail. The first crumb carries a lucide ArrowLeft as the
+ *  back affordance; crumbs with an onClick are clickable, the last is the
+ *  current page. */
+export function Breadcrumbs({ items }: { items: Crumb[] }) {
+  return (
+    <nav style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "24px", flexWrap: "wrap" }}>
+      {items.map((item, i) => {
+        const isLast = i === items.length - 1;
+        return (
+          <React.Fragment key={i}>
+            {item.onClick ? (
+              <button
+                onClick={item.onClick}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.5)", fontFamily: "inherit", fontSize: "13px", padding: 0 }}
+              >
+                {i === 0 && <ArrowLeft size={15} strokeWidth={2} style={{ marginRight: "1px" }} />}
+                {item.label}
+              </button>
+            ) : (
+              <span style={{ fontSize: "13px", color: isLast ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "320px" }}>{item.label}</span>
+            )}
+            {!isLast && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "13px" }}>/</span>}
+          </React.Fragment>
+        );
+      })}
+    </nav>
+  );
+}
 
 /** Shadcn/Radix select used by dashboard filters and playground controls. */
 export function FilterSelect({

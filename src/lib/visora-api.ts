@@ -37,7 +37,7 @@ export interface CurrentUser {
 }
 
 export type PlanId = "free" | "starter" | "plus" | "growth" | "scale";
-export type ProjectType = "moderation" | "redaction";
+export type ProjectType = "moderation" | "redaction" | "verify";
 export type RedactionStyle = "blur" | "black_box";
 export type RedactionTextCategory = "sexual" | "profanity" | "credentials" | "id_document" | "pii" | "financial" | "medical" | "dates";
 
@@ -50,6 +50,14 @@ export interface RedactionSettings {
   customWords: string[];
   ignoredWords: string[];
   minConfidence: number;
+}
+
+export type VerifyDecision = "verified" | "review" | "rejected";
+
+export interface VerifySettings {
+  faceMatchThreshold: number;
+  faceMatchRejectBelow: number;
+  requireUnexpiredDocument: boolean;
 }
 
 export interface DeleteAccountResponse {
@@ -177,12 +185,56 @@ export interface RedactionLogEntry {
   redactedImageUrl?: string;
 }
 
+export interface VerifyLogEntry {
+  verificationId: string;
+  accountId: string;
+  projectId: string;
+  planId: string;
+  decision: VerifyDecision;
+  confidence: number;
+  faceMatchSimilarity: number;
+  documentType?: string;
+  documentDetected: boolean;
+  documentExpired: boolean;
+  selfieQuality: "pass" | "fail";
+  reasons: string[];
+  documentImageKey: string;
+  selfieImageKey: string;
+  createdAt: string;
+  documentImageUrl?: string;
+  selfieImageUrl?: string;
+}
+
+export interface VerifyResponse {
+  verificationId: string;
+  decision: VerifyDecision;
+  confidence: number;
+  reasons: string[];
+  document: {
+    detected: boolean;
+    type?: string;
+    fields: { key: string; value: string; confidence: number }[];
+    expired: boolean;
+    expirationDate?: string;
+  };
+  faceMatch: { matched: boolean; similarity: number };
+  selfie: {
+    quality: "pass" | "fail";
+    faceCount: number;
+    checks: { singleFace: boolean; eyesOpen: boolean; noSunglasses: boolean; sharp: boolean; wellLit: boolean };
+  };
+  documentImageKey: string;
+  selfieImageKey: string;
+  createdAt: string;
+}
+
 export interface DashboardProject {
   accountId: string;
   projectId: string;
   name: string;
   projectType?: ProjectType;
   redactionSettings?: RedactionSettings;
+  verifySettings?: VerifySettings;
   planId: string;
   monthlyLimit: number;
   monthModerations?: number;
@@ -240,7 +292,8 @@ export type WebhookEventType =
   | "moderation.review_required"
   | "review.approved"
   | "review.rejected"
-  | "redaction.completed";
+  | "redaction.completed"
+  | "verification.completed";
 
 export type WebhookEventStatus = "pending" | "delivered" | "failed" | "skipped";
 
@@ -837,6 +890,27 @@ export async function saveDashboardRedactionSettings(params: {
   return payload.project;
 }
 
+export async function saveDashboardVerifySettings(params: {
+  idToken: string;
+  projectId: string;
+  verifySettings: VerifySettings;
+}): Promise<DashboardProject> {
+  const response = await fetch(`${API_BASE_URL}/projects/verify-settings`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${params.idToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      projectId: params.projectId,
+      verifySettings: params.verifySettings,
+    }),
+  });
+  const payload = await parseResponse<{ project: DashboardProject }>(response);
+
+  return payload.project;
+}
+
 export async function renameDashboardProject(params: {
   idToken: string;
   projectId: string;
@@ -1023,6 +1097,30 @@ export async function redactDashboardImageUpload(params: {
   return parseResponse<RedactionResponse>(response);
 }
 
+export async function verifyDashboardImageUpload(params: {
+  idToken: string;
+  projectId: string;
+  document: File;
+  selfie: File;
+}): Promise<VerifyResponse> {
+  const formData = new FormData();
+  formData.append("document", params.document);
+  formData.append("selfie", params.selfie);
+
+  const response = await fetch(
+    `${API_BASE_URL}/dashboard/verify?projectId=${encodeURIComponent(params.projectId)}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${params.idToken}`,
+      },
+      body: formData,
+    },
+  );
+
+  return parseResponse<VerifyResponse>(response);
+}
+
 export async function fetchDashboardRedactionLogs(params: {
   idToken: string;
   projectId: string;
@@ -1038,6 +1136,23 @@ export async function fetchDashboardRedactionLogs(params: {
   );
 
   return parseResponse<{ logs: RedactionLogEntry[] }>(response);
+}
+
+export async function fetchDashboardVerifyLogs(params: {
+  idToken: string;
+  projectId: string;
+}): Promise<{ logs: VerifyLogEntry[] }> {
+  const response = await fetch(
+    `${API_BASE_URL}/dashboard/verify-logs?projectId=${encodeURIComponent(params.projectId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${params.idToken}`,
+      },
+    },
+  );
+
+  return parseResponse<{ logs: VerifyLogEntry[] }>(response);
 }
 
 export async function listProjectWebhooks(params: {

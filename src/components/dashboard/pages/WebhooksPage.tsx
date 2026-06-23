@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Project, ProjectType, WebhookEndpoint, WebhookEventLog, WebhookEventStatus, WebhookEventType } from "../types";
 import { card } from "../styles";
+import { Breadcrumbs } from "../shared";
 
 const EVENT_LABEL: Record<WebhookEventType, string> = {
   "moderation.completed": "Moderation completed",
@@ -11,6 +12,7 @@ const EVENT_LABEL: Record<WebhookEventType, string> = {
   "review.approved": "Review approved",
   "review.rejected": "Review rejected",
   "redaction.completed": "Redaction completed",
+  "verification.completed": "Verification completed",
 };
 
 const MODERATION_EVENTS: WebhookEventType[] = [
@@ -317,7 +319,7 @@ function WebhookDetail({
 
   return (
     <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "32px 44px 80px" }}>
-      <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "transparent", border: "none", color: "rgba(255,255,255,0.55)", fontFamily: "inherit", fontSize: "13px", cursor: "pointer", padding: 0, marginBottom: "22px" }}>‹ Webhooks</button>
+      <Breadcrumbs items={[{ label: "Webhooks", onClick: onBack }, { label: webhook.url }]} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
